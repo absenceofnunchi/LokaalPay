@@ -1,0 +1,1055 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		490367B927B9658700DFDE2B /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367B827B9658700DFDE2B /* TestTree.swift */; };
+		490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367BC27BB25FF00DFDE2B /* Mine.swift */; };
+		490367BF27BB289500DFDE2B /* MiningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367BE27BB289500DFDE2B /* MiningTests.swift */; };
+		490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */; };
+		490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */; };
+		490367C627BB456B00DFDE2B /* CodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C527BB456A00DFDE2B /* CodableTests.swift */; };
+		490367C827BB612400DFDE2B /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C727BB612400DFDE2B /* ScannerViewController.swift */; };
+		490367CA27BC48E100DFDE2B /* AlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C927BC48E000DFDE2B /* AlertView.swift */; };
+		490367CC27BC5FAA00DFDE2B /* QRCodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */; };
+		490367CE27BCC07E00DFDE2B /* ContractMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367CD27BCC07D00DFDE2B /* ContractMethods.swift */; };
+		492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983827A998BA003BFAB4 /* AppDelegate.swift */; };
+		492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983A27A998BA003BFAB4 /* SceneDelegate.swift */; };
+		492D983D27A998BA003BFAB4 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983C27A998BA003BFAB4 /* MainViewController.swift */; };
+		492D984327A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 492D984127A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld */; };
+		492D984527A998BF003BFAB4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492D984427A998BF003BFAB4 /* Assets.xcassets */; };
+		492D984827A998BF003BFAB4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 492D984627A998BF003BFAB4 /* LaunchScreen.storyboard */; };
+		492D985327A998C0003BFAB4 /* LedgerLinkV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985227A998C0003BFAB4 /* LedgerLinkV2Tests.swift */; };
+		492D985D27A998C0003BFAB4 /* LedgerLinkV2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985C27A998C0003BFAB4 /* LedgerLinkV2UITests.swift */; };
+		492D985F27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985E27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift */; };
+		4950591F27B05B6A006B9294 /* CoreDataServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950591E27B05B6A006B9294 /* CoreDataServices.swift */; };
+		4950592227B06140006B9294 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592127B06140006B9294 /* Errors.swift */; };
+		4950592527B064D4006B9294 /* WalletCoreData+CoreDataProperties copy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592327B064D4006B9294 /* WalletCoreData+CoreDataProperties copy.swift */; };
+		4950592627B064D4006B9294 /* WalletCoreData+CoreDataClass copy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592427B064D4006B9294 /* WalletCoreData+CoreDataClass copy.swift */; };
+		4950592827B08B40006B9294 /* SigninViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592727B08B40006B9294 /* SigninViewController.swift */; };
+		4950592A27B08B4F006B9294 /* SignupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592927B08B4F006B9294 /* SignupViewController.swift */; };
+		4950592C27B09F50006B9294 /* ViewController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592B27B09F50006B9294 /* ViewController+Extensions.swift */; };
+		49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49657A7C27ACF45600A19EC3 /* 1.mp3 */; };
+		49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49689F7327B1EBB20062C093 /* Array+Extensions.swift */; };
+		499AF10B27ADABF500CAF0EA /* HostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF10A27ADABF500CAF0EA /* HostViewController.swift */; };
+		499AF10D27ADAC0000CAF0EA /* GuestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF10C27ADAC0000CAF0EA /* GuestViewController.swift */; };
+		499AF11227ADFF0D00CAF0EA /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF11127ADFF0D00CAF0EA /* Date+Extensions.swift */; };
+		499AF11427AE18B300CAF0EA /* ConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF11327AE18B300CAF0EA /* ConnectionStatus.swift */; };
+		499AF11627AE1A1700CAF0EA /* CustomTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF11527AE1A1700CAF0EA /* CustomTabBarController.swift */; };
+		499AF11B27AE1F0D00CAF0EA /* StatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF11A27AE1F0D00CAF0EA /* StatusViewController.swift */; };
+		499AF11D27AF6DC100CAF0EA /* WalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF11C27AF6DC000CAF0EA /* WalletViewController.swift */; };
+		499AF12027AF6E9000CAF0EA /* TransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF11F27AF6E9000CAF0EA /* TransactionService.swift */; };
+		499AF12227B042AB00CAF0EA /* WalletTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF12127B042AA00CAF0EA /* WalletTests.swift */; };
+		499AF12427B04E6D00CAF0EA /* KeysService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF12327B04E6C00CAF0EA /* KeysService.swift */; };
+		49A7C32827B73DBD00AC7EB0 /* Vectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C32727B73DBD00AC7EB0 /* Vectors.swift */; };
+		49A7C32A27B74E1C00AC7EB0 /* TreeConfigurable+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C32927B74E1B00AC7EB0 /* TreeConfigurable+Protocols.swift */; };
+		49A7C32C27B75EDB00AC7EB0 /* MainTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C32B27B75EDB00AC7EB0 /* MainTree.swift */; };
+		49A7C32E27B75EFA00AC7EB0 /* MainTreeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C32D27B75EFA00AC7EB0 /* MainTreeTests.swift */; };
+		49A7C33027B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */; };
+		49A7C33227B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */; };
+		49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */; };
+		49C3E76F27AB3FAE00D989E8 /* PasscodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */; };
+		49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B427BECD5200DBEFDA /* NetworkManager.swift */; };
+		49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */; };
+		49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BA27BF525100DBEFDA /* Blockchain.swift */; };
+		49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */; };
+		49FC14F327B3236D00D215B6 /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F227B3236D00D215B6 /* Block.swift */; };
+		49FC14F527B323A800D215B6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F427B323A800D215B6 /* Account.swift */; };
+		49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F627B32A1100D215B6 /* MerkleTree.swift */; };
+		49FC14F927B32B6300D215B6 /* MerkleTreeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */; };
+		49FC14FB27B5DFCE00D215B6 /* BinarySearchTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14FA27B5DFCE00D215B6 /* BinarySearchTree.swift */; };
+		49FC14FD27B5E26000D215B6 /* RedBlackTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14FC27B5E26000D215B6 /* RedBlackTree.swift */; };
+		49FC14FF27B5E35200D215B6 /* RedBlackTreeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14FE27B5E35200D215B6 /* RedBlackTreeTests.swift */; };
+		49FC150127B5EDC200D215B6 /* NodeDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC150027B5EDC200D215B6 /* NodeDB.swift */; };
+		49FC150327B6033000D215B6 /* TreeConfigurableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC150227B6033000D215B6 /* TreeConfigurableTransaction.swift */; };
+		49FC150527B62B4D00D215B6 /* TreeConfigurableAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC150427B62B4D00D215B6 /* TreeConfigurableAccount.swift */; };
+		49FC150727B62C8900D215B6 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC150627B62C8900D215B6 /* Data+Extensions.swift */; };
+		9A0B344FE8A85FD48A81AFE0 /* Pods_LedgerLinkV2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF615A8CEC9B9448386AB490 /* Pods_LedgerLinkV2.framework */; };
+		F530D0ED21139B98BDFF93E0 /* Pods_LedgerLinkV2Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30FBEB60BD774BAE1AA4DB38 /* Pods_LedgerLinkV2Tests.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		492D984F27A998C0003BFAB4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 492D982D27A998BA003BFAB4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 492D983427A998BA003BFAB4;
+			remoteInfo = LedgerLinkV2;
+		};
+		492D985927A998C0003BFAB4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 492D982D27A998BA003BFAB4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 492D983427A998BA003BFAB4;
+			remoteInfo = LedgerLinkV2;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0894508696358C46982FD240 /* Pods-LedgerLinkV2Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2Tests.release.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2Tests/Pods-LedgerLinkV2Tests.release.xcconfig"; sourceTree = "<group>"; };
+		17DCCCBFE8E3E24C8C56548C /* Pods-LedgerLinkV2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.debug.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.debug.xcconfig"; sourceTree = "<group>"; };
+		30FBEB60BD774BAE1AA4DB38 /* Pods_LedgerLinkV2Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LedgerLinkV2Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		33367FC6DE6351BAD09798A8 /* Pods-LedgerLinkV2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.release.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.release.xcconfig"; sourceTree = "<group>"; };
+		490367B827B9658700DFDE2B /* TestTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
+		490367BC27BB25FF00DFDE2B /* Mine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mine.swift; sourceTree = "<group>"; };
+		490367BE27BB289500DFDE2B /* MiningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiningTests.swift; sourceTree = "<group>"; };
+		490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BIP39Language+Extensions.swift"; sourceTree = "<group>"; };
+		490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Digest+Extensions.swift"; sourceTree = "<group>"; };
+		490367C527BB456A00DFDE2B /* CodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableTests.swift; sourceTree = "<group>"; };
+		490367C727BB612400DFDE2B /* ScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
+		490367C927BC48E000DFDE2B /* AlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertView.swift; sourceTree = "<group>"; };
+		490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeViewController.swift; sourceTree = "<group>"; };
+		490367CD27BCC07D00DFDE2B /* ContractMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractMethods.swift; sourceTree = "<group>"; };
+		492D983527A998BA003BFAB4 /* LedgerLinkV2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LedgerLinkV2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		492D983827A998BA003BFAB4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		492D983A27A998BA003BFAB4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		492D983C27A998BA003BFAB4 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		492D984227A998BA003BFAB4 /* LedgerLinkV2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = LedgerLinkV2.xcdatamodel; sourceTree = "<group>"; };
+		492D984427A998BF003BFAB4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		492D984727A998BF003BFAB4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		492D984927A998BF003BFAB4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		492D984E27A998C0003BFAB4 /* LedgerLinkV2Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LedgerLinkV2Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		492D985227A998C0003BFAB4 /* LedgerLinkV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinkV2Tests.swift; sourceTree = "<group>"; };
+		492D985827A998C0003BFAB4 /* LedgerLinkV2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LedgerLinkV2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		492D985C27A998C0003BFAB4 /* LedgerLinkV2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinkV2UITests.swift; sourceTree = "<group>"; };
+		492D985E27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinkV2UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		4950591E27B05B6A006B9294 /* CoreDataServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataServices.swift; sourceTree = "<group>"; };
+		4950592127B06140006B9294 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		4950592327B064D4006B9294 /* WalletCoreData+CoreDataProperties copy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WalletCoreData+CoreDataProperties copy.swift"; sourceTree = "<group>"; };
+		4950592427B064D4006B9294 /* WalletCoreData+CoreDataClass copy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WalletCoreData+CoreDataClass copy.swift"; sourceTree = "<group>"; };
+		4950592727B08B40006B9294 /* SigninViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigninViewController.swift; sourceTree = "<group>"; };
+		4950592927B08B4F006B9294 /* SignupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupViewController.swift; sourceTree = "<group>"; };
+		4950592B27B09F50006B9294 /* ViewController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Extensions.swift"; sourceTree = "<group>"; };
+		49657A7C27ACF45600A19EC3 /* 1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 1.mp3; sourceTree = "<group>"; };
+		49689F7327B1EBB20062C093 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
+		499AF10A27ADABF500CAF0EA /* HostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostViewController.swift; sourceTree = "<group>"; };
+		499AF10C27ADAC0000CAF0EA /* GuestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestViewController.swift; sourceTree = "<group>"; };
+		499AF11127ADFF0D00CAF0EA /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		499AF11327AE18B300CAF0EA /* ConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStatus.swift; sourceTree = "<group>"; };
+		499AF11527AE1A1700CAF0EA /* CustomTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBarController.swift; sourceTree = "<group>"; };
+		499AF11A27AE1F0D00CAF0EA /* StatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusViewController.swift; sourceTree = "<group>"; };
+		499AF11C27AF6DC000CAF0EA /* WalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViewController.swift; sourceTree = "<group>"; };
+		499AF11F27AF6E9000CAF0EA /* TransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionService.swift; sourceTree = "<group>"; };
+		499AF12127B042AA00CAF0EA /* WalletTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletTests.swift; sourceTree = "<group>"; };
+		499AF12327B04E6C00CAF0EA /* KeysService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysService.swift; sourceTree = "<group>"; };
+		49A7C32727B73DBD00AC7EB0 /* Vectors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vectors.swift; sourceTree = "<group>"; };
+		49A7C32927B74E1B00AC7EB0 /* TreeConfigurable+Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TreeConfigurable+Protocols.swift"; sourceTree = "<group>"; };
+		49A7C32B27B75EDB00AC7EB0 /* MainTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTree.swift; sourceTree = "<group>"; };
+		49A7C32D27B75EFA00AC7EB0 /* MainTreeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTreeTests.swift; sourceTree = "<group>"; };
+		49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeConfigurableReceipt.swift; sourceTree = "<group>"; };
+		49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionReceipt+Extensions.swift"; sourceTree = "<group>"; };
+		49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EthereumTransaction+Extensions.swift"; sourceTree = "<group>"; };
+		49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasscodeViewController.swift; sourceTree = "<group>"; };
+		49F030B427BECD5200DBEFDA /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionExtraData.swift; sourceTree = "<group>"; };
+		49F030BA27BF525100DBEFDA /* Blockchain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchain.swift; sourceTree = "<group>"; };
+		49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainTests.swift; sourceTree = "<group>"; };
+		49FC14F227B3236D00D215B6 /* Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Block.swift; sourceTree = "<group>"; };
+		49FC14F427B323A800D215B6 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
+		49FC14F627B32A1100D215B6 /* MerkleTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTree.swift; sourceTree = "<group>"; };
+		49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTreeTests.swift; sourceTree = "<group>"; };
+		49FC14FA27B5DFCE00D215B6 /* BinarySearchTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinarySearchTree.swift; sourceTree = "<group>"; };
+		49FC14FC27B5E26000D215B6 /* RedBlackTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedBlackTree.swift; sourceTree = "<group>"; };
+		49FC14FE27B5E35200D215B6 /* RedBlackTreeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedBlackTreeTests.swift; sourceTree = "<group>"; };
+		49FC150027B5EDC200D215B6 /* NodeDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDB.swift; sourceTree = "<group>"; };
+		49FC150227B6033000D215B6 /* TreeConfigurableTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeConfigurableTransaction.swift; sourceTree = "<group>"; };
+		49FC150427B62B4D00D215B6 /* TreeConfigurableAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeConfigurableAccount.swift; sourceTree = "<group>"; };
+		49FC150627B62C8900D215B6 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
+		BF615A8CEC9B9448386AB490 /* Pods_LedgerLinkV2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LedgerLinkV2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F08E6AE58A6955B0CA16C926 /* Pods-LedgerLinkV2Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2Tests.debug.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2Tests/Pods-LedgerLinkV2Tests.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		492D983227A998BA003BFAB4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9A0B344FE8A85FD48A81AFE0 /* Pods_LedgerLinkV2.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492D984B27A998C0003BFAB4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F530D0ED21139B98BDFF93E0 /* Pods_LedgerLinkV2Tests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492D985527A998C0003BFAB4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		492D982C27A998BA003BFAB4 = {
+			isa = PBXGroup;
+			children = (
+				492D983727A998BA003BFAB4 /* LedgerLinkV2 */,
+				492D985127A998C0003BFAB4 /* LedgerLinkV2Tests */,
+				492D985B27A998C0003BFAB4 /* LedgerLinkV2UITests */,
+				492D983627A998BA003BFAB4 /* Products */,
+				4BAF973C47D28CF04A68D9EB /* Pods */,
+				7F89880BA899F8C9139B1F5D /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		492D983627A998BA003BFAB4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				492D983527A998BA003BFAB4 /* LedgerLinkV2.app */,
+				492D984E27A998C0003BFAB4 /* LedgerLinkV2Tests.xctest */,
+				492D985827A998C0003BFAB4 /* LedgerLinkV2UITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		492D983727A998BA003BFAB4 /* LedgerLinkV2 */ = {
+			isa = PBXGroup;
+			children = (
+				49FC14F127B31DEC00D215B6 /* Node */,
+				49689F6D27B1B9A60062C093 /* Extensions */,
+				499AF11E27AF6E7C00CAF0EA /* Services */,
+				49C3E76327AB3EB500D989E8 /* Networking */,
+				49C3E76227AB3EAE00D989E8 /* ViewControllers */,
+				4950592027B0612D006B9294 /* Models */,
+				499AF11727AE1D6900CAF0EA /* Views */,
+				49657A7927ACEB5900A19EC3 /* AV */,
+				49C3E76127AB3E7400D989E8 /* SupportingFiles */,
+				499AF11027ADFEF200CAF0EA /* Convenience */,
+				492EA6A927B05704001C6A1D /* CoreData */,
+			);
+			path = LedgerLinkV2;
+			sourceTree = "<group>";
+		};
+		492D985127A998C0003BFAB4 /* LedgerLinkV2Tests */ = {
+			isa = PBXGroup;
+			children = (
+				492D985227A998C0003BFAB4 /* LedgerLinkV2Tests.swift */,
+				499AF12127B042AA00CAF0EA /* WalletTests.swift */,
+				490367C527BB456A00DFDE2B /* CodableTests.swift */,
+				49A7C32D27B75EFA00AC7EB0 /* MainTreeTests.swift */,
+				49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */,
+				49FC14FE27B5E35200D215B6 /* RedBlackTreeTests.swift */,
+				490367BE27BB289500DFDE2B /* MiningTests.swift */,
+				49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */,
+				49A7C32727B73DBD00AC7EB0 /* Vectors.swift */,
+			);
+			path = LedgerLinkV2Tests;
+			sourceTree = "<group>";
+		};
+		492D985B27A998C0003BFAB4 /* LedgerLinkV2UITests */ = {
+			isa = PBXGroup;
+			children = (
+				492D985C27A998C0003BFAB4 /* LedgerLinkV2UITests.swift */,
+				492D985E27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift */,
+			);
+			path = LedgerLinkV2UITests;
+			sourceTree = "<group>";
+		};
+		492EA6A927B05704001C6A1D /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				4950592327B064D4006B9294 /* WalletCoreData+CoreDataProperties copy.swift */,
+				4950592427B064D4006B9294 /* WalletCoreData+CoreDataClass copy.swift */,
+				492D984127A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld */,
+			);
+			path = CoreData;
+			sourceTree = "<group>";
+		};
+		4950592027B0612D006B9294 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				4950592127B06140006B9294 /* Errors.swift */,
+				490367CD27BCC07D00DFDE2B /* ContractMethods.swift */,
+				49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		49657A7927ACEB5900A19EC3 /* AV */ = {
+			isa = PBXGroup;
+			children = (
+				49657A7C27ACF45600A19EC3 /* 1.mp3 */,
+			);
+			path = AV;
+			sourceTree = "<group>";
+		};
+		49689F6D27B1B9A60062C093 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */,
+				49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */,
+				490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		499AF11027ADFEF200CAF0EA /* Convenience */ = {
+			isa = PBXGroup;
+			children = (
+				499AF11127ADFF0D00CAF0EA /* Date+Extensions.swift */,
+				49689F7327B1EBB20062C093 /* Array+Extensions.swift */,
+				49FC150627B62C8900D215B6 /* Data+Extensions.swift */,
+				490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */,
+				4950592B27B09F50006B9294 /* ViewController+Extensions.swift */,
+				499AF11327AE18B300CAF0EA /* ConnectionStatus.swift */,
+				49A7C32927B74E1B00AC7EB0 /* TreeConfigurable+Protocols.swift */,
+			);
+			path = Convenience;
+			sourceTree = "<group>";
+		};
+		499AF11727AE1D6900CAF0EA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				490367C927BC48E000DFDE2B /* AlertView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		499AF11E27AF6E7C00CAF0EA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				499AF11F27AF6E9000CAF0EA /* TransactionService.swift */,
+				499AF12327B04E6C00CAF0EA /* KeysService.swift */,
+				4950591E27B05B6A006B9294 /* CoreDataServices.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		49C3E76127AB3E7400D989E8 /* SupportingFiles */ = {
+			isa = PBXGroup;
+			children = (
+				492D983827A998BA003BFAB4 /* AppDelegate.swift */,
+				492D983A27A998BA003BFAB4 /* SceneDelegate.swift */,
+				492D984427A998BF003BFAB4 /* Assets.xcassets */,
+				492D984627A998BF003BFAB4 /* LaunchScreen.storyboard */,
+				492D984927A998BF003BFAB4 /* Info.plist */,
+			);
+			path = SupportingFiles;
+			sourceTree = "<group>";
+		};
+		49C3E76227AB3EAE00D989E8 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				4950592927B08B4F006B9294 /* SignupViewController.swift */,
+				4950592727B08B40006B9294 /* SigninViewController.swift */,
+				492D983C27A998BA003BFAB4 /* MainViewController.swift */,
+				499AF11C27AF6DC000CAF0EA /* WalletViewController.swift */,
+				490367C727BB612400DFDE2B /* ScannerViewController.swift */,
+				499AF11A27AE1F0D00CAF0EA /* StatusViewController.swift */,
+				499AF10A27ADABF500CAF0EA /* HostViewController.swift */,
+				499AF10C27ADAC0000CAF0EA /* GuestViewController.swift */,
+				49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */,
+				499AF11527AE1A1700CAF0EA /* CustomTabBarController.swift */,
+				490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		49C3E76327AB3EB500D989E8 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				49F030B427BECD5200DBEFDA /* NetworkManager.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		49FC14F127B31DEC00D215B6 /* Node */ = {
+			isa = PBXGroup;
+			children = (
+				49FC14F227B3236D00D215B6 /* Block.swift */,
+				49FC14F427B323A800D215B6 /* Account.swift */,
+				49FC150027B5EDC200D215B6 /* NodeDB.swift */,
+				49A7C32B27B75EDB00AC7EB0 /* MainTree.swift */,
+				49FC14F627B32A1100D215B6 /* MerkleTree.swift */,
+				49FC14FA27B5DFCE00D215B6 /* BinarySearchTree.swift */,
+				49FC14FC27B5E26000D215B6 /* RedBlackTree.swift */,
+				49FC150227B6033000D215B6 /* TreeConfigurableTransaction.swift */,
+				49FC150427B62B4D00D215B6 /* TreeConfigurableAccount.swift */,
+				49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */,
+				49F030BA27BF525100DBEFDA /* Blockchain.swift */,
+				490367B827B9658700DFDE2B /* TestTree.swift */,
+				490367BC27BB25FF00DFDE2B /* Mine.swift */,
+			);
+			path = Node;
+			sourceTree = "<group>";
+		};
+		4BAF973C47D28CF04A68D9EB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				17DCCCBFE8E3E24C8C56548C /* Pods-LedgerLinkV2.debug.xcconfig */,
+				33367FC6DE6351BAD09798A8 /* Pods-LedgerLinkV2.release.xcconfig */,
+				F08E6AE58A6955B0CA16C926 /* Pods-LedgerLinkV2Tests.debug.xcconfig */,
+				0894508696358C46982FD240 /* Pods-LedgerLinkV2Tests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		7F89880BA899F8C9139B1F5D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BF615A8CEC9B9448386AB490 /* Pods_LedgerLinkV2.framework */,
+				30FBEB60BD774BAE1AA4DB38 /* Pods_LedgerLinkV2Tests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		492D983427A998BA003BFAB4 /* LedgerLinkV2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 492D986227A998C0003BFAB4 /* Build configuration list for PBXNativeTarget "LedgerLinkV2" */;
+			buildPhases = (
+				5E8A799A3A326C0592719FF5 /* [CP] Check Pods Manifest.lock */,
+				492D983127A998BA003BFAB4 /* Sources */,
+				492D983227A998BA003BFAB4 /* Frameworks */,
+				492D983327A998BA003BFAB4 /* Resources */,
+				943B290CF751FDFCB3AD5C9B /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LedgerLinkV2;
+			productName = LedgerLinkV2;
+			productReference = 492D983527A998BA003BFAB4 /* LedgerLinkV2.app */;
+			productType = "com.apple.product-type.application";
+		};
+		492D984D27A998C0003BFAB4 /* LedgerLinkV2Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 492D986527A998C0003BFAB4 /* Build configuration list for PBXNativeTarget "LedgerLinkV2Tests" */;
+			buildPhases = (
+				5494A6C8C4141116931BCAD1 /* [CP] Check Pods Manifest.lock */,
+				492D984A27A998C0003BFAB4 /* Sources */,
+				492D984B27A998C0003BFAB4 /* Frameworks */,
+				492D984C27A998C0003BFAB4 /* Resources */,
+				8BF5882D8E5728B971C1A918 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				492D985027A998C0003BFAB4 /* PBXTargetDependency */,
+			);
+			name = LedgerLinkV2Tests;
+			productName = LedgerLinkV2Tests;
+			productReference = 492D984E27A998C0003BFAB4 /* LedgerLinkV2Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		492D985727A998C0003BFAB4 /* LedgerLinkV2UITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 492D986827A998C0003BFAB4 /* Build configuration list for PBXNativeTarget "LedgerLinkV2UITests" */;
+			buildPhases = (
+				492D985427A998C0003BFAB4 /* Sources */,
+				492D985527A998C0003BFAB4 /* Frameworks */,
+				492D985627A998C0003BFAB4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				492D985A27A998C0003BFAB4 /* PBXTargetDependency */,
+			);
+			name = LedgerLinkV2UITests;
+			productName = LedgerLinkV2UITests;
+			productReference = 492D985827A998C0003BFAB4 /* LedgerLinkV2UITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		492D982D27A998BA003BFAB4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1310;
+				LastUpgradeCheck = 1310;
+				TargetAttributes = {
+					492D983427A998BA003BFAB4 = {
+						CreatedOnToolsVersion = 13.1;
+					};
+					492D984D27A998C0003BFAB4 = {
+						CreatedOnToolsVersion = 13.1;
+						TestTargetID = 492D983427A998BA003BFAB4;
+					};
+					492D985727A998C0003BFAB4 = {
+						CreatedOnToolsVersion = 13.1;
+						TestTargetID = 492D983427A998BA003BFAB4;
+					};
+				};
+			};
+			buildConfigurationList = 492D983027A998BA003BFAB4 /* Build configuration list for PBXProject "LedgerLinkV2" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 492D982C27A998BA003BFAB4;
+			productRefGroup = 492D983627A998BA003BFAB4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				492D983427A998BA003BFAB4 /* LedgerLinkV2 */,
+				492D984D27A998C0003BFAB4 /* LedgerLinkV2Tests */,
+				492D985727A998C0003BFAB4 /* LedgerLinkV2UITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		492D983327A998BA003BFAB4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492D984827A998BF003BFAB4 /* LaunchScreen.storyboard in Resources */,
+				49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */,
+				492D984527A998BF003BFAB4 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492D984C27A998C0003BFAB4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492D985627A998C0003BFAB4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5494A6C8C4141116931BCAD1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-LedgerLinkV2Tests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5E8A799A3A326C0592719FF5 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-LedgerLinkV2-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8BF5882D8E5728B971C1A918 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LedgerLinkV2Tests/Pods-LedgerLinkV2Tests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LedgerLinkV2Tests/Pods-LedgerLinkV2Tests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LedgerLinkV2Tests/Pods-LedgerLinkV2Tests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		943B290CF751FDFCB3AD5C9B /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		492D983127A998BA003BFAB4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				499AF12427B04E6D00CAF0EA /* KeysService.swift in Sources */,
+				492D983D27A998BA003BFAB4 /* MainViewController.swift in Sources */,
+				490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */,
+				490367CC27BC5FAA00DFDE2B /* QRCodeViewController.swift in Sources */,
+				499AF11D27AF6DC100CAF0EA /* WalletViewController.swift in Sources */,
+				499AF11627AE1A1700CAF0EA /* CustomTabBarController.swift in Sources */,
+				490367B927B9658700DFDE2B /* TestTree.swift in Sources */,
+				499AF10B27ADABF500CAF0EA /* HostViewController.swift in Sources */,
+				49C3E76F27AB3FAE00D989E8 /* PasscodeViewController.swift in Sources */,
+				49A7C32A27B74E1C00AC7EB0 /* TreeConfigurable+Protocols.swift in Sources */,
+				49FC14FD27B5E26000D215B6 /* RedBlackTree.swift in Sources */,
+				499AF12027AF6E9000CAF0EA /* TransactionService.swift in Sources */,
+				490367CE27BCC07E00DFDE2B /* ContractMethods.swift in Sources */,
+				49A7C33027B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift in Sources */,
+				49FC150327B6033000D215B6 /* TreeConfigurableTransaction.swift in Sources */,
+				49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */,
+				49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */,
+				49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */,
+				49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */,
+				49A7C32C27B75EDB00AC7EB0 /* MainTree.swift in Sources */,
+				4950592827B08B40006B9294 /* SigninViewController.swift in Sources */,
+				492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */,
+				49FC150527B62B4D00D215B6 /* TreeConfigurableAccount.swift in Sources */,
+				492D984327A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld in Sources */,
+				490367CA27BC48E100DFDE2B /* AlertView.swift in Sources */,
+				499AF11227ADFF0D00CAF0EA /* Date+Extensions.swift in Sources */,
+				4950592C27B09F50006B9294 /* ViewController+Extensions.swift in Sources */,
+				49FC14FB27B5DFCE00D215B6 /* BinarySearchTree.swift in Sources */,
+				499AF11B27AE1F0D00CAF0EA /* StatusViewController.swift in Sources */,
+				490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */,
+				490367C827BB612400DFDE2B /* ScannerViewController.swift in Sources */,
+				492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */,
+				49FC14F527B323A800D215B6 /* Account.swift in Sources */,
+				49A7C33227B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift in Sources */,
+				499AF10D27ADAC0000CAF0EA /* GuestViewController.swift in Sources */,
+				49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */,
+				4950592227B06140006B9294 /* Errors.swift in Sources */,
+				49FC150127B5EDC200D215B6 /* NodeDB.swift in Sources */,
+				49FC14F327B3236D00D215B6 /* Block.swift in Sources */,
+				490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */,
+				49FC150727B62C8900D215B6 /* Data+Extensions.swift in Sources */,
+				49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */,
+				4950592A27B08B4F006B9294 /* SignupViewController.swift in Sources */,
+				4950591F27B05B6A006B9294 /* CoreDataServices.swift in Sources */,
+				4950592627B064D4006B9294 /* WalletCoreData+CoreDataClass copy.swift in Sources */,
+				4950592527B064D4006B9294 /* WalletCoreData+CoreDataProperties copy.swift in Sources */,
+				499AF11427AE18B300CAF0EA /* ConnectionStatus.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492D984A27A998C0003BFAB4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49A7C32E27B75EFA00AC7EB0 /* MainTreeTests.swift in Sources */,
+				49FC14F927B32B6300D215B6 /* MerkleTreeTests.swift in Sources */,
+				490367C627BB456B00DFDE2B /* CodableTests.swift in Sources */,
+				490367BF27BB289500DFDE2B /* MiningTests.swift in Sources */,
+				49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */,
+				49FC14FF27B5E35200D215B6 /* RedBlackTreeTests.swift in Sources */,
+				499AF12227B042AB00CAF0EA /* WalletTests.swift in Sources */,
+				49A7C32827B73DBD00AC7EB0 /* Vectors.swift in Sources */,
+				492D985327A998C0003BFAB4 /* LedgerLinkV2Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492D985427A998C0003BFAB4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492D985D27A998C0003BFAB4 /* LedgerLinkV2UITests.swift in Sources */,
+				492D985F27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		492D985027A998C0003BFAB4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 492D983427A998BA003BFAB4 /* LedgerLinkV2 */;
+			targetProxy = 492D984F27A998C0003BFAB4 /* PBXContainerItemProxy */;
+		};
+		492D985A27A998C0003BFAB4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 492D983427A998BA003BFAB4 /* LedgerLinkV2 */;
+			targetProxy = 492D985927A998C0003BFAB4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		492D984627A998BF003BFAB4 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				492D984727A998BF003BFAB4 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		492D986027A998C0003BFAB4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		492D986127A998C0003BFAB4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		492D986327A998C0003BFAB4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 17DCCCBFE8E3E24C8C56548C /* Pods-LedgerLinkV2.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
+				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		492D986427A998C0003BFAB4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 33367FC6DE6351BAD09798A8 /* Pods-LedgerLinkV2.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
+				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		492D986627A998C0003BFAB4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F08E6AE58A6955B0CA16C926 /* Pods-LedgerLinkV2Tests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LedgerLinkV2.app/LedgerLinkV2";
+			};
+			name = Debug;
+		};
+		492D986727A998C0003BFAB4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0894508696358C46982FD240 /* Pods-LedgerLinkV2Tests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LedgerLinkV2.app/LedgerLinkV2";
+			};
+			name = Release;
+		};
+		492D986927A998C0003BFAB4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LedgerLinkV2;
+			};
+			name = Debug;
+		};
+		492D986A27A998C0003BFAB4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LedgerLinkV2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		492D983027A998BA003BFAB4 /* Build configuration list for PBXProject "LedgerLinkV2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492D986027A998C0003BFAB4 /* Debug */,
+				492D986127A998C0003BFAB4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		492D986227A998C0003BFAB4 /* Build configuration list for PBXNativeTarget "LedgerLinkV2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492D986327A998C0003BFAB4 /* Debug */,
+				492D986427A998C0003BFAB4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		492D986527A998C0003BFAB4 /* Build configuration list for PBXNativeTarget "LedgerLinkV2Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492D986627A998C0003BFAB4 /* Debug */,
+				492D986727A998C0003BFAB4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		492D986827A998C0003BFAB4 /* Build configuration list for PBXNativeTarget "LedgerLinkV2UITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492D986927A998C0003BFAB4 /* Debug */,
+				492D986A27A998C0003BFAB4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		492D984127A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				492D984227A998BA003BFAB4 /* LedgerLinkV2.xcdatamodel */,
+			);
+			currentVersion = 492D984227A998BA003BFAB4 /* LedgerLinkV2.xcdatamodel */;
+			path = LedgerLinkV2.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 492D982D27A998BA003BFAB4 /* Project object */;
+}
