@@ -15,7 +15,7 @@
 import Foundation
 import web3swift
 
-public struct TreeConfigurableTransaction: TreeConfigurable {
+public struct TreeConfigurableTransaction: LightConfigurable {
     typealias T = EthereumTransaction
     var id: Data // transaction hash
     var data: Data // RLP encoded EthereumTransaction

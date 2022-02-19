@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import web3swift
 
-final class Tree<T: TreeConfigurable> {
+final class Tree<T: LightConfigurable> {
     private(set) var rootHash: MerkleTree<T>?
     private(set) var searchTree = RedBlackTree<T>()
     private var storage = Set<AnyCancellable>()
@@ -262,6 +262,4 @@ final class Tree<T: TreeConfigurable> {
             }
             .store(in: &storage)
     }
-    
-
 }

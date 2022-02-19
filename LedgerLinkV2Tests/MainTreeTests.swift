@@ -242,8 +242,14 @@ final class MainTreeTest: XCTestCase {
             XCTAssertEqual(acct.codeHash, res.codeHash)
 
             /// all trees have to be initialized
-            let blockHash = try? node.getBlockHash()
-            XCTAssertNil(blockHash)
+            let receiptHash = node.exposeRootHash(for: .receipt)
+            XCTAssertNil(receiptHash)
+            
+            let transactionHash = node.exposeRootHash(for: .transaction)
+            XCTAssertNil(transactionHash)
+            
+            let stateHash = node.exposeRootHash(for: .state)
+            XCTAssertNil(stateHash)
         }
         
         /// add and search receipts
@@ -266,8 +272,14 @@ final class MainTreeTest: XCTestCase {
             XCTAssertEqual(receipt.gasUsed, res.gasUsed)
             
             /// all trees have to be initialized
-            let blockHash = try? node.getBlockHash()
-            XCTAssertNil(blockHash)
+            let receiptHash = node.exposeRootHash(for: .receipt)
+            XCTAssertNil(receiptHash)
+            
+            let transactionHash = node.exposeRootHash(for: .transaction)
+            XCTAssertNil(transactionHash)
+            
+            let stateHash = node.exposeRootHash(for: .state)
+            XCTAssertNil(stateHash)
         }
 
         /// add and search transactions
@@ -289,9 +301,14 @@ final class MainTreeTest: XCTestCase {
             XCTAssertEqual(decoded.value, res.value)
         }
         
-        guard let blockHash = try? node.getBlockHash() else {
-            throw NodeError.hashingError
-        }
-        XCTAssertNotNil(blockHash)
+        /// all trees have to be initialized
+        let receiptHash = node.exposeRootHash(for: .receipt)
+        XCTAssertNil(receiptHash)
+        
+        let transactionHash = node.exposeRootHash(for: .transaction)
+        XCTAssertNil(transactionHash)
+        
+        let stateHash = node.exposeRootHash(for: .state)
+        XCTAssertNil(stateHash)
     }
 }

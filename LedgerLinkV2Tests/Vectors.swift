@@ -42,7 +42,7 @@ struct Vectors {
         var data = [Data]()
         for hash in checksumHashes {
             guard let converted = hash.data(using: .utf8) else { continue }
-            let hashData = converted.sha3(.keccak256)
+            let hashData = converted.sha256()
             data.append(hashData)
         }
         return data
@@ -132,11 +132,11 @@ struct Vectors {
         return txArray
     }
     
-    static var blocks: [Block] {
-        var blocks = [Block]()
-        for i in 0 ..< addresses.count {
-            let block = Block(
-//            blocks.append(<#T##Element#>)
+    static var blocks: [ChainBlock] {
+        var blocks = [ChainBlock]()
+        for i in 0 ..< binaryHashes.count {
+            let block = ChainBlock(number: BigUInt(i), hash: binaryHashes[i], parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], size: BigUInt(i), timestamp: Date(), transactions: [treeConfigurableTransactions[i]])
+            blocks.append(block)
         }
         return blocks
     }

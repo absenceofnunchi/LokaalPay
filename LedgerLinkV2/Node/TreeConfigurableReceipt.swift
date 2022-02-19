@@ -8,7 +8,7 @@
 import Foundation
 import web3swift
 
-public struct TreeConfigurableReceipt: TreeConfigurable {
+public struct TreeConfigurableReceipt: LightConfigurable {
     typealias T = TransactionReceipt
     var id: Data // Receipt hash
     var data: Data // RLP encoded TransactionReceipt

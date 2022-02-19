@@ -10,17 +10,16 @@ import web3swift
 import CryptoKit
 
 struct Mine {
-    func generate(with blockHash: String) throws -> String? {
+    func generate(with blockHash: String) throws -> Data? {
         guard let english = BIP39Language(language: "english") else { return nil }
         let words = english.words
         
-        var hashes = [String]()
+        var hashes = [Data]()
         for word in words {
             guard let data = (word + blockHash).data(using: .utf8) else { return nil }
-            let hash = SHA256.hash(data: data)
-            hashes.append(hash.hexStr)
+            hashes.append(data)
         }
-        guard case .Node(hash: let hash, datum: _, left: _, right: _) = try? MerkleTree<String>.buildTree(fromData: hashes) else { return nil }
+        guard case .Node(hash: let hash, datum: _, left: _, right: _) = try? MerkleTree<Data>.buildTree(fromData: hashes) else { return nil }
         return hash
     }
 }

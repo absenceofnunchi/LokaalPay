@@ -17,7 +17,7 @@ import Foundation
 import BigInt
 import web3swift
 
-public struct TreeConfigurableAccount: TreeConfigurable {
+public struct TreeConfigurableAccount: LightConfigurable {
     typealias T = Account
     var id: Data /// Address
     var data: Data /// RLP encoded Account

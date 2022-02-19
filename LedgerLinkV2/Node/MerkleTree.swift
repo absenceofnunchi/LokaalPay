@@ -17,34 +17,40 @@ import web3swift
 
 indirect enum MerkleTree<T: Equatable & Encodable & Hashable> {
     case Empty
-    case Node(hash: String, datum: T?, left: MerkleTree, right: MerkleTree)
+    case Node(hash: Data, datum: T?, left: MerkleTree, right: MerkleTree)
     
     init() { self = .Empty }
     
-    init(hash: String) {
+    init(hash: Data) {
         self = MerkleTree.Node(hash: hash, datum: nil, left: .Empty, right: .Empty)
     }
     
     init(datum: T) throws {
-        let encoder = JSONEncoder()
-        
-        var encoded: Data
-        do {
-            encoded = try encoder.encode(datum)
-        } catch {
-            throw NodeError.encodingError
+        var hashData: Data
+        if datum is Data {
+            guard let temp = datum as? Data else {
+                throw NodeError.encodingError
+            }
+            
+            hashData = temp
+        } else {
+            let encoder = JSONEncoder()
+            do {
+                let encoded = try encoder.encode(datum)
+                hashData = encoded.sha256()
+            } catch {
+                throw NodeError.encodingError
+            }
         }
         
-        /// make a string from the data and make a hash from it.
-        let hash = SHA256.hash(data: encoded).description
-        self = MerkleTree.Node(hash: hash, datum: datum, left: .Empty, right: .Empty)
+        self = MerkleTree.Node(hash: hashData, datum: datum, left: .Empty, right: .Empty)
     }
     
     static func createParentNode(leftChild: MerkleTree, rightChild: MerkleTree) -> MerkleTree {
         
         /// get the hashes
-        var leftHash  = ""
-        var rightHash = ""
+        var leftHash = Data()
+        var rightHash = Data()
         
         switch leftChild {
             case let .Node(hash, _, _, _):
@@ -62,9 +68,8 @@ indirect enum MerkleTree<T: Equatable & Encodable & Hashable> {
         
         /// Calculate the new node's hash which is the hash of the concatenation
         /// of the two children's hashes.
-        let data = Data((leftHash + rightHash).utf8)
-        let newHash = SHA256.hash(data: data).description
-        return MerkleTree.Node(hash: newHash, datum: nil, left: leftChild, right: rightChild)
+        let data = (leftHash + rightHash).sha256()
+        return MerkleTree.Node(hash: data, datum: nil, left: leftChild, right: rightChild)
     }
     
     static func buildTree(fromData data: [T]) throws -> MerkleTree {

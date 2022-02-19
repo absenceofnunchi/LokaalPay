@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		490367B927B9658700DFDE2B /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367B827B9658700DFDE2B /* TestTree.swift */; };
 		490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367BC27BB25FF00DFDE2B /* Mine.swift */; };
-		490367BF27BB289500DFDE2B /* MiningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367BE27BB289500DFDE2B /* MiningTests.swift */; };
 		490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */; };
 		490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */; };
 		490367C627BB456B00DFDE2B /* CodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C527BB456A00DFDE2B /* CodableTests.swift */; };
@@ -53,11 +52,12 @@
 		49A7C33227B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */; };
 		49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */; };
 		49C3E76F27AB3FAE00D989E8 /* PasscodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */; };
+		49C4492227BFF98D00970B8E /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C4492127BFF98D00970B8E /* String+Extension.swift */; };
 		49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B427BECD5200DBEFDA /* NetworkManager.swift */; };
 		49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */; };
 		49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BA27BF525100DBEFDA /* Blockchain.swift */; };
 		49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */; };
-		49FC14F327B3236D00D215B6 /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F227B3236D00D215B6 /* Block.swift */; };
+		49FC14F327B3236D00D215B6 /* ChainBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F227B3236D00D215B6 /* ChainBlock.swift */; };
 		49FC14F527B323A800D215B6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F427B323A800D215B6 /* Account.swift */; };
 		49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F627B32A1100D215B6 /* MerkleTree.swift */; };
 		49FC14F927B32B6300D215B6 /* MerkleTreeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */; };
@@ -96,7 +96,6 @@
 		33367FC6DE6351BAD09798A8 /* Pods-LedgerLinkV2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.release.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.release.xcconfig"; sourceTree = "<group>"; };
 		490367B827B9658700DFDE2B /* TestTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
 		490367BC27BB25FF00DFDE2B /* Mine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mine.swift; sourceTree = "<group>"; };
-		490367BE27BB289500DFDE2B /* MiningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiningTests.swift; sourceTree = "<group>"; };
 		490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BIP39Language+Extensions.swift"; sourceTree = "<group>"; };
 		490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Digest+Extensions.swift"; sourceTree = "<group>"; };
 		490367C527BB456A00DFDE2B /* CodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableTests.swift; sourceTree = "<group>"; };
@@ -144,11 +143,12 @@
 		49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionReceipt+Extensions.swift"; sourceTree = "<group>"; };
 		49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EthereumTransaction+Extensions.swift"; sourceTree = "<group>"; };
 		49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasscodeViewController.swift; sourceTree = "<group>"; };
+		49C4492127BFF98D00970B8E /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		49F030B427BECD5200DBEFDA /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionExtraData.swift; sourceTree = "<group>"; };
 		49F030BA27BF525100DBEFDA /* Blockchain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchain.swift; sourceTree = "<group>"; };
 		49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainTests.swift; sourceTree = "<group>"; };
-		49FC14F227B3236D00D215B6 /* Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Block.swift; sourceTree = "<group>"; };
+		49FC14F227B3236D00D215B6 /* ChainBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainBlock.swift; sourceTree = "<group>"; };
 		49FC14F427B323A800D215B6 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		49FC14F627B32A1100D215B6 /* MerkleTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTree.swift; sourceTree = "<group>"; };
 		49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTreeTests.swift; sourceTree = "<group>"; };
@@ -239,7 +239,6 @@
 				49A7C32D27B75EFA00AC7EB0 /* MainTreeTests.swift */,
 				49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */,
 				49FC14FE27B5E35200D215B6 /* RedBlackTreeTests.swift */,
-				490367BE27BB289500DFDE2B /* MiningTests.swift */,
 				49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */,
 				49A7C32727B73DBD00AC7EB0 /* Vectors.swift */,
 			);
@@ -297,6 +296,7 @@
 			isa = PBXGroup;
 			children = (
 				499AF11127ADFF0D00CAF0EA /* Date+Extensions.swift */,
+				49C4492127BFF98D00970B8E /* String+Extension.swift */,
 				49689F7327B1EBB20062C093 /* Array+Extensions.swift */,
 				49FC150627B62C8900D215B6 /* Data+Extensions.swift */,
 				490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */,
@@ -366,7 +366,6 @@
 		49FC14F127B31DEC00D215B6 /* Node */ = {
 			isa = PBXGroup;
 			children = (
-				49FC14F227B3236D00D215B6 /* Block.swift */,
 				49FC14F427B323A800D215B6 /* Account.swift */,
 				49FC150027B5EDC200D215B6 /* NodeDB.swift */,
 				49A7C32B27B75EDB00AC7EB0 /* MainTree.swift */,
@@ -377,6 +376,7 @@
 				49FC150427B62B4D00D215B6 /* TreeConfigurableAccount.swift */,
 				49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */,
 				49F030BA27BF525100DBEFDA /* Blockchain.swift */,
+				49FC14F227B3236D00D215B6 /* ChainBlock.swift */,
 				490367B827B9658700DFDE2B /* TestTree.swift */,
 				490367BC27BB25FF00DFDE2B /* Mine.swift */,
 			);
@@ -635,6 +635,7 @@
 				49A7C33027B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift in Sources */,
 				49FC150327B6033000D215B6 /* TreeConfigurableTransaction.swift in Sources */,
 				49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */,
+				49C4492227BFF98D00970B8E /* String+Extension.swift in Sources */,
 				49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */,
 				49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */,
 				49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */,
@@ -657,7 +658,7 @@
 				49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */,
 				4950592227B06140006B9294 /* Errors.swift in Sources */,
 				49FC150127B5EDC200D215B6 /* NodeDB.swift in Sources */,
-				49FC14F327B3236D00D215B6 /* Block.swift in Sources */,
+				49FC14F327B3236D00D215B6 /* ChainBlock.swift in Sources */,
 				490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */,
 				49FC150727B62C8900D215B6 /* Data+Extensions.swift in Sources */,
 				49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */,
@@ -676,7 +677,6 @@
 				49A7C32E27B75EFA00AC7EB0 /* MainTreeTests.swift in Sources */,
 				49FC14F927B32B6300D215B6 /* MerkleTreeTests.swift in Sources */,
 				490367C627BB456B00DFDE2B /* CodableTests.swift in Sources */,
-				490367BF27BB289500DFDE2B /* MiningTests.swift in Sources */,
 				49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */,
 				49FC14FF27B5E35200D215B6 /* RedBlackTreeTests.swift in Sources */,
 				499AF12227B042AB00CAF0EA /* WalletTests.swift in Sources */,

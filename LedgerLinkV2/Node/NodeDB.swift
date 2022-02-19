@@ -20,13 +20,8 @@ final class NodeDB {
     private(set) var transactionTrie = Tree<TreeConfigurableTransaction>()
     private(set) var stateTrie = Tree<TreeConfigurableAccount>()
     private(set) var receiptTrie = Tree<TreeConfigurableReceipt>()
-    var blockHash: String? {
-        return try? getBlockHash()
-    }
-    
-    init() {
-        
-    }
+
+    init() { }
 
     func search(_ data: TreeConfigurableAccount) -> TreeConfigurableAccount? {
         return stateTrie.search(for: data)
@@ -121,34 +116,45 @@ final class NodeDB {
 }
 
 extension NodeDB {
-    func getBlockHash() throws -> String {
-        guard let stateRoot = stateTrie.rootHash,
-              let receiptRoot = receiptTrie.rootHash,
-              let txRoot = transactionTrie.rootHash  else {
-                  throw NodeError.generalError("Unable to generate the root hashes.")
-        }
-        
-        var hash: String = ""
-        if case .Node(hash: let stateHash, datum: _, left: _, right: _) = stateRoot {
-            hash += stateHash
-        }
-        
-        if case .Node(hash: let receiptHash, datum: _, left: _, right: _) = receiptRoot {
-            hash += receiptHash
-        }
-        
-        if case .Node(hash: let txHash, datum: _, left: _, right: _) = txRoot {
-            hash += txHash
-        }
-        guard let data = hash.data(using: .utf8) else {
-            throw NodeError.hashingError
-        }
-        
-        let hashed = SHA256.hash(data: data)
-        return hashed.hexStr
+    enum RootHash {
+        case state
+        case receipt
+        case transaction
     }
     
+    private func getRootHash(for rootHash: RootHash) -> Data? {
+        switch rootHash {
+            case .state:
+                let stateRoot = stateTrie.rootHash
+                guard case .Node(hash: let stateHash, datum: _, left: _, right: _) = stateRoot else {
+                    return nil
+                }
+                
+                return stateHash
+            case .receipt:
+                let receiptRoot = receiptTrie.rootHash
+                guard case .Node(hash: let stateHash, datum: _, left: _, right: _) = receiptRoot else {
+                    return nil
+                }
+                
+                return stateHash
+            case .transaction:
+                let transactionRoot = transactionTrie.rootHash
+                guard case .Node(hash: let stateHash, datum: _, left: _, right: _) = transactionRoot else {
+                    return nil
+                }
+                
+                return stateHash
+        }
+    }
+    
+    #if DEBUG
+    func exposeRootHash(for rootHash: RootHash) -> Data? {
+        return getRootHash(for: rootHash)
+    }
+    #endif
+    
     func createBlock() {
-        let block = Block.pending
+        
     }
 }

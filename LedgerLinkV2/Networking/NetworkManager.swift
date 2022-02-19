@@ -180,8 +180,7 @@ extension NetworkManager: MCSessionDelegate {
         guard let dataArray = data.decompressedToArray else {
             return
         }
-        
-        
+                
         for data in dataArray {
             /// First check and see if the transaction already exists in the node and, if it does, simply return, if it doesn't, propagate right away (don't wait for the predefined interval) then validate.
             /// If valid, include it in the block and mine. If not valid, do nothing.
