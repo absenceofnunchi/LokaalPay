@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="21A559" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="State" representedClassName="State" syncable="YES" codeGenerationType="class"/>
+    <entity name="BlockCoreData" representedClassName="BlockCoreData" syncable="YES">
+        <attribute name="data" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="Binary"/>
+        <attribute name="number" optional="YES" attributeType="Binary"/>
+    </entity>
     <entity name="WalletCoreData" representedClassName="WalletCoreData" syncable="YES">
         <attribute name="address" attributeType="String"/>
         <attribute name="data" optional="YES" attributeType="Binary"/>
     </entity>
     <elements>
+        <element name="BlockCoreData" positionX="-63" positionY="0" width="128" height="74"/>
         <element name="WalletCoreData" positionX="-63" positionY="-18" width="128" height="59"/>
-        <element name="State" positionX="-63" positionY="0" width="128" height="29"/>
     </elements>
 </model>

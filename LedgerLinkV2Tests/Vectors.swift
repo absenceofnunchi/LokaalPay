@@ -132,13 +132,23 @@ struct Vectors {
         return txArray
     }
     
-    static var blocks: [ChainBlock] {
+    static var blocks: [ChainBlock]? {
         var blocks = [ChainBlock]()
         for i in 0 ..< binaryHashes.count {
-            let block = ChainBlock(number: BigUInt(i), hash: binaryHashes[i], parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], size: BigUInt(i), timestamp: Date(), transactions: [treeConfigurableTransactions[i]])
+            guard let block = try? ChainBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [treeConfigurableTransactions[i]]) else { return nil }
             blocks.append(block)
         }
         return blocks
+    }
+    
+    static var lightBlocks: [LightBlock]? {
+        guard let blocks = blocks else { return nil }
+        var lBlocks = [LightBlock]()
+        for block in blocks {
+            guard let block = try? LightBlock(data: block) else { return nil }
+            lBlocks.append(block)
+        }
+        return lBlocks
     }
 }
 

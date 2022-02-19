@@ -69,8 +69,48 @@ final class LocalStorage {
             try? completion(.walletDeleteError)
         }
     }
+}
+
+extension LocalStorage {
+    func getBlock(id: Data) throws -> BlockModel? {
+        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+        requestBlock.predicate = NSPredicate(format: "id = '%@'", id as NSData)
+        
+        do {
+            let results = try context.fetch(requestBlock)
+            guard let result = results.first else { return nil }
+            return BlockModel.fromCoreData(crModel: result)
+        } catch {
+            throw WalletError.walletRetrievalError
+        }
+    }
     
+    func getBlock(number: Data) throws -> BlockModel? {
+        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+        requestBlock.predicate = NSPredicate(format: "id = '%@'", number as NSData)
+        
+        do {
+            let results = try context.fetch(requestBlock)
+            guard let result = results.first else { return nil }
+            return BlockModel.fromCoreData(crModel: result)
+        } catch {
+            throw WalletError.walletRetrievalError
+        }
+    }
     
+    func saveBlock(block: BlockModel, completion: @escaping (NodeError?) throws -> Void) throws {
+        guard let entity = NSEntityDescription.insertNewObject(forEntityName: "BlockCoreData", into: context) as? BlockCoreData else { return }
+        entity.id = block.id
+        entity.number = block.number.serialize()
+        entity.data = block.data
+        
+        do {
+            try context.save()
+            try completion(nil)
+        } catch {
+            try completion(NodeError.generalError("Block save error"))
+        }
+    }
 }
 
 // MARK: - Core Data stack
