@@ -258,7 +258,7 @@ extension RedBlackTree {
     }
     
     /// delete a duplicate and update
-    public func update(key: T) {
+    public func update(key: T, completion: @escaping (NodeError?) -> Void) {
         Deferred {
             Future<Bool, NodeError> { [weak self] promise in
                 self?.delete(key: key, promise: promise)
@@ -281,8 +281,13 @@ extension RedBlackTree {
                 promise(.success(true))
             }
         }
-        .sink { completion in
-            print("completion", completion)
+        .sink { done in
+            switch done {
+                case .finished:
+                    completion(nil)
+                case .failure(let error):
+                    completion(error)
+            }
         } receiveValue: { _ in
             
         }

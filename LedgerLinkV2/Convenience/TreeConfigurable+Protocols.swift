@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Compression
 
 /**
  TreeConfigurable is for a binary tree to be able to sort the nodes
@@ -15,9 +16,43 @@ import Foundation
  */
 protocol LightConfigurable: Codable, Hashable, Comparable {
     associatedtype T
-    var id: Data { get set }
+    var id: String { get set }
     init(data: T) throws
     func decode() -> T?
 }
 
+extension LightConfigurable {
+    func compress(_ sourceData: Data, algorithm: Algorithm = .lzfse) -> Data {
+        let pageSize = 128
+        var compressedData = Data()
+        
+        do {
+            let outputFilter = try OutputFilter(.compress, using: algorithm) { (data: Data?) -> Void in
+                if let data = data {
+                    compressedData.append(data)
+                }
+            }
+            
+            var index = 0
+            let bufferSize = sourceData.count
+            
+            while true {
+                let rangeLength = min(pageSize, bufferSize - index)
+                
+                let subdata = sourceData.subdata(in: index ..< index + rangeLength)
+                index += rangeLength
+                
+                try outputFilter.write(subdata)
+                
+                if (rangeLength == 0) {
+                    break
+                }
+            }
+        }catch {
+            fatalError("Error occurred during encoding: \(error.localizedDescription).")
+        }
+        
+        return compressedData
+    }
+}
 

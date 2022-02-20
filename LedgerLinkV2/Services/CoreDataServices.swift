@@ -72,29 +72,108 @@ final class LocalStorage {
 }
 
 extension LocalStorage {
-    func getBlock(id: Data) throws -> BlockModel? {
+//    func getBlock(id: Data) throws -> BlockModel? {
+//        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+//        requestBlock.predicate = NSPredicate(format: "id = '%@'", id as NSData)
+//
+//        do {
+//            let results = try context.fetch(requestBlock)
+//            guard let result = results.first else { return nil }
+//            return BlockModel.fromCoreData(crModel: result)
+//        } catch {
+//            throw NodeError.generalError("Unable to fetch blocks")
+//        }
+//    }
+//
+    func getBlock(id: String) throws -> LightBlock? {
+        print("id", id)
         let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
-        requestBlock.predicate = NSPredicate(format: "id = '%@'", id as NSData)
-        
+        requestBlock.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        print("requestBlock", requestBlock)
         do {
             let results = try context.fetch(requestBlock)
+            print("results", results)
             guard let result = results.first else { return nil }
             return BlockModel.fromCoreData(crModel: result)
         } catch {
-            throw WalletError.walletRetrievalError
+            throw NodeError.generalError("Unable to fetch blocks")
         }
     }
     
-    func getBlock(number: Data) throws -> BlockModel? {
+    func getBlock(id: String) throws -> ChainBlock? {
         let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
-        requestBlock.predicate = NSPredicate(format: "id = '%@'", number as NSData)
+        requestBlock.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+
+        do {
+            let results = try context.fetch(requestBlock)
+            guard let result = results.first else { return nil }
+            print("result", result)
+            return BlockModel.fromCoreData(crModel: result)
+        } catch {
+            throw NodeError.generalError("Unable to fetch blocks")
+        }
+    }
+//
+//    func getBlock(number: Data) throws -> BlockModel? {
+//        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+//        requestBlock.predicate = NSPredicate(format: "id == '%@'", number as NSData)
+//
+//        do {
+//            let results = try context.fetch(requestBlock)
+//            guard let result = results.first else { return nil }
+//            return BlockModel.fromCoreData(crModel: result)
+//        } catch {
+//            throw NodeError.generalError("Unable to fetch blocks")
+//        }
+//    }
+//
+    func getLatestBlock() throws -> BlockModel? {
+        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+        let allElementsCount = try context.count(for: requestBlock)
+        requestBlock.fetchLimit = 1
+        requestBlock.fetchOffset = allElementsCount - 1
+        requestBlock.returnsObjectsAsFaults = false
         
         do {
             let results = try context.fetch(requestBlock)
             guard let result = results.first else { return nil }
             return BlockModel.fromCoreData(crModel: result)
         } catch {
-            throw WalletError.walletRetrievalError
+            throw NodeError.generalError("Unable to fetch blocks")
+        }
+    }
+    
+    func getLatestBlock() throws -> LightBlock? {
+        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+        let allElementsCount = try context.count(for: requestBlock)
+        requestBlock.fetchLimit = 1
+        requestBlock.fetchOffset = allElementsCount - 1
+        requestBlock.returnsObjectsAsFaults = false
+        
+        do {
+            let results = try context.fetch(requestBlock)
+            guard let result = results.first else { return nil }
+            let block: LightBlock? = BlockModel.fromCoreData(crModel: result)
+            return block
+        } catch {
+            throw NodeError.generalError("Unable to fetch blocks")
+        }
+    }
+    
+    func getLatestBlock() throws -> ChainBlock? {
+        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+        let allElementsCount = try context.count(for: requestBlock)
+        requestBlock.fetchLimit = 1
+        requestBlock.fetchOffset = allElementsCount - 1
+        requestBlock.returnsObjectsAsFaults = false
+        
+        do {
+            let results = try context.fetch(requestBlock)
+            guard let result = results.first else { return nil }
+            let block: ChainBlock? = BlockModel.fromCoreData(crModel: result)
+            return block
+        } catch {
+            throw NodeError.generalError("Unable to fetch blocks")
         }
     }
     

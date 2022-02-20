@@ -5,6 +5,12 @@
 //  Created by J C on 2022-02-11.
 //
 
+/*
+ Abstract:
+ An interface to update both merkle tree and red black tree at the same time.  The red black tree will work as fast-search database for the merkle tree leaves.
+ Both are updated synchronously.
+ */
+
 import Foundation
 import Combine
 import web3swift
@@ -58,9 +64,9 @@ final class Tree<T: LightConfigurable> {
     }
     
     /// Search only with address data since this is possible due to the Equatable protocol only comparing the id.
-    /// Use the method only for TreeConfigurableAccount since other TreeConfigurables use different hashing for the id.
-    func search(for addressData: Data) -> T? {
-        guard let account = TreeConfigurableAccount(id: addressData, rlpAccount: Data()) as? T else { return nil }
+    /// Use the method only for TreeConfigurableAccount since other TreeConfigurables use different hashing for the id.    
+    func search(address: String) -> T? {
+        guard let account = try? TreeConfigurableAccount(address: address, rlpAccount: Data()) as? T else { return nil }
         let node = searchTree.search(input: account)
         return node?.key
     }

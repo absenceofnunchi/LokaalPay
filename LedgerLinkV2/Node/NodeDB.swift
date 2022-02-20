@@ -33,8 +33,8 @@ final class NodeDB {
     }
     
     /// for seraching states only using the address data.
-    func search(_ addressData: Data) -> Account? {
-        guard let treeConfigAccount =  stateTrie.search(for: addressData) else {
+    func search(_ addressString: String) -> Account? {
+        guard let treeConfigAccount =  stateTrie.search(address: addressString) else {
             return nil
         }
         
@@ -80,7 +80,7 @@ final class NodeDB {
     
     func transfer(_ encoded: TreeConfigurableTransaction, decoded: EthereumTransaction) throws {
         /// Search for an existing account to transfer from and substract the amount to transfer from the balance. If it doesn't exist, abort the transfer operation.
-        guard let result = stateTrie.search(for: encoded.id),
+        guard let result = stateTrie.search(address: encoded.id),
               let existingAccount = result.decode(),
               let transferAmount = decoded.value else { return }
         
@@ -90,7 +90,7 @@ final class NodeDB {
         stateTrie.deleteAndUpdate(treeConfigAccount)
         
         /// Search for the account to transfer to. If it exists, update the existing balance. If it doesn't, create a new account with a new balance.
-        if let result = stateTrie.search(for: decoded.to.addressData),
+        if let result = stateTrie.search(address: decoded.to.address),
            let existingAccount = result.decode(),
            let transferAmount = decoded.value {
             let newBalance = existingAccount.balance + transferAmount
@@ -109,8 +109,7 @@ final class NodeDB {
         let localStorage = LocalStorage()
         let wallet = try localStorage.getWallet()
         guard let address = wallet?.address else { return nil }
-        let addressData = Data(hex: address)
-        let result =  search(addressData)
+        let result = search(address)
         return result
     }
 }
@@ -154,7 +153,15 @@ extension NodeDB {
     }
     #endif
     
-    func createBlock() {
+    func createBlock() throws {
+        guard let latestBlock: ChainBlock = try LocalStorage.shared.getLatestBlock(),
+              let txRoot = getRootHash(for: .transaction),
+              let stateRoot = getRootHash(for: .state),
+              let receiptRoot = getRootHash(for: .receipt) else { return }
         
+        let transactions = transactionTrie.getAllNodes()
+//        let compressed = transactions.compressed
+        
+//        let block = ChainBlock(number: latestBlock.number, parentHash: latestBlock.hash, nonce: nil, transactionsRoot: txRoot, stateRoot: stateRoot, receiptsRoot: receiptRoot, transactions: <#T##[TreeConfigurableTransaction]#>, uncles: <#T##[Data]?#>)
     }
 }

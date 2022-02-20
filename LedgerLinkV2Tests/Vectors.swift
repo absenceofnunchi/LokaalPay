@@ -67,7 +67,7 @@ struct Vectors {
         return addressArray
     }
 
-    static var accountVectors: [Account] {
+    static var accounts: [Account] {
         var arr = [Account]()
         for i in 0 ..< addresses.count {
             let account = Account(address: addresses[i], nonce: BigUInt(i), balance: BigUInt(i), codeHash: checksumHashes[i], storageRoot: checksumHashes[i])
@@ -80,16 +80,12 @@ struct Vectors {
     }
     
     static var treeConfigurableAccounts: [TreeConfigurableAccount] {
-        var accounts: [TreeConfigurableAccount] = []
-        for account in accountVectors {
-            do {
-                let treeAccount = try TreeConfigurableAccount(data: account)
-                accounts.append(treeAccount)
-            } catch {
-                print("encoding error", error)
-            }
+        var accountsArray: [TreeConfigurableAccount] = []
+        for account in accounts {
+            guard let treeAccount = try? TreeConfigurableAccount(data: account) else { fatalError("treeConfigurableAccounts vector error") }
+            accountsArray.append(treeAccount)
         }
-        return accounts
+        return accountsArray
     }
 
     static var transactions: [EthereumTransaction] {
@@ -105,7 +101,7 @@ struct Vectors {
         var txArray = [TreeConfigurableTransaction]()
         for i in 0 ..< transactions.count {
             let transaction = transactions[i]
-            guard let tx = try? TreeConfigurableTransaction(data: transaction) else { continue }
+            guard let tx = try? TreeConfigurableTransaction(data: transaction) else { fatalError("treeConfigurableTransactions vector error") }
             txArray.append(tx)
         }
         return txArray
@@ -126,26 +122,25 @@ struct Vectors {
         var txArray = [TreeConfigurableReceipt]()
         for i in 0 ..< receipts.count {
             let receipt = receipts[i]
-            guard let tx = try? TreeConfigurableReceipt(data: receipt) else { continue }
+            guard let tx = try? TreeConfigurableReceipt(data: receipt) else { fatalError("treeConfigurableReceipts vector error") }
             txArray.append(tx)
         }
         return txArray
     }
     
-    static var blocks: [ChainBlock]? {
+    static var blocks: [ChainBlock] {
         var blocks = [ChainBlock]()
         for i in 0 ..< binaryHashes.count {
-            guard let block = try? ChainBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [treeConfigurableTransactions[i]]) else { return nil }
+            guard let block = try? ChainBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [treeConfigurableTransactions[i]]) else { fatalError("blocks vector error") }
             blocks.append(block)
         }
         return blocks
     }
     
-    static var lightBlocks: [LightBlock]? {
-        guard let blocks = blocks else { return nil }
+    static var lightBlocks: [LightBlock] {
         var lBlocks = [LightBlock]()
         for block in blocks {
-            guard let block = try? LightBlock(data: block) else { return nil }
+            guard let block = try? LightBlock(data: block) else { fatalError("lightBlocks vector error") }
             lBlocks.append(block)
         }
         return lBlocks

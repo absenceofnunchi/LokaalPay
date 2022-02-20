@@ -98,6 +98,7 @@ public struct ChainBlock: Decodable {
     
     public func encode(to encoder: Encoder) throws {
         var encoder = encoder.container(keyedBy: CodingKeys.self)
+        try encoder.encode(number.serialize().toHexString(), forKey: .number)
         try encoder.encode(hash, forKey: .hash)
         try encoder.encode(nonce, forKey: .nonce)
         try encoder.encode(parentHash, forKey: .parentHash)
@@ -106,30 +107,36 @@ public struct ChainBlock: Decodable {
         try encoder.encode(stateRoot, forKey: .stateRoot)
         try encoder.encode(receiptsRoot, forKey: .receiptsRoot)
         try encoder.encode(miner, forKey: .miner)
-        try encoder.encode(difficulty, forKey: .difficulty)
-        try encoder.encode(totalDifficulty, forKey: .totalDifficulty)
+        try encoder.encode(difficulty?.serialize(), forKey: .difficulty)
+        try encoder.encode(totalDifficulty?.serialize(), forKey: .totalDifficulty)
         try encoder.encode(extraData, forKey: .extraData)
-        try encoder.encode(size, forKey: .size)
-        try encoder.encode(gasLimit, forKey: .gasLimit)
-        try encoder.encode(gasUsed, forKey: .gasUsed)
-        try encoder.encode(timestamp, forKey: .timestamp)
+        try encoder.encode(size.serialize(), forKey: .size)
+        try encoder.encode(gasLimit?.serialize(), forKey: .gasLimit)
+        try encoder.encode(gasUsed?.serialize(), forKey: .gasUsed)
+        let dateInt = Int(timestamp.timeIntervalSince1970)
+        let dateHex = String(dateInt, radix: 16, uppercase: true)
+        try encoder.encode(dateHex, forKey: .timestamp)
         try encoder.encode(transactions, forKey: .transactions)
-        try encoder.encode(uncles, forKey: .uncles)
+        let convertedUncles = uncles?.map { $0.toHexString() }
+        try encoder.encode(convertedUncles, forKey: .uncles)
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         guard let number = try decodeHexToBigUInt(container, key: .number) else {throw Web3Error.dataError}
         self.number = number
         
-        guard let hash = try decodeHexToData(container, key: .hash) else {throw Web3Error.dataError}
+        guard let hash = try? container.decode(Data.self, forKey: .hash) else {throw Web3Error.dataError }
         self.hash = hash
         
-        guard let parentHash = try decodeHexToData(container, key: .parentHash) else {throw Web3Error.dataError}
+        
+        guard let parentHash = try? container.decode(Data.self, forKey: .parentHash) else { throw Web3Error.dataError }
         self.parentHash = parentHash
         
-        let nonce = try decodeHexToData(container, key: .nonce, allowOptional: true)
-        self.nonce = nonce
+        if nonce != nil {
+            guard let nonce = try? container.decode(Data.self, forKey: .nonce) else { throw Web3Error.dataError }
+            self.nonce = nonce
+        }
         
 //        let logsBloomData = try decodeHexToData(container, key: .logsBloom, allowOptional: true)
 //        var bloom:EthereumBloomFilter?
@@ -138,40 +145,52 @@ public struct ChainBlock: Decodable {
 //        }
 //        self.logsBloom = bloom
         
-        guard let transactionsRoot = try decodeHexToData(container, key: .transactionsRoot) else {throw Web3Error.dataError}
+        guard let transactionsRoot = try? container.decode(Data.self, forKey: .transactionsRoot) else { throw Web3Error.dataError }
         self.transactionsRoot = transactionsRoot
         
-        guard let stateRoot = try decodeHexToData(container, key: .stateRoot) else {throw Web3Error.dataError}
+        guard let stateRoot = try? container.decode(Data.self, forKey: .stateRoot) else { throw Web3Error.dataError }
         self.stateRoot = stateRoot
         
-        guard let receiptsRoot = try decodeHexToData(container, key: .receiptsRoot) else {throw Web3Error.dataError}
+        guard let receiptsRoot = try? container.decode(Data.self, forKey: .receiptsRoot) else { throw Web3Error.dataError }
         self.receiptsRoot = receiptsRoot
         
-        let minerAddress = try? container.decode(String.self, forKey: .miner)
-        var miner:EthereumAddress?
-        if minerAddress != nil {
-            guard let minr = EthereumAddress(minerAddress!) else {throw Web3Error.dataError}
-            miner = minr
+        if miner != nil {
+            let minerAddress = try? container.decode(String.self, forKey: .miner)
+            var miner:EthereumAddress?
+            if minerAddress != nil {
+                guard let minr = EthereumAddress(minerAddress!) else {throw Web3Error.dataError}
+                miner = minr
+            }
+            self.miner = miner
         }
-        self.miner = miner
         
-        guard let difficulty = try decodeHexToBigUInt(container, key: .difficulty) else {throw Web3Error.dataError}
-        self.difficulty = difficulty
+        if difficulty != nil {
+            guard let difficulty = try? container.decode(Data.self, forKey: .difficulty) else { throw Web3Error.dataError }
+            self.difficulty = BigUInt(difficulty)
+        }
         
-        guard let totalDifficulty = try decodeHexToBigUInt(container, key: .totalDifficulty) else {throw Web3Error.dataError}
-        self.totalDifficulty = totalDifficulty
+        if totalDifficulty != nil {
+            guard let totalDifficulty = try? container.decode(Data.self, forKey: .totalDifficulty) else { throw Web3Error.dataError }
+            self.totalDifficulty = BigUInt(totalDifficulty)
+        }
         
-        guard let extraData = try decodeHexToData(container, key: .extraData) else {throw Web3Error.dataError}
-        self.extraData = extraData
+        if extraData != nil {
+            guard let extraData = try? container.decode(Data.self, forKey: .extraData) else { throw Web3Error.dataError }
+            self.extraData = extraData
+        }
         
-        guard let size = try decodeHexToBigUInt(container, key: .size) else {throw Web3Error.dataError}
-        self.size = size
+        guard let size = try? container.decode(Data.self, forKey: .size) else { throw Web3Error.dataError }
+        self.size = BigUInt(size)
         
-        guard let gasLimit = try decodeHexToBigUInt(container, key: .gasLimit) else {throw Web3Error.dataError}
-        self.gasLimit = gasLimit
+        if gasLimit != nil {
+            guard let gasLimit = try? container.decode(Data.self, forKey: .gasLimit) else { throw Web3Error.dataError }
+            self.gasLimit = BigUInt(gasLimit)
+        }
         
-        guard let gasUsed = try decodeHexToBigUInt(container, key: .gasUsed) else {throw Web3Error.dataError}
-        self.gasUsed = gasUsed
+        if gasUsed != nil {
+            guard let gasUsed = try? container.decode(Data.self, forKey: .gasUsed) else { throw Web3Error.dataError }
+            self.gasUsed = BigUInt(gasUsed)
+        }
         
         let timestampString = try container.decode(String.self, forKey: .timestamp).stripHexPrefix()
         guard let timestampInt = UInt64(timestampString, radix: 16) else {throw Web3Error.dataError}
@@ -181,13 +200,15 @@ public struct ChainBlock: Decodable {
         let transactions = try container.decode([TreeConfigurableTransaction].self, forKey: .transactions)
         self.transactions = transactions
         
-        let unclesStrings = try container.decode([String].self, forKey: .uncles)
-        var uncles = [Data]()
-        for str in unclesStrings {
-            guard let d = Data.fromHex(str) else {throw Web3Error.dataError}
-            uncles.append(d)
+        if uncles != nil {
+            let unclesStrings = try container.decode([String].self, forKey: .uncles)
+            var uncles = [Data]()
+            for str in unclesStrings {
+                guard let d = Data.fromHex(str) else {throw Web3Error.dataError}
+                uncles.append(d)
+            }
+            self.uncles = uncles
         }
-        self.uncles = uncles
     }
 }
 
@@ -320,27 +341,40 @@ fileprivate func decodeHexToBigUInt<T>(_ container: KeyedDecodingContainer<T>, k
     }
 }
 
+// MARK: - LightBlock
+
+/*
+ To be used for saving the full-ledged ChainBlock into Core Data. Better space complexity compared to ChainBlock
+ */
+
 struct LightBlock: LightConfigurable {
     typealias T = ChainBlock
-    var id: Data
+    var id: String
     var number: BigUInt
     var data: Data
-    
+
     init(data: ChainBlock) throws {
-        self.id = data.hash
+        self.id = data.hash.toHexString()
         self.number = data.number
-        
+
         do {
             let encoded = try JSONEncoder().encode(data)
-            self.data = encoded
+            guard let compressed = encoded.compressed else {
+                throw NodeError.compressionError
+            }
+            self.data = compressed
         } catch {
             throw NodeError.encodingError
         }
     }
-    
+
     func decode() -> ChainBlock? {
         do {
-            let decoded = try JSONDecoder().decode(ChainBlock.self, from: data)
+            guard let decompressed = data.decompressed else {
+                throw NodeError.compressionError
+            }
+            
+            let decoded = try JSONDecoder().decode(ChainBlock.self, from: decompressed)
             return decoded
         } catch {
             return nil
@@ -348,12 +382,18 @@ struct LightBlock: LightConfigurable {
     }
 
     static func < (lhs: LightBlock, rhs: LightBlock) -> Bool {
-        return (lhs.id.toHexString() < rhs.id.toHexString()) && (lhs.data.toHexString() < rhs.data.toHexString())
+        return (lhs.id < rhs.id) && (lhs.data.toHexString() < rhs.data.toHexString())
     }
 }
 
+// MARK: - BlockModel
+
+/*
+    Used as a buffer between Core Data format and regular format.
+ */
+
 struct BlockModel {
-    let id: Data
+    let id: String
     let number: BigUInt
     let data: Data
     
@@ -361,10 +401,48 @@ struct BlockModel {
         guard let id = crModel.id,
               let numberData = crModel.number,
               let data = crModel.data else { return nil }
-        
+
         let number = BigUInt(numberData)
-        
+
         let model = BlockModel(id: id, number: number, data: data)
         return model
+    }
+
+    static func fromCoreData(crModel: BlockCoreData) -> LightBlock? {
+        guard let data = crModel.data else { return nil }
+        
+        return decode(data)
+    }
+    
+    static func fromCoreData(crModel: BlockCoreData) -> ChainBlock? {
+        guard let data = crModel.data else { return nil }
+        
+        guard let chainBlock: ChainBlock = decode(data) else {
+            return nil
+        }
+        return chainBlock
+    }
+    
+    static func decode(_ model: BlockModel) -> ChainBlock? {
+        return decode(model.data)
+    }
+    
+    static func decode(_ data: Data) -> ChainBlock? {
+        do {
+            let decoded = try JSONDecoder().decode(ChainBlock.self, from: data)
+            return decoded
+        } catch {
+            print(error)
+            return nil
+        }
+    }
+    
+    static func decode(_ data: Data) -> LightBlock? {
+        do {
+            let decoded = try JSONDecoder().decode(ChainBlock.self, from: data)
+            return try LightBlock(data: decoded)
+        } catch {
+            return nil
+        }
     }
 }

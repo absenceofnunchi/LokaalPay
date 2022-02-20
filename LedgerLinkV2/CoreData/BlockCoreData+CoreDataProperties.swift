@@ -2,7 +2,7 @@
 //  BlockCoreData+CoreDataProperties.swift
 //  LedgerLinkV2
 //
-//  Created by J C on 2022-02-18.
+//  Created by J C on 2022-02-19.
 //
 //
 
@@ -16,9 +16,9 @@ extension BlockCoreData {
         return NSFetchRequest<BlockCoreData>(entityName: "BlockCoreData")
     }
 
-    @NSManaged public var id: Data?
-    @NSManaged public var number: Data?
+    @NSManaged public var id: String?
     @NSManaged public var data: Data?
+    @NSManaged public var number: Data?
 
 }
 

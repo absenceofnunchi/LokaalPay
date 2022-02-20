@@ -19,62 +19,50 @@ import web3swift
 
 public struct TreeConfigurableAccount: LightConfigurable {
     typealias T = Account
-    var id: Data /// Address
-    var data: Data /// RLP encoded Account
+    var id: String /// Address
+    var data: Data /// RLP encoded and compressed Account
     
     /// Account is already RLP encoded
-    public init(id: Data, rlpAccount: Data) {
-        self.id = id
-        self.data = rlpAccount
+    public init(address: String, rlpAccount: Data) throws {
+        guard let compressed = rlpAccount.compressed else {
+            throw NodeError.compressionError
+        }
+        
+        self.id = address
+        self.data = compressed
     }
     
-    public init(data: Account) throws {
-        self.id = data.address.addressData
-        
-        guard let encodedAccount = data.encode() else {
+    init(data: Account) throws {
+//        var encoded: Data
+//        do {
+//            encoded = try JSONEncoder().encode(data)
+//        } catch {
+//            throw NodeError.encodingError
+//        }
+        guard let encoded = data.encode() else {
             throw NodeError.encodingError
         }
-        self.data = encodedAccount
+        
+        guard let compressed = encoded.compressed else {
+            throw NodeError.compressionError
+        }
+        
+        self.id = data.address.address
+        self.data = compressed
     }
 
-    public init(toCompress account: Account) throws {
-        self.id = account.address.addressData
-        
-        let encoder = JSONEncoder()
-        do {
-            let encoded = try encoder.encode(account)
-            guard let compressed = encoded.compressed else {
-                throw NodeError.compressionError
-            }
-            self.data = compressed
-        } catch {
-            throw NodeError.encodingError
-        }
-    }
-    
     public func decode() -> Account? {
-        return Account.fromRaw(data)
-    }
-    
-    public func getAccountFromCompressed() -> Account? {
-        guard let decompressed = try? (data as NSData).decompressed(using: .lzfse) else {
+        guard let decompressed = data.decompressed else {
             return nil
         }
-        let data = Data(referencing: decompressed)
         
-        let decoder = JSONDecoder()
-        do {
-            let decoded = try decoder.decode(Account.self, from: data)
-            return decoded
-        } catch {
-            return nil
-        }
+        return Account.fromRaw(decompressed)
     }
 }
 
 extension TreeConfigurableAccount: Equatable {
     public static func < (lhs: TreeConfigurableAccount, rhs: TreeConfigurableAccount) -> Bool {
-        return lhs.id.toHexString() < rhs.id.toHexString()
+        return lhs.id < rhs.id
 //        return lhs.id.hashValue < rhs.id.hashValue
     }
     
@@ -83,6 +71,6 @@ extension TreeConfigurableAccount: Equatable {
     /// This is to prevent duplicate accounts as well as to only search by the account number when searched in the tree.
     /// When searched and updated in the tree, account A with a balance of 10 can be used to search an account A with a balance of 0.
     public static func == (lhs: TreeConfigurableAccount, rhs: TreeConfigurableAccount) -> Bool {
-        return lhs.id.toHexString() == rhs.id.toHexString()
+        return lhs.id == rhs.id
     }
 }

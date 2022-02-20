@@ -15,7 +15,7 @@ final class MainTreeTest: XCTestCase {
     var treeConfigurableReceipts = Vectors.treeConfigurableReceipts
     var newAccountArr = [TreeConfigurableAccount]()
 
-    func test_tree_counting() {
+    func test_tree_counting() throws {
         let tree = Tree<TreeConfigurableAccount>()
         tree.insert(treeConfigurableAccounts[0])
         tree.insert(treeConfigurableAccounts[1])
@@ -57,7 +57,7 @@ final class MainTreeTest: XCTestCase {
         /// this is possible because the equatable protocol for TreeConfigAccount only compares the address data.
         for i in 0 ..< Vectors.addresses.count {
             let address = Vectors.addresses[i]
-            let foundNode = tree.search(for: address.addressData)
+            let foundNode = tree.search(address: address.address)
             
             let account = treeConfigurableAccounts[i]
             
@@ -107,8 +107,8 @@ final class MainTreeTest: XCTestCase {
         XCTAssertFalse(tree1.searchTree.isEmpty())
     }
     
-    func test_delete_and_update_using_array_parameter() {
-        let tree = Tree<TreeConfigurableAccount>()
+    func test_delete_and_update_using_array_parameter() throws {
+          let tree = Tree<TreeConfigurableAccount>()
         tree.deleteAndUpdate(treeConfigurableAccounts)
         XCTAssertEqual(tree.searchTree.allElements().count, treeConfigurableAccounts.count)
         XCTAssertEqual(tree.searchTree.allElements().count, tree.searchTree.size)
@@ -176,7 +176,7 @@ final class MainTreeTest: XCTestCase {
     }
     
     /// AddData with a single item parameter
-    func test_single_adds_NodeDB() {
+    func test_single_adds_NodeDB() throws {
         let node = NodeDB()
         
         /// add and search state
@@ -231,10 +231,16 @@ final class MainTreeTest: XCTestCase {
         for account in treeConfigurableAccounts {
             let result = node.search(account)
 
-            guard let acct = account.decode(),
-                  let res = result?.decode() else {
-                      throw NodeError.decodingError
-                  }
+            guard let acct = account.decode() else {
+                print("acct decode error")
+                throw NodeError.decodingError
+            }
+                  
+            guard let res = result?.decode() else {
+                print("result decode error")
+                throw NodeError.decodingError
+            }
+            
             XCTAssertEqual(acct.address, res.address)
             XCTAssertEqual(acct.balance, res.balance)
             XCTAssertEqual(acct.nonce, res.nonce)

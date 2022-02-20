@@ -202,9 +202,8 @@ extension NetworkManager: MCSessionDelegate {
             switch contractMethod {
                 case .transferValue:
                     print("transferValue")
-                    let tx = TreeConfigurableTransaction(rlpTransaction: data)
-                    
                     do {
+                        let tx = try TreeConfigurableTransaction(rlpTransaction: data)
                         try NodeDB.shared.transfer(tx, decoded: decodedSig)
                     } catch {
                         print(error)

@@ -11,9 +11,6 @@ import BigInt
 @testable import LedgerLinkV2
 
 class CodableTests: XCTestCase {
-    let treeConfigurableReceipts = Vectors.treeConfigurableReceipts
-    let vectorReceipts = Vectors.receipts
-    
     func test_receipts() throws {
         /// full receipt including the contract address.
         for i in 0 ..< treeConfigurableReceipts.count {
@@ -23,7 +20,7 @@ class CodableTests: XCTestCase {
             }
             
             /// Compared the decoded receipts against the original receipts
-            let vectorReceipt = vectorReceipts[i]
+            let vectorReceipt = receipts[i]
             XCTAssertEqual(decoded.blockHash, vectorReceipt.blockHash)
             XCTAssertEqual(decoded.blockNumber, vectorReceipt.blockNumber)
             XCTAssertEqual(decoded.transactionHash, vectorReceipt.transactionHash)
@@ -58,6 +55,76 @@ class CodableTests: XCTestCase {
             XCTAssertEqual(decoded.contractAddress, originalReceipt.contractAddress)
             XCTAssertEqual(decoded.cumulativeGasUsed, originalReceipt.cumulativeGasUsed)
             XCTAssertEqual(decoded.gasUsed, originalReceipt.gasUsed)
+        }
+    }
+    
+    /// Test with a minimal initializer since it makes a difference to RLP encoding/decoding
+    func test_single_account() {
+        let account = Account(address: EthereumAddress("0x139b782cE2da824b98b6Af358f725259799D2f74")!, nonce: BigUInt(10))
+        guard let encodedAccount = account.encode() else { fatalError("account encoding error")}
+        guard let compressed = encodedAccount.compressed else { fatalError("compression error")}
+        guard let decompressed = compressed.decompressed else { fatalError("decompression error")}
+        guard let decoded = Account.fromRaw(decompressed) else { fatalError("decoded error")}
+        guard let treeConfig = try? TreeConfigurableAccount(data: account) else { fatalError("treeConfig error") }
+        guard let originalAccount = treeConfig.decode() else { fatalError("decode error") }
+
+        XCTAssertEqual(account, decoded)
+        XCTAssertEqual(account, originalAccount)
+        XCTAssertEqual(decoded, originalAccount)
+    }
+    
+    func test_accounts() {
+        for i in 0 ..< accounts.count {
+            let account = accounts[i]
+            guard let encodedAccount = account.encode() else { fatalError("account encoding error")}
+            guard let compressed = encodedAccount.compressed else { fatalError("compression error")}
+            guard let decompressed = compressed.decompressed else { fatalError("decompression error")}
+            guard let decoded = Account.fromRaw(decompressed) else { fatalError("decoded error")}
+            guard let treeConfig = try? TreeConfigurableAccount(data: account) else { fatalError("treeConfig error") }
+            guard let originalAccount = treeConfig.decode() else { fatalError("decode error") }
+            
+            XCTAssertEqual(account, decoded)
+            XCTAssertEqual(account, originalAccount)
+            XCTAssertEqual(decoded, originalAccount)
+        }
+    }
+    
+    func test_transactions() {
+        for i in 0 ..< transactions.count {
+            let transaction = transactions[i]
+            guard let encoded = transaction.encode() else { fatalError("account encoding error")}
+            guard let compressed = encoded.compressed else { fatalError("compression error")}
+            guard let decompressed = compressed.decompressed else { fatalError("decompression error")}
+            guard let decoded = EthereumTransaction.fromRaw(decompressed) else { fatalError("decoded error")}
+            guard let treeConfig = try? TreeConfigurableTransaction(data: transaction) else { fatalError("treeConfig error") }
+            guard let originalTransaction = treeConfig.decode() else { fatalError("decode error") }
+            
+            XCTAssertEqual(transaction.nonce, decoded.nonce)
+            XCTAssertEqual(transaction.gasLimit, decoded.gasLimit)
+            XCTAssertEqual(transaction.gasPrice, decoded.gasPrice)
+            XCTAssertEqual(transaction.value, decoded.value)
+            XCTAssertEqual(transaction.to, decoded.to)
+            
+            XCTAssertEqual(transaction.nonce, originalTransaction.nonce)
+            XCTAssertEqual(transaction.gasLimit, originalTransaction.gasLimit)
+            XCTAssertEqual(transaction.gasPrice, originalTransaction.gasPrice)
+            XCTAssertEqual(transaction.value, originalTransaction.value)
+            XCTAssertEqual(transaction.to, originalTransaction.to)
+        }
+    }
+    
+    func test_blocks() {
+        for block in blocks {
+            var encoded: Data
+            do {
+                encoded = try JSONEncoder().encode(block)
+            } catch {
+                fatalError("encoding error")
+            }
+            
+            guard let compressed = encoded!.compressed else { fatalError("compression error") }
+            guard let decompressed = compressed.decompressed else { fatalError("decompression error") }
+            
         }
     }
 }

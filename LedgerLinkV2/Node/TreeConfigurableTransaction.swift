@@ -17,16 +17,17 @@ import web3swift
 
 public struct TreeConfigurableTransaction: LightConfigurable {
     typealias T = EthereumTransaction
-    var id: Data // transaction hash
-    var data: Data // RLP encoded EthereumTransaction
+    var id: String // transaction hash
+    var data: Data // RLP encoded and compressed EthereumTransaction
     
     /// Transaction is already RLP encoded such as when received from another device.
-    public init(rlpTransaction: Data) {
-        let hash = rlpTransaction.sha3(.keccak256)
-        self.id = hash
-
+    public init(rlpTransaction: Data) throws {
+        guard let compressed = rlpTransaction.compressed else {
+            throw NodeError.compressionError
+        }
         
-        self.data = rlpTransaction
+        self.id = compressed.sha256().toHexString()
+        self.data = compressed
     }
     
     public init(data: EthereumTransaction) throws {
@@ -34,24 +35,23 @@ public struct TreeConfigurableTransaction: LightConfigurable {
             throw NodeError.encodingError
         }
         
-        self.init(rlpTransaction: encoded)
+        try self.init(rlpTransaction: encoded) 
     }
+    
     
     func decode() -> EthereumTransaction? {
-        return EthereumTransaction.fromRaw(data)
-    }
-    
-    func getTransaction() -> EthereumTransaction? {
-        guard let decompressed = data.decompressed else { return nil }
-        let ethereumTransaction = EthereumTransaction.fromRaw(decompressed)
-        return ethereumTransaction
+        guard let decompressed = data.decompressed else {
+            return nil
+        }
+        
+        return EthereumTransaction.fromRaw(decompressed)
     }
     
     static public func < (lhs: TreeConfigurableTransaction, rhs: TreeConfigurableTransaction) -> Bool {
-        return lhs.id.toHexString() < rhs.id.toHexString()
+        return lhs.id < rhs.id
     }
     
     static public func == (lhs: TreeConfigurableTransaction, rhs: TreeConfigurableTransaction) -> Bool {
-        return lhs.id == rhs.id
+        return (lhs.id == rhs.id && lhs.data == rhs.data)
     }
 }

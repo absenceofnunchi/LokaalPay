@@ -13,8 +13,7 @@ extension Data {
             return nil
         }
         
-        let data = Data(referencing: compressed)
-        return data
+        return Data(compressed)
     }
     
     var decompressedToArray: [Data]? {
@@ -31,17 +30,25 @@ extension Data {
         return decoded
     }
     
+//    var decompressed: Data? {
+//        guard let decompressed = try? (self as NSData).decompressed(using: .lzfse) else {
+//            return nil
+//        }
+//
+//        let data = Data(referencing: decompressed)
+//        let decoder = JSONDecoder()
+//        guard let decoded = try? decoder.decode(Data.self, from: data) else {
+//            return nil
+//        }
+//
+//        return decoded
+//    }
+    
     var decompressed: Data? {
         guard let decompressed = try? (self as NSData).decompressed(using: .lzfse) else {
             return nil
         }
         
-        let data = Data(referencing: decompressed)
-        let decoder = JSONDecoder()
-        guard let decoded = try? decoder.decode(Data.self, from: data) else {
-            return nil
-        }
-        
-        return decoded
+        return Data(decompressed)
     }
 }
