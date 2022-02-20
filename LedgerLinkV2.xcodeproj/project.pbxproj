@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		490367B927B9658700DFDE2B /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367B827B9658700DFDE2B /* TestTree.swift */; };
 		490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367BC27BB25FF00DFDE2B /* Mine.swift */; };
 		490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */; };
 		490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */; };
@@ -34,8 +33,9 @@
 		4950592C27B09F50006B9294 /* ViewController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592B27B09F50006B9294 /* ViewController+Extensions.swift */; };
 		49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49657A7C27ACF45600A19EC3 /* 1.mp3 */; };
 		49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49689F7327B1EBB20062C093 /* Array+Extensions.swift */; };
-		497633D127C18D570044B426 /* BlockCoreData+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633CF27C18D570044B426 /* BlockCoreData+CoreDataClass.swift */; };
-		497633D227C18D570044B426 /* BlockCoreData+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633D027C18D570044B426 /* BlockCoreData+CoreDataProperties.swift */; };
+		497633D427C22F360044B426 /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633D327C22F360044B426 /* TestTree.swift */; };
+		4992CB3527C2C9E400836419 /* BlockCoreData+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB3327C2C9E400836419 /* BlockCoreData+CoreDataClass.swift */; };
+		4992CB3627C2C9E400836419 /* BlockCoreData+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB3427C2C9E400836419 /* BlockCoreData+CoreDataProperties.swift */; };
 		499AF10B27ADABF500CAF0EA /* HostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF10A27ADABF500CAF0EA /* HostViewController.swift */; };
 		499AF10D27ADAC0000CAF0EA /* GuestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF10C27ADAC0000CAF0EA /* GuestViewController.swift */; };
 		499AF11227ADFF0D00CAF0EA /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF11127ADFF0D00CAF0EA /* Date+Extensions.swift */; };
@@ -59,7 +59,7 @@
 		49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */; };
 		49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BA27BF525100DBEFDA /* Blockchain.swift */; };
 		49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */; };
-		49FC14F327B3236D00D215B6 /* ChainBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F227B3236D00D215B6 /* ChainBlock.swift */; };
+		49FC14F327B3236D00D215B6 /* Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F227B3236D00D215B6 /* Blocks.swift */; };
 		49FC14F527B323A800D215B6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F427B323A800D215B6 /* Account.swift */; };
 		49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F627B32A1100D215B6 /* MerkleTree.swift */; };
 		49FC14F927B32B6300D215B6 /* MerkleTreeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */; };
@@ -96,7 +96,6 @@
 		17DCCCBFE8E3E24C8C56548C /* Pods-LedgerLinkV2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.debug.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.debug.xcconfig"; sourceTree = "<group>"; };
 		30FBEB60BD774BAE1AA4DB38 /* Pods_LedgerLinkV2Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LedgerLinkV2Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		33367FC6DE6351BAD09798A8 /* Pods-LedgerLinkV2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.release.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.release.xcconfig"; sourceTree = "<group>"; };
-		490367B827B9658700DFDE2B /* TestTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
 		490367BC27BB25FF00DFDE2B /* Mine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mine.swift; sourceTree = "<group>"; };
 		490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BIP39Language+Extensions.swift"; sourceTree = "<group>"; };
 		490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Digest+Extensions.swift"; sourceTree = "<group>"; };
@@ -127,8 +126,9 @@
 		4950592B27B09F50006B9294 /* ViewController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Extensions.swift"; sourceTree = "<group>"; };
 		49657A7C27ACF45600A19EC3 /* 1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 1.mp3; sourceTree = "<group>"; };
 		49689F7327B1EBB20062C093 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
-		497633CF27C18D570044B426 /* BlockCoreData+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlockCoreData+CoreDataClass.swift"; sourceTree = "<group>"; };
-		497633D027C18D570044B426 /* BlockCoreData+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlockCoreData+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		497633D327C22F360044B426 /* TestTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
+		4992CB3327C2C9E400836419 /* BlockCoreData+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlockCoreData+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4992CB3427C2C9E400836419 /* BlockCoreData+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlockCoreData+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		499AF10A27ADABF500CAF0EA /* HostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostViewController.swift; sourceTree = "<group>"; };
 		499AF10C27ADAC0000CAF0EA /* GuestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestViewController.swift; sourceTree = "<group>"; };
 		499AF11127ADFF0D00CAF0EA /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
@@ -152,7 +152,7 @@
 		49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionExtraData.swift; sourceTree = "<group>"; };
 		49F030BA27BF525100DBEFDA /* Blockchain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchain.swift; sourceTree = "<group>"; };
 		49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainTests.swift; sourceTree = "<group>"; };
-		49FC14F227B3236D00D215B6 /* ChainBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainBlock.swift; sourceTree = "<group>"; };
+		49FC14F227B3236D00D215B6 /* Blocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blocks.swift; sourceTree = "<group>"; };
 		49FC14F427B323A800D215B6 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		49FC14F627B32A1100D215B6 /* MerkleTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTree.swift; sourceTree = "<group>"; };
 		49FC14F827B32B6300D215B6 /* MerkleTreeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTreeTests.swift; sourceTree = "<group>"; };
@@ -261,8 +261,8 @@
 		492EA6A927B05704001C6A1D /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
-				497633CF27C18D570044B426 /* BlockCoreData+CoreDataClass.swift */,
-				497633D027C18D570044B426 /* BlockCoreData+CoreDataProperties.swift */,
+				4992CB3327C2C9E400836419 /* BlockCoreData+CoreDataClass.swift */,
+				4992CB3427C2C9E400836419 /* BlockCoreData+CoreDataProperties.swift */,
 				4950592327B064D4006B9294 /* WalletCoreData+CoreDataProperties copy.swift */,
 				4950592427B064D4006B9294 /* WalletCoreData+CoreDataClass copy.swift */,
 				492D984127A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld */,
@@ -382,8 +382,8 @@
 				49FC150427B62B4D00D215B6 /* TreeConfigurableAccount.swift */,
 				49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */,
 				49F030BA27BF525100DBEFDA /* Blockchain.swift */,
-				49FC14F227B3236D00D215B6 /* ChainBlock.swift */,
-				490367B827B9658700DFDE2B /* TestTree.swift */,
+				49FC14F227B3236D00D215B6 /* Blocks.swift */,
+				497633D327C22F360044B426 /* TestTree.swift */,
 				490367BC27BB25FF00DFDE2B /* Mine.swift */,
 			);
 			path = Node;
@@ -625,15 +625,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				497633D127C18D570044B426 /* BlockCoreData+CoreDataClass.swift in Sources */,
+				4992CB3527C2C9E400836419 /* BlockCoreData+CoreDataClass.swift in Sources */,
 				499AF12427B04E6D00CAF0EA /* KeysService.swift in Sources */,
 				492D983D27A998BA003BFAB4 /* MainViewController.swift in Sources */,
 				490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */,
 				490367CC27BC5FAA00DFDE2B /* QRCodeViewController.swift in Sources */,
 				499AF11D27AF6DC100CAF0EA /* WalletViewController.swift in Sources */,
-				497633D227C18D570044B426 /* BlockCoreData+CoreDataProperties.swift in Sources */,
+				4992CB3627C2C9E400836419 /* BlockCoreData+CoreDataProperties.swift in Sources */,
 				499AF11627AE1A1700CAF0EA /* CustomTabBarController.swift in Sources */,
-				490367B927B9658700DFDE2B /* TestTree.swift in Sources */,
 				499AF10B27ADABF500CAF0EA /* HostViewController.swift in Sources */,
 				49C3E76F27AB3FAE00D989E8 /* PasscodeViewController.swift in Sources */,
 				49A7C32A27B74E1C00AC7EB0 /* TreeConfigurable+Protocols.swift in Sources */,
@@ -649,6 +648,7 @@
 				49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */,
 				49A7C32C27B75EDB00AC7EB0 /* MainTree.swift in Sources */,
 				4950592827B08B40006B9294 /* SigninViewController.swift in Sources */,
+				497633D427C22F360044B426 /* TestTree.swift in Sources */,
 				492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */,
 				49FC150527B62B4D00D215B6 /* TreeConfigurableAccount.swift in Sources */,
 				492D984327A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld in Sources */,
@@ -666,7 +666,7 @@
 				49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */,
 				4950592227B06140006B9294 /* Errors.swift in Sources */,
 				49FC150127B5EDC200D215B6 /* NodeDB.swift in Sources */,
-				49FC14F327B3236D00D215B6 /* ChainBlock.swift in Sources */,
+				49FC14F327B3236D00D215B6 /* Blocks.swift in Sources */,
 				490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */,
 				49FC150727B62C8900D215B6 /* Data+Extensions.swift in Sources */,
 				49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */,
@@ -854,6 +854,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
@@ -886,6 +887,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2RH2V33K5A;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";

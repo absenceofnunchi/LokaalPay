@@ -58,7 +58,7 @@ final class MerkleTreeTests: XCTestCase {
             switch tree {
                 case let .Node(root_hash,_,_,_):
                     print("root_hash", root_hash.toHexString())
-//                    XCTAssert(root_hash == "7f641bd423cb05e39ff5f42084dc30dd2947678dbf526bfa22184b17d373cb71")
+                    XCTAssertNotNil(root_hash)
                 case .Empty:
                     XCTFail()
                     break
@@ -71,36 +71,22 @@ final class MerkleTreeTests: XCTestCase {
         }
     }
     
-    private func createHash(addressString: String, nonce: BigUInt) throws -> String? {
-        guard let address = EthereumAddress(addressString) else {
-            return nil
-        }
-        let account = Account(address: address, nonce: BigUInt(10))
-        
-        do {
-            let encoder = JSONEncoder()
-            let encoded = try encoder.encode(account)
-            let hash = SHA256.hash(data: encoded)
-            return hash.description
-        } catch {
-            print("Encoding error")
-            throw NodeError.encodingError
-        }
-    }
-    
     func test_rootHashes() {
-        let tree = Tree<TreeConfigurableAccount>()
-        
-        var rootHashArr = Set<MerkleTree<TreeConfigurableAccount>>()
+        var rootHashArr = Set<Data>()
         for account in treeConfigurableAccounts {
-            tree.deleteAndUpdate(account)
-            guard let rootHash = tree.rootHash else { continue }
-            rootHashArr.insert(rootHash)
+            do {
+                guard case .Node(hash: let stateRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: [account]) else {
+                    fatalError()
+                }
+
+                rootHashArr.insert(stateRoot)
+            } catch {
+                fatalError("merkle tree build error")
+            }
         }
-        
-        print(rootHashArr)
+
         /// All the root hashes should be different
-//        XCTAssertEqual(rootHashArr.count, treeConfigurableAccounts.count)
+        XCTAssertEqual(rootHashArr.count, treeConfigurableAccounts.count)
     }
     
     func testPerformanceExample() {

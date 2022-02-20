@@ -128,10 +128,10 @@ struct Vectors {
         return txArray
     }
     
-    static var blocks: [ChainBlock] {
-        var blocks = [ChainBlock]()
+    static var blocks: [FullBlock] {
+        var blocks = [FullBlock]()
         for i in 0 ..< binaryHashes.count {
-            guard let block = try? ChainBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [treeConfigurableTransactions[i]]) else { fatalError("blocks vector error") }
+            guard let block = try? FullBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [treeConfigurableTransactions[i]]) else { fatalError("blocks vector error") }
             blocks.append(block)
         }
         return blocks

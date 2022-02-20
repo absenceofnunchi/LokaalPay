@@ -275,8 +275,8 @@ extension Blockchain: Collection {
     
 }
 
-
 //MARK: - MutableCollection Conformance
+
 extension Blockchain: MutableCollection {
     
     public subscript(position: Index) -> Element {

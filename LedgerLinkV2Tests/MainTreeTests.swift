@@ -232,13 +232,11 @@ final class MainTreeTest: XCTestCase {
             let result = node.search(account)
 
             guard let acct = account.decode() else {
-                print("acct decode error")
-                throw NodeError.decodingError
+                fatalError("acct decode error")
             }
                   
             guard let res = result?.decode() else {
-                print("result decode error")
-                throw NodeError.decodingError
+                fatalError("result decode error")
             }
             
             XCTAssertEqual(acct.address, res.address)
@@ -246,7 +244,8 @@ final class MainTreeTest: XCTestCase {
             XCTAssertEqual(acct.nonce, res.nonce)
             XCTAssertEqual(acct.storageRoot, res.storageRoot)
             XCTAssertEqual(acct.codeHash, res.codeHash)
-
+            XCTAssertEqual(acct, res)
+            
             /// all trees have to be initialized
             let receiptHash = node.exposeRootHash(for: .receipt)
             XCTAssertNil(receiptHash)
@@ -255,7 +254,7 @@ final class MainTreeTest: XCTestCase {
             XCTAssertNil(transactionHash)
             
             let stateHash = node.exposeRootHash(for: .state)
-            XCTAssertNil(stateHash)
+            XCTAssertNotNil(stateHash)
         }
         
         /// add and search receipts
@@ -279,13 +278,13 @@ final class MainTreeTest: XCTestCase {
             
             /// all trees have to be initialized
             let receiptHash = node.exposeRootHash(for: .receipt)
-            XCTAssertNil(receiptHash)
+            XCTAssertNotNil(receiptHash)
             
             let transactionHash = node.exposeRootHash(for: .transaction)
             XCTAssertNil(transactionHash)
             
             let stateHash = node.exposeRootHash(for: .state)
-            XCTAssertNil(stateHash)
+            XCTAssertNotNil(stateHash)
         }
 
         /// add and search transactions
@@ -309,12 +308,14 @@ final class MainTreeTest: XCTestCase {
         
         /// all trees have to be initialized
         let receiptHash = node.exposeRootHash(for: .receipt)
-        XCTAssertNil(receiptHash)
+        XCTAssertNotNil(receiptHash)
         
         let transactionHash = node.exposeRootHash(for: .transaction)
-        XCTAssertNil(transactionHash)
+        XCTAssertNotNil(transactionHash)
         
         let stateHash = node.exposeRootHash(for: .state)
-        XCTAssertNil(stateHash)
+        XCTAssertNotNil(stateHash)
+        
+        
     }
 }

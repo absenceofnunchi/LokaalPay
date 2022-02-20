@@ -8,6 +8,7 @@
 /*
  Abstract:
  A node that adds and searches transactions, state, and receipts.
+ Also create a block and adds it to the blockchain.
  */
 
 import Foundation
@@ -76,6 +77,14 @@ final class NodeDB {
     
     func addData(_ data: [TreeConfigurableReceipt]) {
         receiptTrie.insert(data)
+    }
+    
+    func transfer(_ treeConfigTransaction: TreeConfigurableTransaction) throws {
+        guard let decoded = treeConfigTransaction.decode() else {
+            return
+        }
+        
+        try transfer(treeConfigTransaction, decoded: decoded)
     }
     
     func transfer(_ encoded: TreeConfigurableTransaction, decoded: EthereumTransaction) throws {
@@ -154,7 +163,7 @@ extension NodeDB {
     #endif
     
     func createBlock() throws {
-        guard let latestBlock: ChainBlock = try LocalStorage.shared.getLatestBlock(),
+        guard let latestBlock: FullBlock = try LocalStorage.shared.getLatestBlock(),
               let txRoot = getRootHash(for: .transaction),
               let stateRoot = getRootHash(for: .state),
               let receiptRoot = getRootHash(for: .receipt) else { return }

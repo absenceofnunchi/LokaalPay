@@ -1,5 +1,5 @@
 //
-//  ChainBlock.swift
+//  Blocks.swift
 //  LedgerLinkV2
 //
 //  Created by J C on 2022-02-08.
@@ -8,15 +8,15 @@
 /*
  Abstract:
  
- ChainBlock: a full block. At a regular time interval, a block is instantiated by NodeDB.
- LightBlock: a full block is encoded into a Light block in order to improve the space complexity. The light node is added to the Blockchain.
+ FullBlock: an unencoded, uncompressed block. At a regular time interval, a block is instantiated by NodeDB.
+ LightBlock: a full block is encoded into a Light block in order to improve the space complexity before being saved in Core Data. The light node is added to the Blockchain and the trees.
  */
 
 import Foundation
 import web3swift
 import BigInt
 
-public struct ChainBlock: Decodable {
+public struct FullBlock: Decodable {
     public var number: BigUInt
     public var hash: Data
     public var parentHash: Data
@@ -212,7 +212,7 @@ public struct ChainBlock: Decodable {
     }
 }
 
-extension ChainBlock: Encodable {
+extension FullBlock: Encodable {
     
     public func generateBlockHash() throws -> Data {
         guard let timestampData = try? JSONEncoder().encode(timestamp) else { throw NodeError.encodingError }
@@ -259,8 +259,8 @@ extension ChainBlock: Encodable {
     }
 }
 
-extension ChainBlock: Equatable {
-    public static func == (lhs: ChainBlock, rhs: ChainBlock) -> Bool {
+extension FullBlock: Equatable {
+    public static func == (lhs: FullBlock, rhs: FullBlock) -> Bool {
         var conditions = [
             lhs.number == rhs.number,
             lhs.parentHash == rhs.parentHash,
@@ -269,7 +269,7 @@ extension ChainBlock: Equatable {
             lhs.receiptsRoot == rhs.receiptsRoot,
             lhs.transactionsRoot == rhs.transactionsRoot,
             lhs.size == rhs.size,
-            lhs.timestamp == rhs.timestamp,
+            abs(lhs.timestamp.timeIntervalSince(rhs.timestamp)) < 1,
             lhs.transactions == rhs.transactions,
             lhs.hash == rhs.hash
         ]
@@ -282,27 +282,27 @@ extension ChainBlock: Equatable {
             conditions.append(lminer == rminer)
         }
         
-        if let ldifficult = lhs.difficulty, let rdifficulty = rhs.difficulty {
-            conditions.append(ldifficult == rdifficulty)
+        if let ldifficulty = lhs.difficulty, let rdifficulty = rhs.difficulty {
+            conditions.append(ldifficulty == rdifficulty)
         }
         
-        if let ldifficult = lhs.totalDifficulty, let rdifficulty = rhs.totalDifficulty {
-            conditions.append(ldifficult == rdifficulty)
+        if let ldifficulty = lhs.totalDifficulty, let rdifficulty = rhs.totalDifficulty {
+            conditions.append(ldifficulty == rdifficulty)
         }
         
-        if let rh = lhs.extraData, let lh = rhs.extraData {
+        if let lhData = lhs.extraData, let rhData = rhs.extraData {
+            conditions.append(lhData == rhData)
+        }
+        
+        if let lhLimit = lhs.gasLimit, let rhLimit = rhs.gasLimit {
+            conditions.append(lhLimit == rhLimit)
+        }
+        
+        if let lh = lhs.gasUsed, let rh = rhs.gasUsed {
             conditions.append(lh == rh)
         }
         
-        if let rh = lhs.gasLimit, let lh = rhs.gasLimit {
-            conditions.append(lh == rh)
-        }
-        
-        if let rh = lhs.gasUsed, let lh = rhs.gasUsed {
-            conditions.append(lh == rh)
-        }
-        
-        if let rh = lhs.uncles, let lh = rhs.uncles {
+        if let lh = lhs.uncles, let rh = rhs.uncles {
             conditions.append(lh == rh)
         }
         
@@ -348,12 +348,12 @@ fileprivate func decodeHexToBigUInt<T>(_ container: KeyedDecodingContainer<T>, k
  */
 
 struct LightBlock: LightConfigurable {
-    typealias T = ChainBlock
+    typealias T = FullBlock
     var id: String
     var number: BigUInt
     var data: Data
 
-    init(data: ChainBlock) throws {
+    init(data: FullBlock) throws {
         self.id = data.hash.toHexString()
         self.number = data.number
 
@@ -367,16 +367,52 @@ struct LightBlock: LightConfigurable {
             throw NodeError.encodingError
         }
     }
+    
+    init(id: String, number: BigUInt, data: Data) {
+        self.id = id
+        self.number = number
+        self.data = data
+    }
 
-    func decode() -> ChainBlock? {
+    func decode() -> FullBlock? {
         do {
             guard let decompressed = data.decompressed else {
                 throw NodeError.compressionError
             }
             
-            let decoded = try JSONDecoder().decode(ChainBlock.self, from: decompressed)
+            let decoded = try JSONDecoder().decode(FullBlock.self, from: decompressed)
             return decoded
         } catch {
+            return nil
+        }
+    }
+    
+    static func fromCoreData(crModel: BlockCoreData) -> LightBlock? {
+        guard let id = crModel.id,
+              let data = crModel.data else { return nil }
+        let convertedNumber = BigUInt(crModel.number)
+        return LightBlock(id: id, number: convertedNumber, data: data)
+    }
+    
+    static func fromCoreData(crModel: BlockCoreData) -> FullBlock? {
+        guard let data = crModel.data else { return nil }
+        
+        guard let chainBlock: FullBlock = decode(data) else {
+            return nil
+        }
+        return chainBlock
+    }
+
+    static func decode(_ data: Data) -> FullBlock? {
+        guard let decompressed = data.decompressed else {
+            return nil
+        }
+        
+        do {
+            let decoded = try JSONDecoder().decode(FullBlock.self, from: decompressed)
+            return decoded
+        } catch {
+            print(error)
             return nil
         }
     }
@@ -392,57 +428,60 @@ struct LightBlock: LightConfigurable {
     Used as a buffer between Core Data format and regular format.
  */
 
-struct BlockModel {
-    let id: String
-    let number: BigUInt
-    let data: Data
-    
-    static func fromCoreData(crModel: BlockCoreData) -> BlockModel? {
-        guard let id = crModel.id,
-              let numberData = crModel.number,
-              let data = crModel.data else { return nil }
-
-        let number = BigUInt(numberData)
-
-        let model = BlockModel(id: id, number: number, data: data)
-        return model
-    }
-
-    static func fromCoreData(crModel: BlockCoreData) -> LightBlock? {
-        guard let data = crModel.data else { return nil }
-        
-        return decode(data)
-    }
-    
-    static func fromCoreData(crModel: BlockCoreData) -> ChainBlock? {
-        guard let data = crModel.data else { return nil }
-        
-        guard let chainBlock: ChainBlock = decode(data) else {
-            return nil
-        }
-        return chainBlock
-    }
-    
-    static func decode(_ model: BlockModel) -> ChainBlock? {
-        return decode(model.data)
-    }
-    
-    static func decode(_ data: Data) -> ChainBlock? {
-        do {
-            let decoded = try JSONDecoder().decode(ChainBlock.self, from: data)
-            return decoded
-        } catch {
-            print(error)
-            return nil
-        }
-    }
-    
-    static func decode(_ data: Data) -> LightBlock? {
-        do {
-            let decoded = try JSONDecoder().decode(ChainBlock.self, from: data)
-            return try LightBlock(data: decoded)
-        } catch {
-            return nil
-        }
-    }
-}
+//struct BlockModel {
+//    let id: String
+//    let number: BigUInt
+//    let data: Data
+//    
+//    static func fromCoreData(crModel: BlockCoreData) -> BlockModel? {
+//        guard let id = crModel.id,
+//              let numberData = crModel.number,
+//              let data = crModel.data else { return nil }
+//
+//        let number = BigUInt(numberData)
+//
+//        let model = BlockModel(id: id, number: number, data: data)
+//        return model
+//    }
+//
+//    static func fromCoreData(crModel: BlockCoreData) -> LightBlock? {
+//        guard let data = crModel.data else { return nil }
+//        
+//        return decode(data)
+//    }
+//    
+//    static func fromCoreData(crModel: BlockCoreData) -> ChainBlock? {
+//        guard let data = crModel.data else { return nil }
+//        
+//        guard let chainBlock: ChainBlock = decode(data) else {
+//            return nil
+//        }
+//        return chainBlock
+//    }
+//    
+//    static func decode(_ model: BlockModel) -> ChainBlock? {
+//        return decode(model.data)
+//    }
+//    
+//    static func decode(_ data: Data) -> LightBlock? {
+//        guard let decompressed = data.decompressed else {
+//            return nil
+//        }
+//        
+//        do {
+//            let decoded = try JSONDecoder().decode(LightBlock.self, from: decompressed)
+//            return decoded
+//        } catch {
+//            print(error)
+//            return nil
+//        }
+//    }
+//    
+//    static func decode(_ data: Data) -> ChainBlock? {
+//        guard let lightBlock: LightBlock = decode(data) else {
+//            return nil
+//        }
+//        
+//        return lightBlock.decode()
+//    }
+//}

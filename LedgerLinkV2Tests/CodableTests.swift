@@ -122,9 +122,28 @@ class CodableTests: XCTestCase {
                 fatalError("encoding error")
             }
             
-            guard let compressed = encoded!.compressed else { fatalError("compression error") }
+            guard let compressed = encoded.compressed else { fatalError("compression error") }
             guard let decompressed = compressed.decompressed else { fatalError("decompression error") }
             
+            var decoded: FullBlock
+            do {
+                decoded = try JSONDecoder().decode(FullBlock.self, from: decompressed)
+            } catch {
+                fatalError("decoding error")
+            }
+  
+            XCTAssertEqual(decoded.number, block.number)
+            XCTAssertEqual(decoded.hash, block.hash)
+            XCTAssertEqual(decoded.parentHash, block.parentHash)
+            XCTAssertEqual(decoded.nonce, block.nonce)
+            XCTAssertEqual(decoded.transactionsRoot, block.transactionsRoot)
+            XCTAssertEqual(decoded.stateRoot, block.stateRoot)
+            XCTAssertEqual(decoded.receiptsRoot, block.receiptsRoot)
+            XCTAssertEqual(decoded.size, block.size)
+            XCTAssertTrue(abs(decoded.timestamp.timeIntervalSince(block.timestamp)) < 1)
+            XCTAssertEqual(decoded.transactions, block.transactions)
+            XCTAssertEqual(decoded.miner, block.miner)
+            XCTAssertEqual(decoded, block)
         }
     }
 }
