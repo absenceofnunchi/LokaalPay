@@ -21,6 +21,13 @@ public struct TreeConfigurableAccount: LightConfigurable {
     typealias T = Account
     var id: String /// Address
     var data: Data /// RLP encoded and compressed Account
+    // The keys must have the same name as the attributes of the StateCoreEntity entity.
+    var dictionaryValue: [String: Any] {
+        [
+            "id": id,
+            "data": data
+        ]
+    }
     
     /// Account is already RLP encoded
     public init(address: String, rlpAccount: Data) throws {
@@ -31,14 +38,13 @@ public struct TreeConfigurableAccount: LightConfigurable {
         self.id = address
         self.data = compressed
     }
+
+    init(id: String, data: Data) {
+        self.id = id
+        self.data = data
+    }
     
     init(data: Account) throws {
-//        var encoded: Data
-//        do {
-//            encoded = try JSONEncoder().encode(data)
-//        } catch {
-//            throw NodeError.encodingError
-//        }
         guard let encoded = data.encode() else {
             throw NodeError.encodingError
         }

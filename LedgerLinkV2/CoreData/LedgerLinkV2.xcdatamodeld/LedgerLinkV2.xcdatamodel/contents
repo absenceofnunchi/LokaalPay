@@ -5,6 +5,18 @@
         <attribute name="id" attributeType="String"/>
         <attribute name="number" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
+    <entity name="ReceiptCoreData" representedClassName="ReceiptCoreData" syncable="YES">
+        <attribute name="data" optional="YES" attributeType="Binary"/>
+        <attribute name="id" attributeType="String"/>
+    </entity>
+    <entity name="StateCoreData" representedClassName="StateCoreData" syncable="YES">
+        <attribute name="data" optional="YES" attributeType="Binary"/>
+        <attribute name="id" attributeType="String"/>
+    </entity>
+    <entity name="TransactionCoreData" representedClassName="TransactionCoreData" syncable="YES">
+        <attribute name="data" optional="YES" attributeType="Binary"/>
+        <attribute name="id" attributeType="String"/>
+    </entity>
     <entity name="WalletCoreData" representedClassName="WalletCoreData" syncable="YES">
         <attribute name="address" attributeType="String"/>
         <attribute name="data" optional="YES" attributeType="Binary"/>
@@ -12,5 +24,8 @@
     <elements>
         <element name="BlockCoreData" positionX="-54" positionY="9" width="128" height="74"/>
         <element name="WalletCoreData" positionX="-63" positionY="-18" width="128" height="59"/>
+        <element name="StateCoreData" positionX="-54" positionY="18" width="128" height="59"/>
+        <element name="TransactionCoreData" positionX="-45" positionY="27" width="128" height="59"/>
+        <element name="ReceiptCoreData" positionX="-36" positionY="36" width="128" height="59"/>
     </elements>
 </model>

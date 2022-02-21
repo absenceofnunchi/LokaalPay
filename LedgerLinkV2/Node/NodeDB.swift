@@ -7,7 +7,7 @@
 
 /*
  Abstract:
- A node that adds and searches transactions, state, and receipts.
+ Node database adds and searches transactions, state, and receipts in memory as opposed to NodeCD which utilizes Core Data.
  Also create a block and adds it to the blockchain.
  */
 
@@ -16,7 +16,7 @@ import CryptoKit
 import web3swift
 import BigInt
 
-final class NodeDB {
+final class NodeDB: NodeConfigurable {
     static let shared = NodeDB()
     private(set) var transactionTrie = Tree<TreeConfigurableTransaction>()
     private(set) var stateTrie = Tree<TreeConfigurableAccount>()

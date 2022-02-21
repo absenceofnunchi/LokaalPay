@@ -15,6 +15,30 @@ public struct Account: Equatable {
     var balance: BigUInt = 0
     var codeHash: String = "0x"
     var storageRoot: String = "0x"
+    
+    init(_ data: Data) throws {
+        guard let decompressed = data.decompressed else {
+            throw NodeError.compressionError
+        }
+        
+        guard let account = Account.fromRaw(decompressed) else {
+            throw NodeError.decodingError
+        }
+        
+        self.address = account.address
+        self.nonce = account.nonce
+        self.balance = account.balance
+        self.codeHash = account.codeHash
+        self.storageRoot = account.storageRoot
+    }
+    
+    init(address: EthereumAddress, nonce: BigUInt, balance: BigUInt = 0, codeHash: String = "0x", storageRoot: String = "0x") {
+        self.address = address
+        self.nonce = nonce
+        self.balance = balance
+        self.codeHash = codeHash
+        self.storageRoot = storageRoot
+    }
 }
 
 extension Account: Codable {
