@@ -19,7 +19,7 @@ public struct TreeConfigurableTransaction: LightConfigurable {
     typealias T = EthereumTransaction
     var id: String // transaction hash
     var data: Data // RLP encoded and compressed EthereumTransaction
-    
+
     /// Transaction is already RLP encoded such as when received from another device.
     public init(rlpTransaction: Data) throws {
         guard let compressed = rlpTransaction.compressed else {

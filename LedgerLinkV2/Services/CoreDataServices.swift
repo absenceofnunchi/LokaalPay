@@ -5,7 +5,7 @@
 //  Created by J C on 2022-02-06.
 //
 
-import UIKit
+import Foundation
 import CoreData
 import BigInt
 import web3swift
@@ -13,18 +13,8 @@ import web3swift
 final class LocalStorage {
     static let shared = LocalStorage()
     var coreDataStack: CoreDataStack!
-    private var container: NSPersistentContainer!
-    private var context: NSManagedObjectContext!
-    private func newTaskContext() -> NSManagedObjectContext {
-        // Create a private queue context.
-        /// - Tag: newBackgroundContext
-        let taskContext = container.newBackgroundContext()
-        taskContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        // Set unused undoManager to nil for macOS (it is nil by default on iOS)
-        // to reduce resource requirements.
-        taskContext.undoManager = nil
-        return taskContext
-    }
+    var container: NSPersistentContainer!
+    var context: NSManagedObjectContext!
     
     init() {
         coreDataStack = CoreDataStack()
@@ -40,15 +30,57 @@ final class LocalStorage {
         case receiptCoreData = "ReceiptCoreData"
     }
     
-        @available(iOS 14.0, *)
-    private func newBatchInsertRequest(with accounts: [TreeConfigurableAccount]) -> NSBatchInsertRequest {
+    func newTaskContext() -> NSManagedObjectContext {
+        // Create a private queue context.
+        /// - Tag: newBackgroundContext
+        let taskContext = container.newBackgroundContext()
+        taskContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        // Set unused undoManager to nil for macOS (it is nil by default on iOS)
+        // to reduce resource requirements.
+        taskContext.undoManager = nil
+        return taskContext
+    }
+    
+    @available(iOS 14.0, *)
+//    func newBatchInsertRequest(with accounts: [TreeConfigurableAccount]) -> NSBatchInsertRequest {
+//        var index = 0
+//        let total = accounts.count
+//
+//        // Provide one dictionary at a time when the closure is called.
+//        let batchInsertRequest = NSBatchInsertRequest(entity: StateCoreData.entity(), dictionaryHandler: { dictionary in
+//            guard index < total else { return true }
+//            dictionary.addEntries(from: accounts[index].dictionaryValue)
+//            index += 1
+//            return false
+//        })
+//        return batchInsertRequest
+//    }
+    
+    func newBatchInsertRequest<T: LightConfigurable>(with elements: [T]) -> NSBatchInsertRequest? {
         var index = 0
-        let total = accounts.count
+        let total = elements.count
+        
+        var entity: NSEntityDescription!
+        switch elements[0] {
+            case is TreeConfigurableAccount.Type:
+                entity = StateCoreData.entity()
+                break
+            case is TreeConfigurableTransaction.Type:
+                entity = TransactionCoreData.entity()
+                break
+            case is TreeConfigurableReceipt.Type:
+                entity = ReceiptCoreData.entity()
+                break
+            default:
+                break
+        }
+        
+        guard let entity = entity else { return nil }
         
         // Provide one dictionary at a time when the closure is called.
-        let batchInsertRequest = NSBatchInsertRequest(entity: StateCoreData.entity(), dictionaryHandler: { dictionary in
+        let batchInsertRequest = NSBatchInsertRequest(entity: entity, dictionaryHandler: { dictionary in
             guard index < total else { return true }
-            dictionary.addEntries(from: accounts[index].dictionaryValue)
+            dictionary.addEntries(from: elements[index].dictionaryValue)
             index += 1
             return false
         })
@@ -372,410 +404,6 @@ extension LocalStorage {
         }
     }
 }
-
-// MARK: - State
-
-extension LocalStorage {
-    func saveState(_ account: Account, completion: @escaping (NodeError?) -> Void) throws {
-        let treeConfigAccount = try TreeConfigurableAccount(data: account)
-        try saveState(treeConfigAccount, completion: completion)
-    }
-    
-    func saveState(_ account: TreeConfigurableAccount, completion: @escaping (NodeError?) -> Void) throws {
-        /// Halt if the item already exists
-        try deleteAccount(account.id) { [weak self] (error) in
-            if let error = error {
-                completion(error)
-            }
-            
-            guard let self = self,
-                  let entity = NSEntityDescription.insertNewObject(forEntityName: EntityName.stateCoreData.rawValue, into: self.context) as? StateCoreData else { return }
-            entity.id = account.id
-            entity.data = account.data
-            
-            do {
-                try self.context.save()
-                completion(nil)
-            } catch {
-                completion(.generalError("Block save error"))
-            }
-        }
-    }
-    
-    func getAccount(_ addressString: String, completion: @escaping (Account?, NodeError?) -> Void) throws {
-        guard let address = EthereumAddress(addressString) else {
-            throw NodeError.generalError("Unable to parse the address")
-        }
-        try getAccount(address, completion: completion)
-    }
-    
-    func getAccount(_ address: EthereumAddress, completion: @escaping (Account?, NodeError?) -> Void) throws {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", address.address)
-        
-        do {
-            let results = try context.fetch(request)
-            guard let result = results.first,
-                  let data = result.data else {
-                      completion(nil, .generalError("Parsing error"))
-                      return
-                  }
-            
-            completion(try Account(data), nil)
-        } catch {
-            completion(nil, .generalError("Unable to fetch blocks"))
-        }
-    }
-    
-    func getAccount(_ addressString: String, completion: @escaping (TreeConfigurableAccount?, NodeError?) -> Void) throws {
-        guard let address = EthereumAddress(addressString) else {
-            throw NodeError.generalError("Unable to parse the address")
-        }
-        try getAccount(address, completion: completion)
-    }
-    
-    func getAccount(_ address: EthereumAddress, completion: @escaping (TreeConfigurableAccount?, NodeError?) -> Void) throws {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", address.address)
-        
-        do {
-            let results = try context.fetch(request)
-            guard let result = results.first,
-                  let data = result.data,
-                  let id = result.id else {
-                      completion(nil, .generalError("Parsing error"))
-                      return
-                  }
-            
-            completion(TreeConfigurableAccount(id: id, data: data), nil)
-        } catch {
-            completion(nil, .generalError("Unable to fetch blocks"))
-        }
-    }
-    
-    func getAllAccounts(completion: @escaping ([TreeConfigurableAccount]?, NodeError?) -> Void) {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        do {
-            let results = try context.fetch(request)
-            let accountArr: [TreeConfigurableAccount] = results.compactMap {
-                guard let id = $0.id,
-                      let data = $0.data else {
-                          return nil
-                      }
-                return TreeConfigurableAccount(id: id, data: data)
-            }
-            completion(accountArr, nil)
-        } catch {
-            completion(nil, .generalError("Unable to fetch blocks"))
-        }
-    }
-    
-    func getAllAccounts(completion: @escaping ([Account]?, NodeError?) -> Void) {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        do {
-            let results = try context.fetch(request)
-            let accountArr: [Account] = results.compactMap {
-                guard let data = $0.data else {
-                    return nil
-                }
-                return try? Account(data)
-            }
-            completion(accountArr, nil)
-        } catch {
-            completion(nil, .generalError("Unable to fetch blocks"))
-        }
-    }
-    
-    func deleteAccount(_ address: EthereumAddress, completion: @escaping (NodeError?) -> Void) {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", address.address)
-        
-        do {
-            let result = try context.fetch(request)
-            for item in result {
-                context.delete(item)
-            }
-            
-            try context.save()
-            completion(nil)
-        } catch {
-            completion(NodeError.generalError("Block deletion error"))
-        }
-    }
-    
-    func deleteAccount(_ addressString: String, completion: @escaping (NodeError?) -> Void) throws {
-        guard let address = EthereumAddress(addressString) else {
-            throw NodeError.generalError("Unable to parse the address")
-        }
-        deleteAccount(address, completion: completion)
-    }
-    
-    func deleteAllAccounts(completion: @escaping (NodeError?) -> Void) {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        do {
-            let result = try context.fetch(request)
-            for item in result {
-                context.delete(item)
-            }
-            
-            try context.save()
-            completion(nil)
-        } catch {
-            completion(NodeError.generalError("Block deletion error"))
-        }
-    }
-}
-
-@available(iOS 15.0.0, *)
-extension LocalStorage {
-    func saveState(_ account: Account) async throws {
-        let treeConfigAccount = try TreeConfigurableAccount(data: account)
-        try await saveState(treeConfigAccount)
-    }
-    
-    func saveState(_ account: TreeConfigurableAccount) async throws {
-        /// Halt if the item already exists
-        try await deleteAccount(account.id)
-        guard let entity = NSEntityDescription.insertNewObject(forEntityName: EntityName.stateCoreData.rawValue, into: self.context) as? StateCoreData else { return }
-        entity.id = account.id
-        entity.data = account.data
-        
-        do {
-            try self.context.save()
-        } catch {
-            throw NodeError.generalError("Block save error")
-        }
-    }
-
-    func saveStates(_ accounts: [Account]) async throws {
-        let treeConfigAccounts: [TreeConfigurableAccount] = accounts.compactMap ({ try? TreeConfigurableAccount(data: $0) })
-        try await saveStates(treeConfigAccounts)
-    }
-    
-    func saveStates(_ accounts: [TreeConfigurableAccount]) async throws {
-        let taskContext = newTaskContext()
-        // Add name and author to identify source of persistent history changes.
-        taskContext.name = "importContext"
-        taskContext.transactionAuthor = "importQuakes"
-        
-        /// - Tag: performAndWait
-        try await taskContext.perform {
-            // Execute the batch insert.
-            /// - Tag: batchInsertRequest
-            let batchInsertRequest = self.newBatchInsertRequest(with: accounts)
-            if let fetchResult = try? taskContext.execute(batchInsertRequest),
-               let batchInsertResult = fetchResult as? NSBatchInsertResult,
-               let success = batchInsertResult.result as? Bool, success {
-                return
-            }
-            print("Failed to execute batch insert request.")
-            throw NodeError.generalError("Batch insert error")
-        }
-        
-        print("Successfully inserted data.")
-    }
-    
-    func getAccount(_ addressString: String) async throws -> Account? {
-        guard let address = EthereumAddress(addressString) else {
-            throw NodeError.generalError("Unable to parse the address")
-        }
-        return try await getAccount(address)
-    }
-    
-    func getAccount(_ address: EthereumAddress) async throws -> Account? {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", address.address)
-        
-        do {
-            let results = try context.fetch(request)
-            guard let result = results.first,
-                  let data = result.data else {
-                      throw NodeError.generalError("Parsing error")
-                  }
-            
-            return try Account(data)
-        } catch {
-            throw NodeError.generalError("Unable to fetch blocks")
-        }
-    }
-    
-    func getAccount(_ addressString: String) async throws -> TreeConfigurableAccount? {
-        guard let address = EthereumAddress(addressString) else {
-            throw NodeError.generalError("Unable to parse the address")
-        }
-        return try await getAccount(address)
-    }
-    
-    func getAccount(_ address: EthereumAddress) async throws -> TreeConfigurableAccount? {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", address.address)
-        
-        do {
-            let results = try context.fetch(request)
-            guard let result = results.first,
-                  let data = result.data,
-                  let id = result.id else {
-                      throw NodeError.generalError("Parsing error")
-                  }
-            
-            return TreeConfigurableAccount(id: id, data: data)
-        } catch {
-            throw NodeError.generalError("Unable to fetch blocks")
-        }
-    }
-    
-    func getAllAccounts() async throws -> [TreeConfigurableAccount]? {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        do {
-            let results = try context.fetch(request)
-            let accountArr: [TreeConfigurableAccount] = try results.compactMap {
-                guard let id = $0.id,
-                      let data = $0.data else {
-                          throw NodeError.generalError("Parsing error")
-                      }
-                return TreeConfigurableAccount(id: id, data: data)
-            }
-            return accountArr
-        } catch {
-            throw NodeError.generalError("Unable to fetch blocks")
-        }
-    }
-    
-    func getAllAccounts() async throws -> [Account]? {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        do {
-            let results = try context.fetch(request)
-            let accountArr: [Account] = results.compactMap {
-                guard let data = $0.data else {
-                    return nil
-                }
-                return try? Account(data)
-            }
-            return accountArr
-        } catch {
-            throw NodeError.generalError("Unable to fetch blocks")
-        }
-    }
-    
-    func deleteAccount(_ address: EthereumAddress) async throws {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", address.address)
-        
-        do {
-            let result = try context.fetch(request)
-            for item in result {
-                context.delete(item)
-            }
-            
-            try context.save()
-        } catch {
-            throw NodeError.generalError("Block deletion error")
-        }
-    }
-    
-    func deleteAccount(_ addressString: String) async throws {
-        guard let address = EthereumAddress(addressString) else {
-            throw NodeError.generalError("Unable to parse the address")
-        }
-        try await deleteAccount(address)
-    }
-    
-    func deleteAllAccounts() async throws {
-        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        do {
-            let result = try context.fetch(request)
-            for item in result {
-                context.delete(item)
-            }
-            
-            try context.save()
-        } catch {
-            throw NodeError.generalError("Block deletion error")
-        }
-    }
-}
-
-// MARK: - Transaction
-
-extension LocalStorage {
-//    func saveTransaction(_ transaction: EthereumTransaction, completion: @escaping (NodeError?) -> Void) throws {
-//        let treeConfigTransaction = try TreeConfigurableTransaction(data: transaction)
-//        try saveTransaction(treeConfigTransaction, completion: completion)
-//    }
-//
-//    func saveTransaction(_ transaction: TreeConfigurableAccount, completion: @escaping (NodeError?) -> Void) throws {
-//        /// Halt if the item already exists
-//        try getAccount(account, completion: { [weak self] (existingAcct: TreeConfigurableAccount?, error: NodeError?) in
-//            if let error = error {
-//                completion(error)
-//            }
-//
-//            if let existingAcct = existingAcct, existingAcct == account  {
-//                completion(.generalError("Already exists"))
-//            }
-//
-//            guard let self = self,
-//                  let entity = NSEntityDescription.insertNewObject(forEntityName: EntityName.stateCoreData.rawValue, into: self.context) as? StateCoreData else { return }
-//            entity.id = account.id
-//            entity.data = account.data
-//
-//            do {
-//                try self.context.save()
-//                completion(nil)
-//            } catch {
-//                completion(.generalError("Block save error"))
-//            }
-//        })
-//    }
-    
-//    func getTransaction(_ transaction: EthereumTransaction, completion: @escaping (EthereumAddress?, NodeError?) -> Void) throws {
-//        let treeConfigAccount = try TreeConfigurableTransaction(data: transaction)
-//        try getTransaction(treeConfigAccount, completion: completion)
-//    }
-//    
-//    func getTransaction(_ account: TreeConfigurableAccount, completion: @escaping (Account?, NodeError?) -> Void) throws {
-//        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-//        request.predicate = NSPredicate(format: "id == %@", account.id)
-//        
-//        do {
-//            let results = try context.fetch(request)
-//            guard let result = results.first,
-//                  let data = result.data else {
-//                      completion(nil, .generalError("Parsing error"))
-//                      return
-//                  }
-//            
-//            completion(try Account(data), nil)
-//        } catch {
-//            completion(nil, .generalError("Unable to fetch blocks"))
-//        }
-//    }
-//    
-//    func getTransaction(_ account: Account, completion: @escaping (TreeConfigurableAccount?, NodeError?) -> Void) throws {
-//        let treeConfigAccount = try TreeConfigurableAccount(data: account)
-//        try getTransaction(treeConfigAccount, completion: completion)
-//    }
-//    
-//    func getTransaction(_ account: TreeConfigurableAccount, completion: @escaping (TreeConfigurableAccount?, NodeError?) -> Void) throws {
-//        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-//        request.predicate = NSPredicate(format: "id == %@", account.id)
-//        
-//        do {
-//            let results = try context.fetch(request)
-//            guard let result = results.first,
-//                  let data = result.data,
-//                  let id = result.id else {
-//                      completion(nil, .generalError("Parsing error"))
-//                      return
-//                  }
-//            
-//            completion(TreeConfigurableAccount(id: id, data: data), nil)
-//        } catch {
-//            completion(nil, .generalError("Unable to fetch blocks"))
-//        }
-//    }
-}
-
 
 // MARK: - Core Data stack
 

@@ -17,8 +17,20 @@ import Compression
 protocol LightConfigurable: Codable, Hashable, Comparable {
     associatedtype T
     var id: String { get set }
+    var data: Data { get set }
+    var dictionaryValue: [String: Any] { get }
     init(data: T) throws
     func decode() -> T?
+}
+
+extension LightConfigurable {
+    // The keys must have the same name as the attributes of the StateCoreData, TransactionCoreEntity, or ReceiptCoreEntity entity. For newBatchInsertRequest in Core Data.
+    var dictionaryValue: [String: Any] {
+        [
+            "id": id,
+            "data": data
+        ]
+    }
 }
 
 extension LightConfigurable {

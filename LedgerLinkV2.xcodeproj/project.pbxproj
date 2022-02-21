@@ -31,6 +31,8 @@
 		4950592827B08B40006B9294 /* SigninViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592727B08B40006B9294 /* SigninViewController.swift */; };
 		4950592A27B08B4F006B9294 /* SignupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592927B08B4F006B9294 /* SignupViewController.swift */; };
 		4950592C27B09F50006B9294 /* ViewController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592B27B09F50006B9294 /* ViewController+Extensions.swift */; };
+		49631C3527C4157400E5F0EA /* CoreDataServices+State.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C3427C4157400E5F0EA /* CoreDataServices+State.swift */; };
+		49631C3727C415F900E5F0EA /* CoreDataServices+Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C3627C415F900E5F0EA /* CoreDataServices+Transaction.swift */; };
 		49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49657A7C27ACF45600A19EC3 /* 1.mp3 */; };
 		49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49689F7327B1EBB20062C093 /* Array+Extensions.swift */; };
 		497633D427C22F360044B426 /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633D327C22F360044B426 /* TestTree.swift */; };
@@ -132,6 +134,8 @@
 		4950592727B08B40006B9294 /* SigninViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigninViewController.swift; sourceTree = "<group>"; };
 		4950592927B08B4F006B9294 /* SignupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupViewController.swift; sourceTree = "<group>"; };
 		4950592B27B09F50006B9294 /* ViewController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Extensions.swift"; sourceTree = "<group>"; };
+		49631C3427C4157400E5F0EA /* CoreDataServices+State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataServices+State.swift"; sourceTree = "<group>"; };
+		49631C3627C415F900E5F0EA /* CoreDataServices+Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataServices+Transaction.swift"; sourceTree = "<group>"; };
 		49657A7C27ACF45600A19EC3 /* 1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 1.mp3; sourceTree = "<group>"; };
 		49689F7327B1EBB20062C093 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		497633D327C22F360044B426 /* TestTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
@@ -350,6 +354,8 @@
 				499AF11F27AF6E9000CAF0EA /* TransactionService.swift */,
 				499AF12327B04E6C00CAF0EA /* KeysService.swift */,
 				4950591E27B05B6A006B9294 /* CoreDataServices.swift */,
+				49631C3427C4157400E5F0EA /* CoreDataServices+State.swift */,
+				49631C3627C415F900E5F0EA /* CoreDataServices+Transaction.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -673,8 +679,10 @@
 				49C4492227BFF98D00970B8E /* String+Extension.swift in Sources */,
 				49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */,
 				49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */,
+				49631C3727C415F900E5F0EA /* CoreDataServices+Transaction.swift in Sources */,
 				49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */,
 				49A7C32C27B75EDB00AC7EB0 /* MainTree.swift in Sources */,
+				49631C3527C4157400E5F0EA /* CoreDataServices+State.swift in Sources */,
 				4950592827B08B40006B9294 /* SigninViewController.swift in Sources */,
 				497633D427C22F360044B426 /* TestTree.swift in Sources */,
 				492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */,
