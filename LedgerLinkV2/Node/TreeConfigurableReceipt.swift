@@ -13,6 +13,11 @@ public struct TreeConfigurableReceipt: LightConfigurable {
     var id: String // Receipt hash
     var data: Data // RLP encoded then compressed TransactionReceipt
     
+    public init(id: String, data: Data) {
+        self.id = id
+        self.data = data
+    }
+    
     public init(data: TransactionReceipt) throws {
         guard let encoded = data.encode() else {
             throw NodeError.encodingError

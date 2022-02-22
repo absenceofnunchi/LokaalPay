@@ -21,6 +21,12 @@ import CryptoKit
 /// 8. sendRawTransactionPromise https://github.com/skywinder/web3swift/blob/5484e81580219ea491d48e94f6aef6f18d8ec58f/Sources/web3swift/Promises/Promise%2BWeb3%2BEth%2BSendRawTransaction.swift#L20
 
 extension EthereumTransaction {
+    public func getHash() -> String? {
+        guard let encoded = self.encode(),
+              let compressed = encoded.compressed else { return nil }
+        return compressed.sha256().toHexString()
+    }
+    
     /// Create a transaction signature for a local transaction.
     /// Doesn't require gas because no mining reward exists.
     /// TODO: Change the chain ID to the 4-digit password set by the host

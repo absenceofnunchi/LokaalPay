@@ -1,8 +1,8 @@
 //
 //  WalletCoreData+CoreDataClass.swift
-//  
+//  LedgerLinkV2
 //
-//  Created by J C on 2022-02-06.
+//  Created by J C on 2022-02-21.
 //
 //
 

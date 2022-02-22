@@ -20,6 +20,11 @@ public struct TreeConfigurableTransaction: LightConfigurable {
     var id: String // transaction hash
     var data: Data // RLP encoded and compressed EthereumTransaction
 
+    public init(id: String, data: Data) {
+        self.id = id
+        self.data = data
+    }
+    
     /// Transaction is already RLP encoded such as when received from another device.
     public init(rlpTransaction: Data) throws {
         guard let compressed = rlpTransaction.compressed else {

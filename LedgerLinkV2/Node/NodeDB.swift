@@ -163,12 +163,12 @@ extension NodeDB {
     #endif
     
     func createBlock() throws {
-        guard let latestBlock: FullBlock = try LocalStorage.shared.getLatestBlock(),
-              let txRoot = getRootHash(for: .transaction),
-              let stateRoot = getRootHash(for: .state),
-              let receiptRoot = getRootHash(for: .receipt) else { return }
-        
-        let transactions = transactionTrie.getAllNodes()
+//        guard let latestBlock: FullBlock = try LocalStorage.shared.getLatestBlock(),
+//              let txRoot = getRootHash(for: .transaction),
+//              let stateRoot = getRootHash(for: .state),
+//              let receiptRoot = getRootHash(for: .receipt) else { return }
+//        
+//        let transactions = transactionTrie.getAllNodes()
 //        let compressed = transactions.compressed
         
 //        let block = ChainBlock(number: latestBlock.number, parentHash: latestBlock.hash, nonce: nil, transactionsRoot: txRoot, stateRoot: stateRoot, receiptsRoot: receiptRoot, transactions: <#T##[TreeConfigurableTransaction]#>, uncles: <#T##[Data]?#>)

@@ -2,7 +2,7 @@
 //  ReceiptCoreData+CoreDataProperties.swift
 //  LedgerLinkV2
 //
-//  Created by J C on 2022-02-20.
+//  Created by J C on 2022-02-21.
 //
 //
 
@@ -16,8 +16,8 @@ extension ReceiptCoreData {
         return NSFetchRequest<ReceiptCoreData>(entityName: "ReceiptCoreData")
     }
 
-    @NSManaged public var id: String?
     @NSManaged public var data: Data?
+    @NSManaged public var id: String?
 
 }
 

@@ -16,6 +16,7 @@ public struct Account: Equatable {
     var codeHash: String = "0x"
     var storageRoot: String = "0x"
     
+    /// From binary. Used when Core Data fetches encoded Account in a binary form.
     init(_ data: Data) throws {
         guard let decompressed = data.decompressed else {
             throw NodeError.compressionError
