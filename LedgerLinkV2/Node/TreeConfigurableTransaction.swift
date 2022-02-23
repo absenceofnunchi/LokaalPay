@@ -19,7 +19,13 @@ public struct TreeConfigurableTransaction: LightConfigurable {
     typealias T = EthereumTransaction
     var id: String // transaction hash
     var data: Data // RLP encoded and compressed EthereumTransaction
-
+    var dictionaryValue: [String: Any] {
+        [
+            "id": id,
+            "data": data
+        ]
+    }
+    
     public init(id: String, data: Data) {
         self.id = id
         self.data = data

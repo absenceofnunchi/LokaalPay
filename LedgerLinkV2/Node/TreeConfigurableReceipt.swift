@@ -12,6 +12,12 @@ public struct TreeConfigurableReceipt: LightConfigurable {
     typealias T = TransactionReceipt
     var id: String // Receipt hash
     var data: Data // RLP encoded then compressed TransactionReceipt
+    var dictionaryValue: [String: Any] {
+        [
+            "id": id,
+            "data": data
+        ]
+    }
     
     public init(id: String, data: Data) {
         self.id = id

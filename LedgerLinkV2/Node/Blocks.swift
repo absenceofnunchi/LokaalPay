@@ -352,7 +352,14 @@ struct LightBlock: LightConfigurable {
     var id: String
     var number: BigUInt
     var data: Data
-
+    var dictionaryValue: [String: Any] {
+        [
+            "id": id,
+            "number": number,
+            "data": data
+        ]
+    }
+    
     init(data: FullBlock) throws {
         self.id = data.hash.toHexString()
         self.number = data.number
@@ -421,6 +428,18 @@ struct LightBlock: LightConfigurable {
         return (lhs.id < rhs.id) && (lhs.data.toHexString() < rhs.data.toHexString())
     }
 }
+
+extension LightBlock {
+    // The keys must have the same name as the attributes of the StateCoreData, TransactionCoreEntity, or ReceiptCoreEntity entity. For newBatchInsertRequest in Core Data.
+    var dictionaryValue: [String: Any] {
+        [
+            "id": id,
+            "number": number,
+            "data": data
+        ]
+    }
+}
+
 
 // MARK: - BlockModel
 

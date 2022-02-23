@@ -425,6 +425,7 @@ final class CoreDataTests: XCTestCase {
     // MARK: - test_generic_save
     /// Generic methods
     func test_generic_save() async {
+        // MARK: - save
         let treeConfigAcct = treeConfigurableAccounts[0]
         await LocalStorage.shared.save(treeConfigAcct) { error in
             XCTAssertNil(error)
@@ -476,6 +477,16 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
+        for block in blocks {
+            await LocalStorage.shared.save(block) { error in
+                XCTAssertNil(error)
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+            }
+        }
+        
+        // MARK: - deletAll
         LocalStorage.shared.deleteAll(of: .stateCoreData)
         LocalStorage.shared.deleteAll(of: .transactionCoreData)
         LocalStorage.shared.deleteAll(of: .receiptCoreData)
@@ -501,7 +512,51 @@ final class CoreDataTests: XCTestCase {
             }
         })
         
-        LocalStorage.shared.fetchAll(of: .account) { (results: [Account]?, error: NodeError?) in
+//        await LocalStorage.shared.save(lightBlocks, completion: { error in
+//            XCTAssertNil(error)
+//            if let error = error {
+//                fatalError(error.localizedDescription)
+//            }
+//        })
+        
+        LocalStorage.shared.deleteAll(of: .stateCoreData)
+        LocalStorage.shared.deleteAll(of: .transactionCoreData)
+        LocalStorage.shared.deleteAll(of: .receiptCoreData)
+    }
+    
+    // MARK: - test_generic_fetch
+    func test_generic_fetch() async {
+        // Seeding
+        await LocalStorage.shared.save(accounts, completion: { error in
+            XCTAssertNil(error)
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+        })
+        
+        await LocalStorage.shared.save(transactions, completion: { error in
+            XCTAssertNil(error)
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+        })
+        
+        await LocalStorage.shared.save(receipts, completion: { error in
+            XCTAssertNil(error)
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+        })
+        
+//        await LocalStorage.shared.save(blocks, completion: { error in
+//            XCTAssertNil(error)
+//            if let error = error {
+//                fatalError(error.localizedDescription)
+//            }
+//        })
+        
+        // MARK: - fetchAll
+        LocalStorage.shared.fetch(from: .account) { (results: [Account]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -512,7 +567,7 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetchAll(of: .transaction) { (results: [EthereumTransaction]?, error: NodeError?) in
+        LocalStorage.shared.fetch(from: .transaction) { (results: [EthereumTransaction]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -523,7 +578,7 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetchAll(of: .receipt) { (results: [TransactionReceipt]?, error: NodeError?) in
+        LocalStorage.shared.fetch(from: .receipt) { (results: [TransactionReceipt]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -534,7 +589,18 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetchAll(of: .account) { (results: [TreeConfigurableAccount]?, error: NodeError?) in
+        LocalStorage.shared.fetch(from: .fullBlock) { (results: [FullBlock]?, error: NodeError?) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            
+            XCTAssertNotNil(results)
+            if let results = results {
+                XCTAssertEqual(results.count, blocks.count)
+            }
+        }
+        
+        LocalStorage.shared.fetch(from: .account) { (results: [TreeConfigurableAccount]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -545,7 +611,7 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetchAll(of: .transaction) { (results: [TreeConfigurableTransaction]?, error: NodeError?) in
+        LocalStorage.shared.fetch(from: .transaction) { (results: [TreeConfigurableTransaction]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -556,7 +622,7 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetchAll(of: .receipt) { (results: [TreeConfigurableReceipt]?, error: NodeError?) in
+        LocalStorage.shared.fetch(from: .receipt) { (results: [TreeConfigurableReceipt]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -564,6 +630,33 @@ final class CoreDataTests: XCTestCase {
             XCTAssertNotNil(results)
             if let results = results {
                 XCTAssertEqual(results.count, treeConfigurableReceipts.count)
+            }
+        }
+        
+        // MARK: - fetch individual
+        for account in accounts {
+            LocalStorage.shared.fetch(account.address.address, from: .account) { (results: [Account]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results {
+                    XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+                }
+            }
+        }
+        
+        for account in treeConfigurableAccounts {
+            LocalStorage.shared.fetch(account.id, from: .treeConfigAcct) { (results: [Account]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results {
+                    XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+                }
             }
         }
     }

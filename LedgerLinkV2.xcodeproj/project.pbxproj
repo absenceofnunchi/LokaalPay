@@ -71,6 +71,7 @@
 		49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */; };
 		49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BA27BF525100DBEFDA /* Blockchain.swift */; };
 		49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */; };
+		49F6E12C27C6850900790A75 /* CoreDataServices+Generic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F6E12B27C6850900790A75 /* CoreDataServices+Generic.swift */; };
 		49FC14F327B3236D00D215B6 /* Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F227B3236D00D215B6 /* Blocks.swift */; };
 		49FC14F527B323A800D215B6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F427B323A800D215B6 /* Account.swift */; };
 		49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F627B32A1100D215B6 /* MerkleTree.swift */; };
@@ -176,6 +177,7 @@
 		49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionExtraData.swift; sourceTree = "<group>"; };
 		49F030BA27BF525100DBEFDA /* Blockchain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchain.swift; sourceTree = "<group>"; };
 		49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainTests.swift; sourceTree = "<group>"; };
+		49F6E12B27C6850900790A75 /* CoreDataServices+Generic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataServices+Generic.swift"; sourceTree = "<group>"; };
 		49FC14F227B3236D00D215B6 /* Blocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blocks.swift; sourceTree = "<group>"; };
 		49FC14F427B323A800D215B6 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		49FC14F627B32A1100D215B6 /* MerkleTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTree.swift; sourceTree = "<group>"; };
@@ -318,6 +320,7 @@
 				49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */,
 				49631C3427C4157400E5F0EA /* CoreDataServices+State.swift */,
 				49631C3627C415F900E5F0EA /* CoreDataServices+Transaction.swift */,
+				49F6E12B27C6850900790A75 /* CoreDataServices+Generic.swift */,
 				49A91A6527C5688400D747E0 /* CoreDataTemp.swift */,
 			);
 			path = CoreDataServices;
@@ -717,6 +720,7 @@
 				492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */,
 				49631C4827C44AEC00E5F0EA /* BlockCoreData+CoreDataClass.swift in Sources */,
 				49FC14F527B323A800D215B6 /* Account.swift in Sources */,
+				49F6E12C27C6850900790A75 /* CoreDataServices+Generic.swift in Sources */,
 				49A7C33227B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift in Sources */,
 				499AF10D27ADAC0000CAF0EA /* GuestViewController.swift in Sources */,
 				49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */,

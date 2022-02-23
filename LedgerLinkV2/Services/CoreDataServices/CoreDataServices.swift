@@ -23,7 +23,7 @@ final class LocalStorage: NSObject {
         context = container.viewContext
     }
     
-    enum EntityName: String {
+    enum EntityName: String, CaseIterable {
         case walletCoreData = "WalletCoreData"
         case blockCoreData = "BlockCoreData"
         case stateCoreData = "StateCoreData"
@@ -107,6 +107,8 @@ final class LocalStorage: NSObject {
             case is TreeConfigurableReceipt:
                 entity = ReceiptCoreData.entity()
                 break
+            case is LightBlock:
+                entity = BlockCoreData.entity()
             default:
                 break
         }

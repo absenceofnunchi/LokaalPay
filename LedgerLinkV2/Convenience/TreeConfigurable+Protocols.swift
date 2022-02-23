@@ -18,19 +18,9 @@ protocol LightConfigurable: Codable, Hashable, Comparable, CoreDatable {
     associatedtype T
     var id: String { get set }
     var data: Data { get set }
-    var dictionaryValue: [String: Any] { get }
+    var dictionaryValue: [String: Any] { get } // The keys must have the same name as the attributes of the StateCoreData, TransactionCoreEntity, etc entities. For newBatchInsertRequest in Core Data.
     init(data: T) throws
     func decode() -> T?
-}
-
-extension LightConfigurable {
-    // The keys must have the same name as the attributes of the StateCoreData, TransactionCoreEntity, or ReceiptCoreEntity entity. For newBatchInsertRequest in Core Data.
-    var dictionaryValue: [String: Any] {
-        [
-            "id": id,
-            "data": data
-        ]
-    }
 }
 
 extension LightConfigurable {
