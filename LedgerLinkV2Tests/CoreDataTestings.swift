@@ -426,7 +426,7 @@ final class CoreDataTests: XCTestCase {
     /// Generic methods
     func test_generic_save() async {
         let treeConfigAcct = treeConfigurableAccounts[0]
-        await LocalStorage.shared.saveAsync(treeConfigAcct) { error in
+        await LocalStorage.shared.save(treeConfigAcct) { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
@@ -434,7 +434,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         let treeConfigTx = treeConfigurableTransactions[0]
-        await LocalStorage.shared.saveAsync(treeConfigTx) { error in
+        await LocalStorage.shared.save(treeConfigTx) { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
@@ -442,11 +442,45 @@ final class CoreDataTests: XCTestCase {
         }
         
         let treeConfigReceipt = treeConfigurableReceipts[0]
-        await LocalStorage.shared.saveAsync(treeConfigReceipt) { error in
+        await LocalStorage.shared.save(treeConfigReceipt) { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
             }
         }
+        
+        await LocalStorage.shared.save(treeConfigurableAccounts, completion: { error in
+            XCTAssertNil(error)
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+        })
+
+        await LocalStorage.shared.save(treeConfigurableTransactions, completion: { error in
+            XCTAssertNil(error)
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+        })
+        
+        await LocalStorage.shared.save(treeConfigurableReceipts, completion: { error in
+            XCTAssertNil(error)
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+        })
+        
+        LocalStorage.shared.fetchAll(of: .account) { (results: [Account]?, error: NodeError?) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            
+            XCTAssertNotNil(results)
+            if let results = results {
+                XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+            }
+        }
+        
+        
     }
 }
