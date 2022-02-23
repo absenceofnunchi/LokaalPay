@@ -10,13 +10,14 @@ import CoreData
 import BigInt
 import web3swift
 
-final class LocalStorage {
+final class LocalStorage: NSObject {
     static let shared = LocalStorage()
     var coreDataStack: CoreDataStack!
     var container: NSPersistentContainer!
     var context: NSManagedObjectContext!
 
-    init() {
+    override init() {
+        super.init()
         coreDataStack = CoreDataStack()
         container = coreDataStack.persistentContainer
         context = container.viewContext
@@ -44,35 +45,35 @@ final class LocalStorage {
         return taskContext
     }
     
-    @available(iOS 14.0, *)
-    func newBatchInsertRequest(with accounts: [TreeConfigurableAccount]) -> NSBatchInsertRequest {
-        var index = 0
-        let total = accounts.count
-
-        // Provide one dictionary at a time when the closure is called.
-        let batchInsertRequest = NSBatchInsertRequest(entity: EntityName.stateDescription, dictionaryHandler: { dictionary in
-            guard index < total else { return true }
-            dictionary.addEntries(from: accounts[index].dictionaryValue)
-            index += 1
-            return false
-        })
-        return batchInsertRequest
-    }
-    
-    @available(iOS 14.0, *)
-    func newBatchInsertRequest(with transactions: [TreeConfigurableTransaction]) -> NSBatchInsertRequest {
-        var index = 0
-        let total = transactions.count
-        
-        // Provide one dictionary at a time when the closure is called.
-        let batchInsertRequest = NSBatchInsertRequest(entity: TransactionCoreData.entity(), dictionaryHandler: { dictionary in
-            guard index < total else { return true }
-            dictionary.addEntries(from: transactions[index].dictionaryValue)
-            index += 1
-            return false
-        })
-        return batchInsertRequest
-    }
+//    @available(iOS 14.0, *)
+//    func newBatchInsertRequest(with accounts: [TreeConfigurableAccount]) -> NSBatchInsertRequest {
+//        var index = 0
+//        let total = accounts.count
+//
+//        // Provide one dictionary at a time when the closure is called.
+//        let batchInsertRequest = NSBatchInsertRequest(entity: EntityName.stateDescription, dictionaryHandler: { dictionary in
+//            guard index < total else { return true }
+//            dictionary.addEntries(from: accounts[index].dictionaryValue)
+//            index += 1
+//            return false
+//        })
+//        return batchInsertRequest
+//    }
+//    
+//    @available(iOS 14.0, *)
+//    func newBatchInsertRequest(with transactions: [TreeConfigurableTransaction]) -> NSBatchInsertRequest {
+//        var index = 0
+//        let total = transactions.count
+//        
+//        // Provide one dictionary at a time when the closure is called.
+//        let batchInsertRequest = NSBatchInsertRequest(entity: TransactionCoreData.entity(), dictionaryHandler: { dictionary in
+//            guard index < total else { return true }
+//            dictionary.addEntries(from: transactions[index].dictionaryValue)
+//            index += 1
+//            return false
+//        })
+//        return batchInsertRequest
+//    }
 //    
 //    @available(iOS 14.0, *)
 //    func newBatchInsertRequest(with receipts: [TreeConfigurableReceipt]) -> NSBatchInsertRequest {
@@ -88,38 +89,39 @@ final class LocalStorage {
 //        })
 //        return batchInsertRequest
 //    }
-//    
-//    func newBatchInsertRequest<T: LightConfigurable>(with elements: [T]) -> NSBatchInsertRequest? {
-//        var index = 0
-//        let total = elements.count
-//
-//        var entity: NSEntityDescription!
-//        switch elements[0] {
-//            case is TreeConfigurableAccount:
-//                entity = StateCoreData.entity()
-//                break
-//            case is TreeConfigurableTransaction:
-//                entity = TransactionCoreData.entity()
-//                break
-//            case is TreeConfigurableReceipt:
-//                entity = ReceiptCoreData.entity()
-//                break
-//            default:
-//                break
-//        }
-//        print("TransactionCoreData.entity()", TransactionCoreData.entity())
-//        print("entity", entity)
-//        guard let entity = entity else { return nil }
-//
-//        // Provide one dictionary at a time when the closure is called.
-//        let batchInsertRequest = NSBatchInsertRequest(entity: entity, dictionaryHandler: { dictionary in
-//            guard index < total else { return true }
-//            dictionary.addEntries(from: elements[index].dictionaryValue)
-//            index += 1
-//            return false
-//        })
-//        return batchInsertRequest
-//    }
+
+    
+    @available(iOS 14.0, *)
+    func newBatchInsertRequest<T: LightConfigurable>(with elements: [T]) -> NSBatchInsertRequest? {
+        var index = 0
+        let total = elements.count
+
+        var entity: NSEntityDescription!
+        switch elements[0] {
+            case is TreeConfigurableAccount:
+                entity = StateCoreData.entity()
+                break
+            case is TreeConfigurableTransaction:
+                entity = TransactionCoreData.entity()
+                break
+            case is TreeConfigurableReceipt:
+                entity = ReceiptCoreData.entity()
+                break
+            default:
+                break
+        }
+
+        guard let entity = entity else { return nil }
+
+        // Provide one dictionary at a time when the closure is called.
+        let batchInsertRequest = NSBatchInsertRequest(entity: entity, dictionaryHandler: { dictionary in
+            guard index < total else { return true }
+            dictionary.addEntries(from: elements[index].dictionaryValue)
+            index += 1
+            return false
+        })
+        return batchInsertRequest
+    }
 }
 
 // MARK: - Wallets

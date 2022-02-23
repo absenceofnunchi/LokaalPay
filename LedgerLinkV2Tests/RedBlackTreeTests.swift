@@ -12,15 +12,15 @@ import Combine
 
 @testable import LedgerLinkV2
 
-var hashes = Vectors.hashes
-var treeConfigurableAccounts = Vectors.treeConfigurableAccounts
-var treeConfigurableTransactions = Vectors.treeConfigurableTransactions
-var treeConfigurableReceipts = Vectors.treeConfigurableReceipts
-var accounts = Vectors.accounts
-var transactions = Vectors.transactions
-var receipts = Vectors.receipts
-var blocks = Vectors.blocks
-var lightBlocks = Vectors.lightBlocks
+let hashes = Vectors.hashes
+let treeConfigurableAccounts = Vectors.treeConfigurableAccounts
+let treeConfigurableTransactions = Vectors.treeConfigurableTransactions
+let treeConfigurableReceipts = Vectors.treeConfigurableReceipts
+let accounts = Vectors.accounts
+let transactions = Vectors.transactions
+let receipts = Vectors.receipts
+let blocks = Vectors.blocks
+let lightBlocks = Vectors.lightBlocks
 let binaryHashes = Vectors.binaryHashes
 
 final class RedBlackTreeTests: XCTestCase {

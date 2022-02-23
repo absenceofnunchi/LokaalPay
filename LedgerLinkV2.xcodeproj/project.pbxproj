@@ -64,6 +64,7 @@
 		49A7C33027B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */; };
 		49A7C33227B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */; };
 		49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */; };
+		49A91A6627C5688400D747E0 /* CoreDataTemp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A91A6527C5688400D747E0 /* CoreDataTemp.swift */; };
 		49C3E76F27AB3FAE00D989E8 /* PasscodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */; };
 		49C4492227BFF98D00970B8E /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C4492127BFF98D00970B8E /* String+Extension.swift */; };
 		49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B427BECD5200DBEFDA /* NetworkManager.swift */; };
@@ -168,6 +169,7 @@
 		49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeConfigurableReceipt.swift; sourceTree = "<group>"; };
 		49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionReceipt+Extensions.swift"; sourceTree = "<group>"; };
 		49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EthereumTransaction+Extensions.swift"; sourceTree = "<group>"; };
+		49A91A6527C5688400D747E0 /* CoreDataTemp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTemp.swift; sourceTree = "<group>"; };
 		49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasscodeViewController.swift; sourceTree = "<group>"; };
 		49C4492127BFF98D00970B8E /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		49F030B427BECD5200DBEFDA /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
@@ -316,6 +318,7 @@
 				49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */,
 				49631C3427C4157400E5F0EA /* CoreDataServices+State.swift */,
 				49631C3627C415F900E5F0EA /* CoreDataServices+Transaction.swift */,
+				49A91A6527C5688400D747E0 /* CoreDataTemp.swift */,
 			);
 			path = CoreDataServices;
 			sourceTree = "<group>";
@@ -723,6 +726,7 @@
 				490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */,
 				49FC150727B62C8900D215B6 /* Data+Extensions.swift in Sources */,
 				49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */,
+				49A91A6627C5688400D747E0 /* CoreDataTemp.swift in Sources */,
 				4950592A27B08B4F006B9294 /* SignupViewController.swift in Sources */,
 				4950591F27B05B6A006B9294 /* CoreDataServices.swift in Sources */,
 				499AF11427AE18B300CAF0EA /* ConnectionStatus.swift in Sources */,
