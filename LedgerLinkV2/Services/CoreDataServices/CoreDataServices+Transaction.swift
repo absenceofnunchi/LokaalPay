@@ -236,8 +236,7 @@ extension LocalStorage {
                 entity.data = element.data
                 break
             default:
-                break
-                
+                return
         }
 
         let taskContext = newTaskContext()
@@ -406,7 +405,7 @@ extension LocalStorage {
 
                     completion(accounts as? [T], nil)
                 }
-                
+
                 do {
                     // Execute Asynchronous Fetch Request
                     let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
@@ -471,13 +470,10 @@ extension LocalStorage {
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<StateCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
-                    let accounts: [Account] = results.compactMap { (element: StateCoreData) in
-                        guard let data = element.data else { return nil }
-                        do {
-                            return try Account(data)
-                        } catch {
-                            return nil
-                        }
+                    let accounts: [TreeConfigurableAccount] = results.compactMap { (element: StateCoreData) in
+                        guard let id = element.id,
+                              let data = element.data else { return nil }
+                        return TreeConfigurableAccount(id: id, data: data)
                     }
                     
                     completion(accounts as? [T], nil)
@@ -493,33 +489,105 @@ extension LocalStorage {
                 }
                 break
             case .treeConfigTx:
+                let fetchRequest = NSFetchRequest<TransactionCoreData>(entityName: EntityName.transactionCoreData.rawValue)
+                // Initialize Asynchronous Fetch Request
+                let asynchronousFetchRequest = NSAsynchronousFetchRequest<TransactionCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+                    guard let results = asynchronousFetchResult.finalResult else { return }
+                    let treeConfigTxs: [TreeConfigurableTransaction] = results.compactMap { (element: TransactionCoreData) in
+                        guard let id = element.id,
+                              let data = element.data else { return nil }
+                        
+                        return TreeConfigurableTransaction(id: id, data: data)
+                    }
+                    
+                    completion(treeConfigTxs as? [T], nil)
+                }
+                
+                do {
+                    // Execute Asynchronous Fetch Request
+                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+                } catch {
+                    let fetchError = error as NSError
+                    print("\(fetchError), \(fetchError.userInfo)")
+                    completion(nil, NodeError.generalError("Unable to fetch data"))
+                }
                 break
             case .treeConfigReceipt:
+                let fetchRequest = NSFetchRequest<ReceiptCoreData>(entityName: EntityName.receiptCoreData.rawValue)
+                // Initialize Asynchronous Fetch Request
+                let asynchronousFetchRequest = NSAsynchronousFetchRequest<ReceiptCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+                    guard let results = asynchronousFetchResult.finalResult else { return }
+                    let treeConfigReceipts: [TreeConfigurableReceipt] = results.compactMap { (element: ReceiptCoreData) in
+                        guard let id = element.id,
+                              let data = element.data else { return nil }
+                        
+                        return TreeConfigurableReceipt(id: id, data: data)
+                    }
+                    
+                    completion(treeConfigReceipts as? [T], nil)
+                }
+                
+                do {
+                    // Execute Asynchronous Fetch Request
+                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+                } catch {
+                    let fetchError = error as NSError
+                    print("\(fetchError), \(fetchError.userInfo)")
+                    completion(nil, NodeError.generalError("Unable to fetch data"))
+                }
                 break
         }
     }
     
-//    enum DeleteMenu {
-//        case account
-//        case transaction
-//        case receipt
-//        case all
-//
-//        var value: String {
-//            switch self {
-//                case .account:
-//                    return EntityName.stateCoreData.rawValue
-//                case .transaction:
-//                    return EntityName.transactionCoreData.rawValue
-//                case .receipt:
-//                    return EntityName.receiptCoreData.rawValue
-//                case .all:
-//                    return nil
-//            }
-//        }
-//    }
-//
-    func deleteAll(of entity: EntityName) async throws {
+    func delete<T: CoreDatable>(_ element: T) {
+        var entityName: String!
+        var predicateString: String!
+        
+        if let account = element as? Account {
+            entityName = EntityName.stateCoreData.rawValue
+            predicateString = account.address.address
+        } else if let transaction = element as? EthereumTransaction {
+            entityName = EntityName.transactionCoreData.rawValue
+            guard let encoded = transaction.encode(),
+                  let compressed = encoded.compressed else { return }
+            predicateString = compressed.sha256().toHexString()
+        } else if let receipt = element as? TransactionReceipt {
+            
+        }
+        
+        guard let predicateString = predicateString,
+              let entityName = entityName else { return }
+        
+        coreDataStack.saveContext()
+        
+        // Create Fetch Request
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+=
+        // Initialize Batch Delete Request
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+        // Configure Batch Update Request
+        batchDeleteRequest.resultType = .resultTypeCount
+        
+        do {
+            // Execute Batch Request
+            guard let batchDeleteResult = try context.execute(batchDeleteRequest) as? NSBatchDeleteResult else {
+                return
+            }
+            
+            print("The batch delete request has deleted \(batchDeleteResult.result!) records.")
+            
+            // Reset Managed Object Context
+            context.reset()
+            
+        } catch {
+            let updateError = error as NSError
+            print("\(updateError), \(updateError.userInfo)")
+        }
+    }
+    
+    func deleteAll(of entity: EntityName) {
         coreDataStack.saveContext()
 
         // Create Fetch Request
@@ -550,8 +618,6 @@ extension LocalStorage {
 }
 
 protocol CoreDatable { }
-extension LightConfigurable { }
 extension Account: CoreDatable { }
 extension EthereumTransaction: CoreDatable { }
 extension TransactionReceipt: CoreDatable { }
-

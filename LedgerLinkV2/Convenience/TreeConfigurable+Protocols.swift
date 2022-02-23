@@ -14,7 +14,7 @@ import Compression
  Hashable because the Merkle tree needs to hash the converted data.
  Comparable because the Red Black tree needs to sort.
  */
-protocol LightConfigurable: Codable, Hashable, Comparable {
+protocol LightConfigurable: Codable, Hashable, Comparable, CoreDatable {
     associatedtype T
     var id: String { get set }
     var data: Data { get set }
