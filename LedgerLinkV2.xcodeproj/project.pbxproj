@@ -44,6 +44,7 @@
 		49631C4E27C44E7900E5F0EA /* CoreDataServices+Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */; };
 		49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49657A7C27ACF45600A19EC3 /* 1.mp3 */; };
 		49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49689F7327B1EBB20062C093 /* Array+Extensions.swift */; };
+		496A9CB927C7FC110089AE84 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CB827C7FC110089AE84 /* AsyncOperation.swift */; };
 		497633D427C22F360044B426 /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633D327C22F360044B426 /* TestTree.swift */; };
 		4992CB3827C3038600836419 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB3727C3038600836419 /* Node.swift */; };
 		4992CB4627C33A3000836419 /* CoreDataTestings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB4527C33A3000836419 /* CoreDataTestings.swift */; };
@@ -151,6 +152,7 @@
 		49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataServices+Block.swift"; sourceTree = "<group>"; };
 		49657A7C27ACF45600A19EC3 /* 1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 1.mp3; sourceTree = "<group>"; };
 		49689F7327B1EBB20062C093 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
+		496A9CB827C7FC110089AE84 /* AsyncOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
 		497633D327C22F360044B426 /* TestTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
 		4992CB3727C3038600836419 /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		4992CB4527C33A3000836419 /* CoreDataTestings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestings.swift; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 				4950592127B06140006B9294 /* Errors.swift */,
 				490367CD27BCC07D00DFDE2B /* ContractMethods.swift */,
 				49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */,
+				496A9CB827C7FC110089AE84 /* AsyncOperation.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -705,6 +708,7 @@
 				49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */,
 				49631C4327C44AEC00E5F0EA /* StateCoreData+CoreDataProperties.swift in Sources */,
 				49631C3727C415F900E5F0EA /* CoreDataServices+Transaction.swift in Sources */,
+				496A9CB927C7FC110089AE84 /* AsyncOperation.swift in Sources */,
 				49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */,
 				49A7C32C27B75EDB00AC7EB0 /* MainTree.swift in Sources */,
 				49631C3527C4157400E5F0EA /* CoreDataServices+State.swift in Sources */,

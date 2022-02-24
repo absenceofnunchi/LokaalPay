@@ -24,7 +24,7 @@ extension Array where Element == Data {
     }
 }
 
-extension Dictionary where Key == Data, Value == Data {
+extension Dictionary where Key == String, Value == Data {
     var compressed: Data? {
         let encoder = JSONEncoder()
         guard let jsonData = try? encoder.encode(self),
@@ -32,7 +32,7 @@ extension Dictionary where Key == Data, Value == Data {
             return nil
         }
         
-        let data = Data(referencing: compressed)
+        let data = Data(compressed)
         return data
     }
 }

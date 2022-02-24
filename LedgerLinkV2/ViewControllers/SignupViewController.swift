@@ -163,7 +163,7 @@ final class SignupViewController: UIViewController {
             }
             
             if let data = data {
-                NetworkManager.shared.enqueue(data)
+                NetworkManager.shared.sendDataToAllPeers(data: data)
                 Node.shared.addValidatedTransaction(data)
             }
         }

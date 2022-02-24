@@ -11,6 +11,8 @@ class DetailTableViewController<T: LightConfigurable>: UITableViewController {
     var data: [T]!
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "reuseIdentifier")
     }
 
     // MARK: - Table view data source

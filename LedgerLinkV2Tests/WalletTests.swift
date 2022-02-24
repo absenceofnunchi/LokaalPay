@@ -8,6 +8,8 @@
 import XCTest
 @testable import LedgerLinkV2
 
+import BigInt
+
 class WalletTests: XCTestCase {
     func test_test() {
         let one = "aksdfksa".data(using: .utf8)

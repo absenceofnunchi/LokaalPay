@@ -67,9 +67,6 @@ final class TransactionService {
                     return
                 }
                 
-                /// Save the sender account with an updated nonce and possibly value
-                try Node.shared.localStorage.saveState(account)
-                
                 completion(encodedSig, nil)
             } catch {
                 completion(nil, TxError.generalError("Unable to create a transaction"))

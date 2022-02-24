@@ -184,7 +184,10 @@ final class Node {
         }
     }
     
-    func createBlock() {
+    /// Block number parameter is to be used for sending out to peer nodes.
+    /// Letting other nodes know about the current block number is to ensure that your and other nodes are up-to-date.
+    /// If your node or other nodes are behind, then a request to provide the discrepency is made.
+    func createBlock(completion: @escaping (BigUInt) -> Void) {
         Deferred {
             Future<FullBlock?, NodeError> { promise in
                 Node.shared.localStorage.getLatestBlock { (block: FullBlock?, error: NodeError?) in
@@ -203,6 +206,8 @@ final class Node {
                     promise(.failure(NodeError.generalError("Unable to create a new block")))
                     return
                 }
+                
+                /// Create the stateRoot and transactionRoot from the validated data using the Merkle tree.
                 let accountArr = self.validatedAccounts.map { $0.data }
                 let txDataArr = self.validatedTransactions.map { $0.data }
                 let txIdArr = self.validatedTransactions.map { $0.id }
@@ -224,17 +229,18 @@ final class Node {
                     
                     var blockNumber: BigUInt!
                     var parentHash: Data!
-                    
+
                     /// Use the previous block if it exists
                     if let lastBlock = lastBlock {
                         blockNumber = lastBlock.number
                         parentHash = lastBlock.hash
                     } else {
-                        /// Last block doesn't exist which means the currenb block is a genesis block
+                        /// Last block doesn't exist which means the current block is a genesis block
                         blockNumber = BigUInt(0)
                         parentHash = Data()
                     }
                     
+                    /// Create a new block
                     let newBlock = try FullBlock(number: blockNumber + 1, parentHash: parentHash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), miner: nil, difficulty:nil, totalDifficulty: nil, extraData: nil, gasLimit: nil, gasUsed: nil, transactions: txIdArr, uncles: nil)
                     
                     promise(.success(newBlock))
@@ -244,8 +250,8 @@ final class Node {
             }
             .eraseToAnyPublisher()
         })
-        .flatMap { newBlock in
-            Future<Bool, NodeError> { promise in
+        .flatMap { (newBlock) -> AnyPublisher<FullBlock, NodeError> in
+            Future<FullBlock, NodeError> { promise in
                 Task { [weak self] in
                     await Node.shared.save(newBlock) { error in
                         if let error = error {
@@ -256,15 +262,16 @@ final class Node {
                         self?.validatedTransactions.removeAll()
                         self?.validatedAccounts.removeAll()
                         
-                        
+                        promise(.success(newBlock))
                     }
                 }
             }
+            .eraseToAnyPublisher()
         }
         .sink { completion in
             print(completion)
-        } receiveValue: { _ in
-            
+        } receiveValue: { (block) in
+            completion(block.number)
         }
         .store(in: &storage)
     }

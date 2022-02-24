@@ -9,7 +9,8 @@ import UIKit
 
 class ExplorerViewController: UIViewController {
     private var blockButton: UIButton!
-
+    private let alert = AlertView()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -32,7 +33,7 @@ class ExplorerViewController: UIViewController {
     
     func setConstraints() {
         NSLayoutConstraint.activate([
-            blockButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
+            blockButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 100),
             blockButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             blockButton.heightAnchor.constraint(equalToConstant: 50),
             blockButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -48,9 +49,13 @@ class ExplorerViewController: UIViewController {
                     }
                         
                     if let blocks = blocks {
-                        let detailVC = DetailTableViewController<LightBlock>()
-                        detailVC.data = blocks
-                        self?.navigationController?.pushViewController(detailVC, animated: true)
+                        DispatchQueue.main.async {
+                            let detailVC = DetailTableViewController<LightBlock>()
+                            detailVC.data = blocks
+                            self?.navigationController?.pushViewController(detailVC, animated: true)
+                        }
+                    } else {
+                        self?.alert.show("No data", for: self)
                     }
                 }
                 break

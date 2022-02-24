@@ -9,6 +9,7 @@ import Foundation
 import MultipeerConnectivity
 import MediaPlayer
 import web3swift
+import BigInt
 
 final class NetworkManager: NSObject {
     static let shared = NetworkManager()
@@ -66,27 +67,8 @@ final class NetworkManager: NSObject {
             self.timer.invalidate()
         }
         /// From the 0 or 30 second mark, the auto relay is run at a specified interval
-        self.timer = Timer(fireAt: roundedDate, interval: 5, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
+        self.timer = Timer(fireAt: roundedDate, interval: 10, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
         RunLoop.main.add(self.timer, forMode: .common)
-        
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//            self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
-//            self.nearbyServiceAdvertiser.delegate = self
-//            self.nearbyServiceAdvertiser?.startAdvertisingPeer()
-//            self.nearbyBrowser.startBrowsingForPeers()
-//            self.isServerRunning = true
-//
-//            /// Start the pinging only at every 0 or 30 second so that all the devices could be synchronized.
-//            let date = Date()
-//            let roundedDate = date.rounded(on: 30, .second)
-//            if self.timer != nil {
-//                self.timer.invalidate()
-//            }
-//            /// From the 0 or 30 second mark, the auto relay is run at a specified interval
-//            self.timer = Timer(fireAt: roundedDate, interval: 5, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
-//            RunLoop.main.add(self.timer, forMode: .common)
-//        }
     }
     
     func suspend() {
@@ -96,15 +78,6 @@ final class NetworkManager: NSObject {
         playerLooper = nil
         timer?.invalidate()
         isServerRunning = false
-        
-//        DispatchQueue.main.async { [weak self] in
-//            self?.nearbyServiceAdvertiser?.stopAdvertisingPeer()
-//            self?.nearbyBrowser.stopBrowsingForPeers()
-//            self?.player = nil
-//            self?.playerLooper = nil
-//            self?.timer?.invalidate()
-//            self?.isServerRunning = false
-//        }
     }
     
     func disconnect() {
@@ -124,14 +97,26 @@ final class NetworkManager: NSObject {
         print("autoRelay")
         guard isServerRunning else { return }
         
-        
-        Node.shared.createBlock()
-        
-        guard transactions.count > 0,
-              let compressedData = transactions.compressed else { return }
-        
-        sendDataToAllPeers(data: compressedData)
-        transactions.removeAll()
+        Node.shared.createBlock { [weak self] (blockNumber) in
+            guard let transactions = self?.transactions else { return }
+            
+            var dict: [String : Data] = [:]
+            
+            do {
+                let encodedTransactions = try JSONEncoder().encode(transactions)
+                let encodedBlockNumber = try JSONEncoder().encode(blockNumber)
+                
+                dict.updateValue(encodedTransactions, forKey: "transactions")
+                dict.updateValue(encodedBlockNumber, forKey: "blockNumber")
+                
+                guard let compressedData = dict.compressed else { return }
+                
+                self?.sendDataToAllPeers(data: compressedData)
+                self?.transactions.removeAll()
+            } catch {
+                print(error)
+            }
+        }
     }
     
     // MARK: - `MPCSession` private methods.
@@ -173,6 +158,7 @@ final class NetworkManager: NSObject {
     }
     
     /// Add the transaction data to the queue to be compressed and sent during the auto relay.
+    /// Any transactions to be sent out also have to be processed by the sender themselves as if these were received from another device
     func enqueue(_ data: Data) {
         transactions.append(data)
     }
@@ -210,11 +196,18 @@ extension NetworkManager: MCSessionDelegate {
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         print("didReceive", data)
         
-        guard let dataArray = data.decompressedToArray else {
+        guard let dataDict = data.decompressedToDict,
+              let transactionsData = dataDict["transactions"],
+              var transactionsArray = transactionsData.decompressedToArray,
+              let blockNumberData = dataDict["blockNumber"],
+              let blockNumber = try? JSONDecoder().decode(BigUInt.self, from: blockNumberData) else {
             return
         }
+        
+        /// My transactions that are to be sent out also have to be treated like transactions from another device and processsed in order.
+        transactionsArray.append(contentsOf: transactions)
                 
-        for data in dataArray {
+        for data in transactionsArray {
             /// First check and see if the transaction already exists in the node and, if it does, simply return, if it doesn't, propagate right away (don't wait for the predefined interval) then validate.
             /// If valid, include it in the block and mine. If not valid, do nothing.
             guard let decodedTx = EthereumTransaction.fromRaw(data),// RLP -> EthereumTransaction
@@ -225,6 +218,8 @@ extension NetworkManager: MCSessionDelegate {
                   let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedTx.data) else {
                       continue
                   }
+            
+            
             
             let contractMethodString = String(decoding: decodedExtraData.contractMethod, as: UTF8.self)
             guard let contractMethod = ContractMethods(rawValue: contractMethodString) else {
@@ -241,6 +236,7 @@ extension NetworkManager: MCSessionDelegate {
                     print("createAccount")
                     Task {
                         guard let newAccount = decodedExtraData.account else { return }
+                        /// validated accounts are to be included in the block 
                         Node.shared.addValidatedAccount(newAccount)
                         await Node.shared.save(newAccount) { error in
                             print(error as Any)
@@ -284,7 +280,7 @@ extension NetworkManager: MCSessionDelegate {
     }
 
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-        print("didReceive", stream)
+        print("didReceive stream", stream)
     }
 
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
