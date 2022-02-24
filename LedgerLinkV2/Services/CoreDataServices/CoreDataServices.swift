@@ -11,7 +11,6 @@ import BigInt
 import web3swift
 
 final class LocalStorage: NSObject {
-    static let shared = LocalStorage()
     var coreDataStack: CoreDataStack!
     var container: NSPersistentContainer!
     var context: NSManagedObjectContext!

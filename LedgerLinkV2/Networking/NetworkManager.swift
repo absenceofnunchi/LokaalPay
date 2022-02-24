@@ -25,7 +25,7 @@ final class NetworkManager: NSObject {
     private var playerLooper: AVPlayerLooper!
     private var isServerRunning = false
     private var timer: Timer!
-    private var transactions: [Data] = [] // an array of transactions to be sent
+    private var transactions: [Data] = [] // transactions to be sent
     private let transactionService = TransactionService()
     var blockchainReceiveHandler: ((String) -> Void)?
 
@@ -52,21 +52,41 @@ final class NetworkManager: NSObject {
     
     // MARK: - `MPCSession` public methods.
     func start() {
-        nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: serviceType)
-        nearbyServiceAdvertiser.delegate = self
-        nearbyServiceAdvertiser?.startAdvertisingPeer()
-        nearbyBrowser.startBrowsingForPeers()
-        isServerRunning = true
+        guard isServerRunning == false else { return }
+        self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
+        self.nearbyServiceAdvertiser.delegate = self
+        self.nearbyServiceAdvertiser?.startAdvertisingPeer()
+        self.nearbyBrowser.startBrowsingForPeers()
+        self.isServerRunning = true
         
         /// Start the pinging only at every 0 or 30 second so that all the devices could be synchronized.
         let date = Date()
         let roundedDate = date.rounded(on: 30, .second)
-        if timer != nil {
-            timer.invalidate()
+        if self.timer != nil {
+            self.timer.invalidate()
         }
         /// From the 0 or 30 second mark, the auto relay is run at a specified interval
-        timer = Timer(fireAt: roundedDate, interval: 5, target: self, selector: #selector(autoRelay), userInfo: nil, repeats: true)
-        RunLoop.main.add(timer, forMode: .common)
+        self.timer = Timer(fireAt: roundedDate, interval: 5, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
+        RunLoop.main.add(self.timer, forMode: .common)
+        
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
+//            self.nearbyServiceAdvertiser.delegate = self
+//            self.nearbyServiceAdvertiser?.startAdvertisingPeer()
+//            self.nearbyBrowser.startBrowsingForPeers()
+//            self.isServerRunning = true
+//
+//            /// Start the pinging only at every 0 or 30 second so that all the devices could be synchronized.
+//            let date = Date()
+//            let roundedDate = date.rounded(on: 30, .second)
+//            if self.timer != nil {
+//                self.timer.invalidate()
+//            }
+//            /// From the 0 or 30 second mark, the auto relay is run at a specified interval
+//            self.timer = Timer(fireAt: roundedDate, interval: 5, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
+//            RunLoop.main.add(self.timer, forMode: .common)
+//        }
     }
     
     func suspend() {
@@ -76,6 +96,15 @@ final class NetworkManager: NSObject {
         playerLooper = nil
         timer?.invalidate()
         isServerRunning = false
+        
+//        DispatchQueue.main.async { [weak self] in
+//            self?.nearbyServiceAdvertiser?.stopAdvertisingPeer()
+//            self?.nearbyBrowser.stopBrowsingForPeers()
+//            self?.player = nil
+//            self?.playerLooper = nil
+//            self?.timer?.invalidate()
+//            self?.isServerRunning = false
+//        }
     }
     
     func disconnect() {
@@ -93,8 +122,12 @@ final class NetworkManager: NSObject {
     
     @objc private func autoRelay() {
         print("autoRelay")
-        guard isServerRunning,
-              transactions.count > 0,
+        guard isServerRunning else { return }
+        
+        
+        Node.shared.createBlock()
+        
+        guard transactions.count > 0,
               let compressedData = transactions.compressed else { return }
         
         sendDataToAllPeers(data: compressedData)
@@ -184,12 +217,12 @@ extension NetworkManager: MCSessionDelegate {
         for data in dataArray {
             /// First check and see if the transaction already exists in the node and, if it does, simply return, if it doesn't, propagate right away (don't wait for the predefined interval) then validate.
             /// If valid, include it in the block and mine. If not valid, do nothing.
-            guard let decodedSig = EthereumTransaction.fromRaw(data),// RLP -> EthereumTransaction
-                  let publicKey = decodedSig.recoverPublicKey(),
-                  let address = Web3.Utils.publicToAddressString(publicKey),
-                  let senderMetaDataAddress = decodedSig.sender?.address,
-                  address == senderMetaDataAddress.lowercased(),
-                  let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedSig.data) else {
+            guard let decodedTx = EthereumTransaction.fromRaw(data),// RLP -> EthereumTransaction
+                  let publicKey = decodedTx.recoverPublicKey(),
+                  let senderAddress = Web3.Utils.publicToAddressString(publicKey),
+                  let senderAddressToBeCompared = decodedTx.sender?.address,
+                  senderAddress == senderAddressToBeCompared.lowercased(),
+                  let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedTx.data) else {
                       continue
                   }
             
@@ -202,11 +235,16 @@ extension NetworkManager: MCSessionDelegate {
             switch contractMethod {
                 case .transferValue:
                     print("transferValue")
-                    do {
-                        let tx = try TreeConfigurableTransaction(rlpTransaction: data)
-                        try NodeDB.shared.transfer(tx, decoded: decodedSig)
-                    } catch {
-                        print(error)
+                    Node.shared.transfer(transaction: decodedTx)
+                    break
+                case .createAccount:
+                    print("createAccount")
+                    Task {
+                        guard let newAccount = decodedExtraData.account else { return }
+                        Node.shared.addValidatedAccount(newAccount)
+                        await Node.shared.save(newAccount) { error in
+                            print(error as Any)
+                        }
                     }
                     break
                 case .blockchainDownloadRequest:
@@ -220,6 +258,8 @@ extension NetworkManager: MCSessionDelegate {
                     }
                     break
             }
+            
+            Node.shared.addValidatedTransaction(data)
         }
     }
     

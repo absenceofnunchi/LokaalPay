@@ -10,34 +10,34 @@ import web3swift
 @testable import LedgerLinkV2
 
 final class CoreDataTests: XCTestCase {
-    func test_repeat() async {
-        var count = 0
-        for _ in 0 ... 5 {
-            let _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Core Data wait")], timeout: 1.0)
-            
-            await test_batch_operations()
-//            await test_state_async()
-            
-            count += 1
-            print("count: ", count)
-        }
-    }
+//    func test_repeat() async {
+//        var count = 0
+//        for _ in 0 ... 5 {
+//            let _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Core Data wait")], timeout: 1.0)
+//            
+//            await test_batch_operations()
+////            await test_state_async()
+//            
+//            count += 1
+//            print("count: ", count)
+//        }
+//    }
     
     /// Batch insert, fetch, and delete
     func test_batch_operations() async {
         do {
-            try await LocalStorage.shared.deleteAllAccountsAsync()
+            try await Node.shared.localStorage.deleteAllAccountsAsync()
         } catch {
             fatalError(error.localizedDescription)
         }
         
         do {
-            try LocalStorage.shared.saveStatesAsync(treeConfigurableAccounts)
+            try Node.shared.localStorage.saveStatesAsync(treeConfigurableAccounts)
         } catch {
             fatalError(error.localizedDescription)
         }
         
-        await LocalStorage.shared.getAllAccountsAsync { [weak self] (results: [Account]?, error: NodeError?) in
+        await Node.shared.localStorage.getAllAccountsAsync { [weak self] (results: [Account]?, error: NodeError?) in
             if let error = error {
                 self?.parseError(error)
                 fatalError(error.localizedDescription)
@@ -52,14 +52,14 @@ final class CoreDataTests: XCTestCase {
     
     func test_state_async() async {
         do {
-            try await LocalStorage.shared.deleteAllAccountsAsync()
+            try await Node.shared.localStorage.deleteAllAccountsAsync()
         } catch {
             fatalError(error.localizedDescription)
         }
 
         /// Individual updates. Save by Account
         for account in accounts {
-            await LocalStorage.shared.saveStateAsync(account) { [weak self] error in
+            await Node.shared.localStorage.saveStateAsync(account) { [weak self] error in
                 if let error = error {
                     self?.parseError(error)
                     fatalError(error.localizedDescription)
@@ -71,7 +71,7 @@ final class CoreDataTests: XCTestCase {
             do {
                 let treeConfigAcct = try TreeConfigurableAccount(data: account)
                 /// Search by EthereumAddress, return Account
-                LocalStorage.shared.getAccountAsync(account.address, completion: { [weak self] (acct: Account?, error: NodeError?) in
+                Node.shared.localStorage.getAccountAsync(account.address, completion: { [weak self] (acct: Account?, error: NodeError?) in
                     if let error = error {
                         self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -84,7 +84,7 @@ final class CoreDataTests: XCTestCase {
                 })
 
                 /// Search by addressString, return Account
-                LocalStorage.shared.getAccountAsync(account.address.address, completion: { [weak self] (acct: Account?, error: NodeError?) in
+                Node.shared.localStorage.getAccountAsync(account.address.address, completion: { [weak self] (acct: Account?, error: NodeError?) in
                     if let error = error {
                         self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -97,7 +97,7 @@ final class CoreDataTests: XCTestCase {
                 })
 
                 /// Search by EthereumAddress, return TreeConfigAccount
-                LocalStorage.shared.getAccountAsync(account.address, completion: { [weak self] (acct: TreeConfigurableAccount?, error: NodeError?) in
+                Node.shared.localStorage.getAccountAsync(account.address, completion: { [weak self] (acct: TreeConfigurableAccount?, error: NodeError?) in
                     if let error = error {
                         self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -111,7 +111,7 @@ final class CoreDataTests: XCTestCase {
 
 
                 /// Search by addressString, return TreeConfigurableAccount
-                try LocalStorage.shared.getAccountAsync(account.address.address, completion: { [weak self] (acct: TreeConfigurableAccount?, error: NodeError?) in
+                try Node.shared.localStorage.getAccountAsync(account.address.address, completion: { [weak self] (acct: TreeConfigurableAccount?, error: NodeError?) in
                     if let error = error {
                         self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -129,7 +129,7 @@ final class CoreDataTests: XCTestCase {
 
         /// Delete by EthreumAddress individually
         for account in accounts {
-            await LocalStorage.shared.deleteAccountAsync(account.address, completion: { [weak self] error in
+            await Node.shared.localStorage.deleteAccountAsync(account.address, completion: { [weak self] error in
                 if let error = error {
                     self?.parseError(error)
                     fatalError(error.localizedDescription)
@@ -138,7 +138,7 @@ final class CoreDataTests: XCTestCase {
         }
 
         /// Confirm that everything has been deleted
-        await LocalStorage.shared.getAllAccountsAsync { [weak self] (results: [Account]?, error: NodeError?) in
+        await Node.shared.localStorage.getAllAccountsAsync { [weak self] (results: [Account]?, error: NodeError?) in
             if let error = error {
                 self?.parseError(error)
                 fatalError(error.localizedDescription)
@@ -151,7 +151,7 @@ final class CoreDataTests: XCTestCase {
 
         /// Individual updates. Save by TreeConfigAccount
         for account in treeConfigurableAccounts {
-            await LocalStorage.shared.saveStateAsync(account, completion: { [weak self] error in
+            await Node.shared.localStorage.saveStateAsync(account, completion: { [weak self] error in
                 if let error = error {
                     self?.parseError(error)
                     fatalError(error.localizedDescription)
@@ -161,7 +161,7 @@ final class CoreDataTests: XCTestCase {
 
         /// Duplicate update to test that only unique elements can be saved
         for account in treeConfigurableAccounts {
-            await LocalStorage.shared.saveStateAsync(account, completion: { [weak self] error in
+            await Node.shared.localStorage.saveStateAsync(account, completion: { [weak self] error in
                 if let error = error {
                     self?.parseError(error)
                     fatalError(error.localizedDescription)
@@ -169,7 +169,7 @@ final class CoreDataTests: XCTestCase {
             })
         }
 
-//        await LocalStorage.shared.getAllAccountsAsync { [weak self] (results: [Account]?, error: NodeError?) in
+//        await Node.shared.localStorage.getAllAccountsAsync { [weak self] (results: [Account]?, error: NodeError?) in
 //            if let error = error {
 //                self?.parseError(error)
 //                fatalError(error.localizedDescription)
@@ -184,7 +184,7 @@ final class CoreDataTests: XCTestCase {
 //        }
 
 //        do {
-//            try await LocalStorage.shared.deleteAllAccountsAsync()
+//            try await Node.shared.localStorage.deleteAllAccountsAsync()
 //        } catch {
 //            fatalError(error.localizedDescription)
 //        }
@@ -194,17 +194,17 @@ final class CoreDataTests: XCTestCase {
     /// Core Data operations for State using synchronous methods
     func test_state_sync() {
         do {
-            try LocalStorage.shared.deleteAllAccounts()
+            try Node.shared.localStorage.deleteAllAccounts()
 
             for account in accounts {
-                try LocalStorage.shared.saveState(account)
+                try Node.shared.localStorage.saveState(account)
             }
-            guard let accounts: [Account] = try LocalStorage.shared.getAllAccounts() else {
+            guard let accounts: [Account] = try Node.shared.localStorage.getAllAccounts() else {
                 fatalError()
             }
             XCTAssertEqual(accounts.count, treeConfigurableAccounts.count)
 
-            guard let accounts: [TreeConfigurableAccount] = try LocalStorage.shared.getAllAccounts() else {
+            guard let accounts: [TreeConfigurableAccount] = try Node.shared.localStorage.getAllAccounts() else {
                 fatalError()
             }
             XCTAssertEqual(accounts.count, treeConfigurableAccounts.count)
@@ -214,7 +214,7 @@ final class CoreDataTests: XCTestCase {
         }
         for account in accounts {
             do {
-                guard let fetchedAcct: Account = try LocalStorage.shared.getAccount(account.address) else {
+                guard let fetchedAcct: Account = try Node.shared.localStorage.getAccount(account.address) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchedAcct, account)
@@ -224,7 +224,7 @@ final class CoreDataTests: XCTestCase {
         }
 
         do {
-            try LocalStorage.shared.deleteAllAccounts()
+            try Node.shared.localStorage.deleteAllAccounts()
         } catch {
             fatalError(error.localizedDescription)
         }
@@ -235,24 +235,24 @@ final class CoreDataTests: XCTestCase {
     func test_transaction_async() async {
         /// Batch updates
         do {
-            try await LocalStorage.shared.deleteAllTransactionsAsync()
-            try await LocalStorage.shared.saveTransactionsAsync(treeConfigurableTransactions)
+            try await Node.shared.localStorage.deleteAllTransactionsAsync()
+            try await Node.shared.localStorage.saveTransactionsAsync(treeConfigurableTransactions)
 
         } catch {
             fatalError(error.localizedDescription)
         }
 
         do {
-            guard let txs: [EthereumTransaction] = try await LocalStorage.shared.getAllTransactionsAsync() else {
+            guard let txs: [EthereumTransaction] = try await Node.shared.localStorage.getAllTransactionsAsync() else {
                 fatalError()
             }
             XCTAssertEqual(txs.count, treeConfigurableTransactions.count)
 
-            guard let txs1: [TreeConfigurableTransaction] = try await LocalStorage.shared.getAllTransactionsAsync() else {
+            guard let txs1: [TreeConfigurableTransaction] = try await Node.shared.localStorage.getAllTransactionsAsync() else {
                 fatalError()
             }
             XCTAssertEqual(txs1.count, treeConfigurableTransactions.count)
-            try await LocalStorage.shared.deleteAllTransactionsAsync()
+            try await Node.shared.localStorage.deleteAllTransactionsAsync()
         } catch {
             fatalError(error.localizedDescription)
         }
@@ -260,7 +260,7 @@ final class CoreDataTests: XCTestCase {
         /// Individual updates. Save by Account
         for tx in transactions {
             do {
-                try await LocalStorage.shared.saveTransactionAsync(tx)
+                try await Node.shared.localStorage.saveTransactionAsync(tx)
             } catch {
                 fatalError(error.localizedDescription)
             }
@@ -272,7 +272,7 @@ final class CoreDataTests: XCTestCase {
                     fatalError()
                 }
                 /// Search by hash, return EthereumTransaction
-                LocalStorage.shared.getTransaction(hash, completion: { [weak self] (result: EthereumTransaction?, error: NodeError?) in
+                Node.shared.localStorage.getTransaction(hash, completion: { [weak self] (result: EthereumTransaction?, error: NodeError?) in
                     if let error = error {
     self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -287,7 +287,7 @@ final class CoreDataTests: XCTestCase {
                     fatalError()
                 }
                 /// Search by RLP, return EthereumTransaction
-                try LocalStorage.shared.getTransaction(encoded, completion: { [weak self] (result: EthereumTransaction?, error: NodeError?) in
+                try Node.shared.localStorage.getTransaction(encoded, completion: { [weak self] (result: EthereumTransaction?, error: NodeError?) in
                     if let error = error {
     self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -304,7 +304,7 @@ final class CoreDataTests: XCTestCase {
                     fatalError()
                 }
                 /// Search by hash, return TreeConfigurableTransaction
-                LocalStorage.shared.getTransaction(hash, completion: { [weak self] (result: TreeConfigurableTransaction?, error: NodeError?) in
+                Node.shared.localStorage.getTransaction(hash, completion: { [weak self] (result: TreeConfigurableTransaction?, error: NodeError?) in
                     if let error = error {
     self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -319,7 +319,7 @@ final class CoreDataTests: XCTestCase {
                     fatalError()
                 }
                 /// Search by RLP, return TreeConfigurableTransaction
-                try LocalStorage.shared.getTransaction(encoded, completion: { [weak self] (result: TreeConfigurableTransaction?, error: NodeError?) in
+                try Node.shared.localStorage.getTransaction(encoded, completion: { [weak self] (result: TreeConfigurableTransaction?, error: NodeError?) in
                     if let error = error {
     self?.parseError(error)
                         fatalError(error.localizedDescription)
@@ -337,7 +337,7 @@ final class CoreDataTests: XCTestCase {
         /// Delete by EthereumTransaction
         for tx in transactions {
             do {
-                try await LocalStorage.shared.deleteTransactionAsync(tx)
+                try await Node.shared.localStorage.deleteTransactionAsync(tx)
             } catch {
                 fatalError(error.localizedDescription)
             }
@@ -345,12 +345,12 @@ final class CoreDataTests: XCTestCase {
 
         /// Confirm that everything is deleted
         do {
-            guard let results: [EthereumTransaction] = try await LocalStorage.shared.getAllTransactionsAsync() else {
+            guard let results: [EthereumTransaction] = try await Node.shared.localStorage.getAllTransactionsAsync() else {
                 fatalError()
             }
             XCTAssertEqual(results.count, 0)
 
-            guard let results1: [TreeConfigurableTransaction] = try await LocalStorage.shared.getAllTransactionsAsync() else {
+            guard let results1: [TreeConfigurableTransaction] = try await Node.shared.localStorage.getAllTransactionsAsync() else {
                 fatalError()
             }
             XCTAssertEqual(results1.count, 0)
@@ -361,7 +361,7 @@ final class CoreDataTests: XCTestCase {
         /// Individual updates. Save by TreeConfigTransaction
         for treeConfigTx in treeConfigurableTransactions {
             do {
-                try await LocalStorage.shared.saveTransactionAsync(treeConfigTx)
+                try await Node.shared.localStorage.saveTransactionAsync(treeConfigTx)
             } catch {
                 fatalError(error.localizedDescription)
             }
@@ -370,7 +370,7 @@ final class CoreDataTests: XCTestCase {
         /// Duplicate update
         for treeConfigTx in treeConfigurableTransactions {
             do {
-                try await LocalStorage.shared.saveTransactionAsync(treeConfigTx)
+                try await Node.shared.localStorage.saveTransactionAsync(treeConfigTx)
             } catch {
                 fatalError(error.localizedDescription)
             }
@@ -378,12 +378,12 @@ final class CoreDataTests: XCTestCase {
 
         /// Confirm that no duplicate exists
         do {
-            guard let results: [EthereumTransaction] = try await LocalStorage.shared.getAllTransactionsAsync() else {
+            guard let results: [EthereumTransaction] = try await Node.shared.localStorage.getAllTransactionsAsync() else {
                 fatalError()
             }
             XCTAssertEqual(results.count, treeConfigurableTransactions.count)
 
-            guard let results1: [TreeConfigurableTransaction] = try await LocalStorage.shared.getAllTransactionsAsync() else {
+            guard let results1: [TreeConfigurableTransaction] = try await Node.shared.localStorage.getAllTransactionsAsync() else {
                 fatalError()
             }
             XCTAssertEqual(results1.count, treeConfigurableTransactions.count)
@@ -393,7 +393,7 @@ final class CoreDataTests: XCTestCase {
 
         // Delete all data
         do {
-            try await LocalStorage.shared.deleteAllTransactionsAsync()
+            try await Node.shared.localStorage.deleteAllTransactionsAsync()
         } catch {
             fatalError(error.localizedDescription)
         }
@@ -427,7 +427,7 @@ final class CoreDataTests: XCTestCase {
     func test_generic_save() async {
         // MARK: - save
         let treeConfigAcct = treeConfigurableAccounts[0]
-        await LocalStorage.shared.save(treeConfigAcct) { error in
+        await Node.shared.save(treeConfigAcct) { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
@@ -435,7 +435,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         let treeConfigTx = treeConfigurableTransactions[0]
-        await LocalStorage.shared.save(treeConfigTx) { error in
+        await Node.shared.save(treeConfigTx) { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
@@ -443,7 +443,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         let treeConfigReceipt = treeConfigurableReceipts[0]
-        await LocalStorage.shared.save(treeConfigReceipt) { error in
+        await Node.shared.save(treeConfigReceipt) { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
@@ -451,7 +451,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for account in accounts {
-            await LocalStorage.shared.save(account) { error in
+            await Node.shared.save(account) { error in
                 XCTAssertNil(error)
                 if let error = error {
                     fatalError(error.localizedDescription)
@@ -460,7 +460,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for transaction in transactions {
-            await LocalStorage.shared.save(transaction) { error in
+            await Node.shared.save(transaction) { error in
                 XCTAssertNil(error)
                 if let error = error {
                     fatalError(error.localizedDescription)
@@ -469,7 +469,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for receipt in receipts {
-            await LocalStorage.shared.save(receipt) { error in
+            await Node.shared.save(receipt) { error in
                 XCTAssertNil(error)
                 if let error = error {
                     fatalError(error.localizedDescription)
@@ -478,7 +478,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for block in blocks {
-            await LocalStorage.shared.save(block) { error in
+            await Node.shared.save(block) { error in
                 XCTAssertNil(error)
                 if let error = error {
                     fatalError(error.localizedDescription)
@@ -487,109 +487,111 @@ final class CoreDataTests: XCTestCase {
         }
         
         // MARK: - deletAll
-        LocalStorage.shared.deleteAll(of: .stateCoreData)
-        LocalStorage.shared.deleteAll(of: .transactionCoreData)
-        LocalStorage.shared.deleteAll(of: .receiptCoreData)
+        Node.shared.deleteAll(of: .stateCoreData)
+        Node.shared.deleteAll(of: .transactionCoreData)
+        Node.shared.deleteAll(of: .receiptCoreData)
         
-        await LocalStorage.shared.save(treeConfigurableAccounts, completion: { error in
+        await Node.shared.save(treeConfigurableAccounts, completion: { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
             }
         })
 
-        await LocalStorage.shared.save(treeConfigurableTransactions, completion: { error in
+        await Node.shared.save(treeConfigurableTransactions, completion: { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
             }
         })
         
-        await LocalStorage.shared.save(treeConfigurableReceipts, completion: { error in
+        await Node.shared.save(treeConfigurableReceipts, completion: { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
             }
         })
         
-//        await LocalStorage.shared.save(lightBlocks, completion: { error in
+//        await Node.shared.save(lightBlocks, completion: { error in
 //            XCTAssertNil(error)
 //            if let error = error {
 //                fatalError(error.localizedDescription)
 //            }
 //        })
         
-        LocalStorage.shared.deleteAll(of: .stateCoreData)
-        LocalStorage.shared.deleteAll(of: .transactionCoreData)
-        LocalStorage.shared.deleteAll(of: .receiptCoreData)
+        Node.shared.deleteAll(of: .stateCoreData)
+        Node.shared.deleteAll(of: .transactionCoreData)
+        Node.shared.deleteAll(of: .receiptCoreData)
     }
     
     // MARK: - test_generic_fetch
     func test_generic_fetch() async {
+        Node.shared.deleteAll()
+        
         // Seeding
-        await LocalStorage.shared.save(accounts, completion: { error in
+        await Node.shared.save(accounts, completion: { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
             }
         })
         
-        await LocalStorage.shared.save(transactions, completion: { error in
+        await Node.shared.save(transactions, completion: { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
             }
         })
         
-        await LocalStorage.shared.save(receipts, completion: { error in
+        await Node.shared.save(receipts, completion: { error in
             XCTAssertNil(error)
             if let error = error {
                 fatalError(error.localizedDescription)
             }
         })
         
-//        await LocalStorage.shared.save(blocks, completion: { error in
-//            XCTAssertNil(error)
-//            if let error = error {
-//                fatalError(error.localizedDescription)
-//            }
-//        })
+        await Node.shared.save(blocks, completion: { error in
+            XCTAssertNil(error)
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+        })
         
         // MARK: - fetchAll
-        LocalStorage.shared.fetch(from: .account) { (results: [Account]?, error: NodeError?) in
+        Node.shared.fetch() { (results: [Account]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
             
             XCTAssertNotNil(results)
             if let results = results {
-                XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+                XCTAssertEqual(results.count, accounts.count)
             }
         }
         
-        LocalStorage.shared.fetch(from: .transaction) { (results: [EthereumTransaction]?, error: NodeError?) in
+        Node.shared.fetch() { (results: [EthereumTransaction]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
             
             XCTAssertNotNil(results)
             if let results = results {
-                XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+                XCTAssertEqual(results.count, transactions.count)
             }
         }
         
-        LocalStorage.shared.fetch(from: .receipt) { (results: [TransactionReceipt]?, error: NodeError?) in
+        Node.shared.fetch() { (results: [TransactionReceipt]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
             
             XCTAssertNotNil(results)
             if let results = results {
-                XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+                XCTAssertEqual(results.count, receipts.count)
             }
         }
         
-        LocalStorage.shared.fetch(from: .fullBlock) { (results: [FullBlock]?, error: NodeError?) in
+        Node.shared.fetch() { (results: [FullBlock]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -600,7 +602,7 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetch(from: .account) { (results: [TreeConfigurableAccount]?, error: NodeError?) in
+        Node.shared.fetch() { (results: [TreeConfigurableAccount]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -611,7 +613,7 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetch(from: .transaction) { (results: [TreeConfigurableTransaction]?, error: NodeError?) in
+        Node.shared.fetch() { (results: [TreeConfigurableTransaction]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -622,7 +624,7 @@ final class CoreDataTests: XCTestCase {
             }
         }
         
-        LocalStorage.shared.fetch(from: .receipt) { (results: [TreeConfigurableReceipt]?, error: NodeError?) in
+        Node.shared.fetch() { (results: [TreeConfigurableReceipt]?, error: NodeError?) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -635,27 +637,123 @@ final class CoreDataTests: XCTestCase {
         
         // MARK: - fetch individual
         for account in accounts {
-            LocalStorage.shared.fetch(account.address.address, from: .account) { (results: [Account]?, error: NodeError?) in
+            Node.shared.fetch(account.address.address) { (results: [Account]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
                 
                 XCTAssertNotNil(results)
-                if let results = results {
-                    XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result, account)
                 }
             }
         }
         
         for account in treeConfigurableAccounts {
-            LocalStorage.shared.fetch(account.id, from: .treeConfigAcct) { (results: [Account]?, error: NodeError?) in
+            Node.shared.fetch(account.id) { (results: [TreeConfigurableAccount]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
                 
                 XCTAssertNotNil(results)
-                if let results = results {
-                    XCTAssertEqual(results.count, treeConfigurableAccounts.count)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result, account)
+                }
+            }
+        }
+        
+        for transaction in transactions {
+            guard let hash = transaction.getHash() else { return }
+            Node.shared.fetch(hash) { (results: [EthereumTransaction]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result.nonce, transaction.nonce)
+                    XCTAssertEqual(result.gasPrice, transaction.gasPrice)
+                    XCTAssertEqual(result.gasLimit, transaction.gasLimit)
+                    XCTAssertEqual(result.value, transaction.value)
+                    XCTAssertEqual(result.sender, transaction.sender)
+                }
+            }
+        }
+        
+        for transaction in treeConfigurableTransactions {
+            Node.shared.fetch(transaction.id) { (results: [TreeConfigurableTransaction]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result, transaction)
+                }
+            }
+        }
+        
+        for receipt in receipts {
+            guard let hash = receipt.getHash() else { return }
+            Node.shared.fetch(hash) { (results: [TransactionReceipt]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result.blockHash, receipt.blockHash)
+                    XCTAssertEqual(result.blockNumber, receipt.blockNumber)
+                    XCTAssertEqual(result.contractAddress, receipt.contractAddress)
+                    XCTAssertEqual(result.transactionHash, receipt.transactionHash)
+                    XCTAssertEqual(result.transactionIndex, receipt.transactionIndex)
+                }
+            }
+        }
+        
+        for receipt in treeConfigurableReceipts {
+            Node.shared.fetch(receipt.id) { (results: [TreeConfigurableReceipt]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result, receipt)
+                }
+            }
+        }
+        
+        for block in blocks {
+            Node.shared.fetch(block.hash.toHexString()) { (results: [FullBlock]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result, block)
+                }
+            }
+        }
+        
+        for block in lightBlocks {
+            Node.shared.fetch(block.id) { (results: [LightBlock]?, error: NodeError?) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                XCTAssertNotNil(results)
+                if let results = results, let result = results.first {
+                    XCTAssertEqual(results.count, 1)
+                    XCTAssertEqual(result, block)
                 }
             }
         }

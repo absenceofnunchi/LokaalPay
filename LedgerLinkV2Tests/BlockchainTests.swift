@@ -201,13 +201,13 @@ final class BlockchainTests: XCTestCase {
     var storage = Set<AnyCancellable>()
     func test_core_data() {
         /// Delete all existing blocks in Core Data before testing
-        LocalStorage.shared.deleteAllBlocks { error in
+        Node.shared.localStorage.deleteAllBlocks { error in
             if let error = error {
                 XCTAssertNil(error)
             }
 
             do {
-                let results: [LightBlock] = try LocalStorage.shared.getAllBlocks()
+                let results: [LightBlock] = try Node.shared.localStorage.getAllBlocks()
                 XCTAssertEqual(results.count, 0)
             } catch {
                 fatalError(error.localizedDescription)
@@ -221,12 +221,12 @@ final class BlockchainTests: XCTestCase {
         guard let address = EthereumAddress(hash) else { return }
         let tx = EthereumTransaction(gasPrice: BigUInt(10), gasLimit: BigUInt(10), to: address, value: BigUInt(10), data: Data())
         guard let treeConfigTx = try? TreeConfigurableTransaction(data: tx) else { return }
-        guard let block = try? FullBlock(number: BigUInt(100), parentHash: hashData, transactionsRoot: hashData, stateRoot: hashData, receiptsRoot: hashData, transactions: [treeConfigTx]) else { return }
+        guard let block = try? FullBlock(number: BigUInt(100), parentHash: hashData, transactionsRoot: hashData, stateRoot: hashData, receiptsRoot: hashData, transactions: [treeConfigTx.id]) else { return }
 
         guard let lightBlock = try? LightBlock(data: block) else { return }
         Deferred {
             Future<Bool, NodeError> { promise in
-                try? LocalStorage.shared.saveBlock(block: lightBlock) { error in
+                try? Node.shared.localStorage.saveBlock(block: lightBlock) { error in
                     if let error = error {
                         XCTAssertNil(error)
                         promise(.failure(.generalError("error")))
@@ -248,7 +248,7 @@ final class BlockchainTests: XCTestCase {
             switch completion {
                 case .finished:
                     do {
-                        guard let fetchedBlock: FullBlock = try LocalStorage.shared.getBlock(lightBlock.id) else {
+                        guard let fetchedBlock: FullBlock = try Node.shared.localStorage.getBlock(lightBlock.id) else {
                             fatalError()
                         }
                         XCTAssertEqual(fetchedBlock, block)
@@ -268,13 +268,13 @@ final class BlockchainTests: XCTestCase {
 
     func test_fetch_all_core_data_items() {
         /// Delete all blocks in Core Data
-        LocalStorage.shared.deleteAllBlocks { error in
+        Node.shared.localStorage.deleteAllBlocks { error in
             if let error = error {
                 XCTAssertNil(error)
             }
 
             do {
-                let results: [LightBlock] = try LocalStorage.shared.getAllBlocks()
+                let results: [LightBlock] = try Node.shared.localStorage.getAllBlocks()
                 XCTAssertEqual(results.count, 0)
             } catch {
                 fatalError(error.localizedDescription)
@@ -283,7 +283,7 @@ final class BlockchainTests: XCTestCase {
 
         /// Save light blocks
         for lightBlock in lightBlocks {
-            try? LocalStorage.shared.saveBlock(block: lightBlock) { error in
+            try? Node.shared.localStorage.saveBlock(block: lightBlock) { error in
                 if let error = error {
                     XCTAssertNil(error)
                 }
@@ -295,10 +295,10 @@ final class BlockchainTests: XCTestCase {
 
         /// Fetch all blocks
         do {
-            let allBlocks: [FullBlock] = try LocalStorage.shared.getAllBlocks()
+            let allBlocks: [FullBlock] = try Node.shared.localStorage.getAllBlocks()
             XCTAssertEqual(allBlocks.count, blocks.count)
             
-            let blockchain: Blockchain<FullBlock> = try LocalStorage.shared.getAllBlocks()
+            let blockchain: Blockchain<FullBlock> = try Node.shared.localStorage.getAllBlocks()
             XCTAssertFalse(blockchain.isEmpty)
             XCTAssertEqual(blockchain.count, blocks.count)
         } catch {
@@ -306,13 +306,13 @@ final class BlockchainTests: XCTestCase {
         }
 
         /// Delete all blocks in Core Data
-        LocalStorage.shared.deleteAllBlocks { error in
+        Node.shared.localStorage.deleteAllBlocks { error in
             if let error = error {
                 XCTAssertNil(error)
             }
 
             do {
-                let results: [LightBlock] = try LocalStorage.shared.getAllBlocks()
+                let results: [LightBlock] = try Node.shared.localStorage.getAllBlocks()
                 XCTAssertEqual(results.count, 0)
             } catch {
                 fatalError(error.localizedDescription)
@@ -321,13 +321,13 @@ final class BlockchainTests: XCTestCase {
     }
 
     func test_multiple_fetch_core_data_items() {
-        LocalStorage.shared.deleteAllBlocks { error in
+        Node.shared.localStorage.deleteAllBlocks { error in
             if let error = error {
                 XCTAssertNil(error)
             }
             
             do {
-                let results: [LightBlock] = try LocalStorage.shared.getAllBlocks()
+                let results: [LightBlock] = try Node.shared.localStorage.getAllBlocks()
                 XCTAssertEqual(results.count, 0)
             } catch {
                 fatalError(error.localizedDescription)
@@ -339,7 +339,7 @@ final class BlockchainTests: XCTestCase {
                 fatalError()
             }
             
-            try? LocalStorage.shared.saveBlock(block: lightBlock) { error in
+            try? Node.shared.localStorage.saveBlock(block: lightBlock) { error in
                 if let error = error {
                     XCTAssertNil(error)
                 }
@@ -347,36 +347,36 @@ final class BlockchainTests: XCTestCase {
             
             /// Test various ways to a certain block or the latest block
             do {
-                guard let fetchedBlock: FullBlock = try LocalStorage.shared.getBlock(lightBlock.id) else {
+                guard let fetchedBlock: FullBlock = try Node.shared.localStorage.getBlock(lightBlock.id) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchedBlock, block)
                 
-                guard let fetchedFullBlock: FullBlock = try LocalStorage.shared.getBlock(lightBlock.number) else {
+                guard let fetchedFullBlock: FullBlock = try Node.shared.localStorage.getBlock(lightBlock.number) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchedFullBlock, block)
                 
-                guard let fetchLightBlock: LightBlock = try LocalStorage.shared.getBlock(lightBlock.id) else {
+                guard let fetchLightBlock: LightBlock = try Node.shared.localStorage.getBlock(lightBlock.id) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchLightBlock, lightBlock)
                 
-                guard let fetchedFullBlock1: LightBlock = try LocalStorage.shared.getBlock(lightBlock.number) else {
+                guard let fetchedFullBlock1: LightBlock = try Node.shared.localStorage.getBlock(lightBlock.number) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchedFullBlock1, lightBlock)
                 
-                guard let fetchedFullBlock2: FullBlock = try LocalStorage.shared.getBlock(block) else {
+                guard let fetchedFullBlock2: FullBlock = try Node.shared.localStorage.getBlock(block) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchedFullBlock2, block)
                 
                 /// Fetch the latest block
-                guard let fetchedLatestBlock: FullBlock = try LocalStorage.shared.getLatestBlock() else { fatalError() }
+                guard let fetchedLatestBlock: FullBlock = try Node.shared.localStorage.getLatestBlock() else { fatalError() }
                 XCTAssertEqual(fetchedLatestBlock, block)
                 
-                guard let fetchedLatestLightBlock: LightBlock = try LocalStorage.shared.getLatestBlock() else { fatalError() }
+                guard let fetchedLatestLightBlock: LightBlock = try Node.shared.localStorage.getLatestBlock() else { fatalError() }
                 XCTAssertEqual(fetchedLatestLightBlock, lightBlock)
           } catch {
                 print(error.localizedDescription)
@@ -387,7 +387,7 @@ final class BlockchainTests: XCTestCase {
     func test_redundancy() {
         /// Add the blocks once
         for lightBlock in lightBlocks {
-            try? LocalStorage.shared.saveBlock(block: lightBlock) { error in
+            try? Node.shared.localStorage.saveBlock(block: lightBlock) { error in
                 if let error = error {
                     XCTAssertNil(error)
                 }
@@ -396,7 +396,7 @@ final class BlockchainTests: XCTestCase {
         
         /// Add the blocks twice
         for lightBlock in lightBlocks {
-            try? LocalStorage.shared.saveBlock(block: lightBlock) { error in
+            try? Node.shared.localStorage.saveBlock(block: lightBlock) { error in
                 if let error = error {
                     XCTAssertNil(error)
                 }
@@ -405,10 +405,10 @@ final class BlockchainTests: XCTestCase {
         
         /// Core Data should only have saved one copy
         do {
-            let allBlocks: [FullBlock] = try LocalStorage.shared.getAllBlocks()
+            let allBlocks: [FullBlock] = try Node.shared.localStorage.getAllBlocks()
             XCTAssertEqual(allBlocks.count, blocks.count)
             
-            let blockchain: Blockchain<FullBlock> = try LocalStorage.shared.getAllBlocks()
+            let blockchain: Blockchain<FullBlock> = try Node.shared.localStorage.getAllBlocks()
             XCTAssertFalse(blockchain.isEmpty)
             XCTAssertEqual(blockchain.count, blocks.count)
         } catch {
@@ -417,13 +417,13 @@ final class BlockchainTests: XCTestCase {
     }
     
     func test_batch_save() async {
-//        LocalStorage.shared.deleteAllBlocks { error in
+//        Node.shared.localStorage.deleteAllBlocks { error in
 //            if let error = error {
 //                XCTAssertNil(error)
 //            }
 //            
 //            do {
-//                let results: [LightBlock] = try LocalStorage.shared.getAllBlocks()
+//                let results: [LightBlock] = try Node.shared.localStorage.getAllBlocks()
 //                XCTAssertEqual(results.count, 0)
 //            } catch {
 //                fatalError(error.localizedDescription)
@@ -431,7 +431,7 @@ final class BlockchainTests: XCTestCase {
 //        }
 //        
 //        do {
-//            try await LocalStorage.shared.saveBlocks(blocks: blocks) { error in
+//            try await Node.shared.localStorage.saveBlocks(blocks: blocks) { error in
 //                if let error = error {
 //                    XCTAssertNil(error)
 //                }
@@ -442,7 +442,7 @@ final class BlockchainTests: XCTestCase {
 //        
 //        let _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Core Data wait")], timeout: 5.0)
 //        do {
-//            let allBlocks: [FullBlock] = try LocalStorage.shared.getAllBlocks()
+//            let allBlocks: [FullBlock] = try Node.shared.localStorage.getAllBlocks()
 //            XCTAssertEqual(allBlocks.count, blocks.count)
 //        } catch {
 //            fatalError(error.localizedDescription)

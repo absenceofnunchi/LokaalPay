@@ -21,6 +21,12 @@ import CryptoKit
 /// 8. sendRawTransactionPromise https://github.com/skywinder/web3swift/blob/5484e81580219ea491d48e94f6aef6f18d8ec58f/Sources/web3swift/Promises/Promise%2BWeb3%2BEth%2BSendRawTransaction.swift#L20
 
 extension EthereumTransaction {
+    public init(nonce: BigUInt, to: EthereumAddress, gasPrice: BigUInt = BigUInt(0), gasLimit: BigUInt = BigUInt(0), value: BigUInt = BigUInt(0), data: Data = Data()) {
+        self.init(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
+        self.nonce = nonce
+    }
+    
+    
     public func getHash() -> String? {
         guard let encoded = self.encode(),
               let compressed = encoded.compressed else { return nil }
@@ -30,8 +36,8 @@ extension EthereumTransaction {
     /// Create a transaction signature for a local transaction.
     /// Doesn't require gas because no mining reward exists.
     /// TODO: Change the chain ID to the 4-digit password set by the host
-    public static func createLocalTransaction(to: EthereumAddress, value: BigUInt = BigUInt(0), data: Data = Data()) -> EthereumTransaction {
-        var tx = EthereumTransaction(gasPrice: BigUInt(0), gasLimit: BigUInt(0), to: to, value: value, data: data)
+    public static func createLocalTransaction(nonce: BigUInt, to: EthereumAddress, value: BigUInt = BigUInt(0), data: Data = Data()) -> EthereumTransaction {
+        var tx = EthereumTransaction(nonce: nonce, to: to, value: value, data: data)
         tx.UNSAFE_setChainID(BigUInt(500))
         return tx
     }

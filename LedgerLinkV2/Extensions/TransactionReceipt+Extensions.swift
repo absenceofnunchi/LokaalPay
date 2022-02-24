@@ -10,6 +10,11 @@ import web3swift
 import BigInt
     
 extension TransactionReceipt {
+    public func getHash() -> String? {
+        guard let encoded = self.encode(),
+              let compressed = encoded.compressed else { return nil }
+        return compressed.sha256().toHexString()
+    }
     
     public func encode() -> Data? {
 //        let fields =  [transactionHash, blockHash, blockNumber, transactionIndex, contractAddress ?? EthereumAddress("0x")!, cumulativeGasUsed, gasUsed, status, logsBloom ?? EthereumBloomFilter()] as [AnyObject]

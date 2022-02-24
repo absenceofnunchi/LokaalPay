@@ -173,11 +173,7 @@ final class WalletViewController: UIViewController {
                 scan()
                 break
             case 2:
-                do {
-                    try checkBalance()
-                } catch {
-                    alert.show(error, for: self)
-                }
+                checkBalance()
                 break
             case 3:
                 showQRCode()
@@ -204,7 +200,6 @@ final class WalletViewController: UIViewController {
             throw TxError.generalError("Unable to encode contract parameters")
         }
         let extraData = TransactionExtraData(contractMethod: contractMethod)
-        
         transactionService.prepareTransaction(extraData: extraData, to: toAddress, value: value, password: "1") { (data, error) in
             if let error = error {
                 print(error)
@@ -215,7 +210,7 @@ final class WalletViewController: UIViewController {
             }
         }
         
-        try checkBalance()
+        checkBalance()
     }
 
     private func scan() {
@@ -237,12 +232,16 @@ final class WalletViewController: UIViewController {
         self.present(qrCodeVC, animated: true, completion: nil)
     }
     
-    private func checkBalance() throws {
-        guard let account = try NodeDB.shared.getMyAccount() else {
-            alert.show("Wallet not found. Have you set up your wallet yet?", for: self)
-            return
+    private func checkBalance() {
+        Node.shared.getMyAccount { [weak self] (account, error) in
+            if let error = error {
+                self?.alert.show(error, for: self)
+            }
+            
+            if let account = account {
+                self?.balanceLabel.text = account.balance.description
+            }
         }
-        balanceLabel.text = account.balance.description
     }
     
     func blockchainReceiveHandler(_ message: String) {

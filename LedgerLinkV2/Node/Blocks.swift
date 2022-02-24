@@ -33,7 +33,7 @@ public struct FullBlock: Decodable {
     public var gasLimit: BigUInt?
     public var gasUsed: BigUInt?
     public var timestamp: Date
-    public var transactions: [TreeConfigurableTransaction]
+    public var transactions: [String]
     public var uncles: [Data]?
     
     enum CodingKeys: String, CodingKey {
@@ -57,7 +57,7 @@ public struct FullBlock: Decodable {
         case uncles
     }
     
-    public init(number: BigUInt, parentHash: Data, nonce: Data? = nil, transactionsRoot: Data, stateRoot: Data, receiptsRoot: Data, miner: EthereumAddress? = nil, difficulty: BigUInt? = nil, totalDifficulty: BigUInt? = nil, extraData: Data? = nil, gasLimit: BigUInt? = nil, gasUsed: BigUInt? = nil, transactions: [TreeConfigurableTransaction], uncles: [Data]? = nil) throws {
+    public init(number: BigUInt, parentHash: Data, nonce: Data? = nil, transactionsRoot: Data, stateRoot: Data, receiptsRoot: Data, miner: EthereumAddress? = nil, difficulty: BigUInt? = nil, totalDifficulty: BigUInt? = nil, extraData: Data? = nil, gasLimit: BigUInt? = nil, gasUsed: BigUInt? = nil, transactions: [String], uncles: [Data]? = nil) throws {
         self.number = number
         self.parentHash = parentHash
         self.nonce = nonce
@@ -197,7 +197,7 @@ public struct FullBlock: Decodable {
         let timestamp = Date(timeIntervalSince1970: TimeInterval(timestampInt))
         self.timestamp = timestamp
         
-        let transactions = try container.decode([TreeConfigurableTransaction].self, forKey: .transactions)
+        let transactions = try container.decode([String].self, forKey: .transactions)
         self.transactions = transactions
         
         if uncles != nil {
@@ -355,7 +355,7 @@ struct LightBlock: LightConfigurable {
     var dictionaryValue: [String: Any] {
         [
             "id": id,
-            "number": number,
+            "number": Int32(number),
             "data": data
         ]
     }
@@ -426,17 +426,6 @@ struct LightBlock: LightConfigurable {
 
     static func < (lhs: LightBlock, rhs: LightBlock) -> Bool {
         return (lhs.id < rhs.id) && (lhs.data.toHexString() < rhs.data.toHexString())
-    }
-}
-
-extension LightBlock {
-    // The keys must have the same name as the attributes of the StateCoreData, TransactionCoreEntity, or ReceiptCoreEntity entity. For newBatchInsertRequest in Core Data.
-    var dictionaryValue: [String: Any] {
-        [
-            "id": id,
-            "number": number,
-            "data": data
-        ]
     }
 }
 

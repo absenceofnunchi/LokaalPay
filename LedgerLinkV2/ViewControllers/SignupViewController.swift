@@ -8,6 +8,7 @@
 import UIKit
 import BigInt
 import web3swift
+import Combine
 
 final class SignupViewController: UIViewController {
     var passwordTextField: UITextField!
@@ -16,6 +17,8 @@ final class SignupViewController: UIViewController {
     let keysService = KeysService()
     let localStorage = LocalStorage()
     let alert = AlertView()
+    var storage = Set<AnyCancellable>()
+    let transactionService = TransactionService()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,40 +79,92 @@ final class SignupViewController: UIViewController {
     @objc func buttonPressed(_ sender: UIButton) {
         switch sender.tag {
             case 0:
-                do {
-                    try createWallet()
-                } catch {
-                    alert.show(error, for: self)
-                }
+                createWallet()
                 break
             default:
                 break
         }
     }
     
-    func createWallet() throws {
+    func createWallet() {
 //        guard let password = passwordTextField.text, !password.isEmpty else { return }
         let password = "1"
-        keysService.createNewWallet(password: password) { [weak self] (keyWalletModel, error) in
-            if let error = error {
-                print("wallet create error", error.localizedDescription)
-            }
-            
-            if let keyWalletModel = keyWalletModel {
-                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) throws in
+        
+        NetworkManager.shared.start()
+        
+        Deferred {
+            Future<KeyWalletModel, WalletError> { [weak self] promise in
+                self?.keysService.createNewWallet(password: password) { (keyWalletModel, error) in
                     if let error = error {
-                        print("wallet save error", error.localizedDescription)
+                        promise(.failure(error))
+                        return
                     }
                     
-                    guard let address = EthereumAddress(keyWalletModel.address) else {
-                        throw NodeError.generalError("Address Save error")
+                    if let keyWalletModel = keyWalletModel {
+                        promise(.success(keyWalletModel))
                     }
-                    let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
-                    try NodeDB.shared.addData(account)
-                    DispatchQueue.main.async {
-                        self?.addressLabel.text = keyWalletModel.address
+                }
+            }
+            .eraseToAnyPublisher()
+        }
+        .flatMap { (keyWalletModel) -> AnyPublisher<KeyWalletModel, WalletError> in
+            Future<KeyWalletModel, WalletError> { [weak self] promise in
+                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) throws in
+                    if let error = error {
+                        promise(.failure(error))
+                        return
                     }
+                    
+                    promise(.success(keyWalletModel))
                 })
+            }
+            .eraseToAnyPublisher()
+        }
+        .sink { [weak self] (completion) in
+            switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    self?.alert.show(error, for: self)
+            }
+        } receiveValue: { [weak self] (keyWalletModel) in
+            guard let address = EthereumAddress(keyWalletModel.address) else {
+                return
+            }
+            
+            let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
+            
+            self?.notifyAccountCreation(account: account)
+            
+            DispatchQueue.main.async {
+                self?.addressLabel.text = keyWalletModel.address
+            }
+            
+            Task {
+                await Node.shared.save(account) { error in
+                    if let error = error {
+                        print(error)
+                    }
+                }
+            }
+        }
+        .store(in: &storage)
+    }
+    
+    func notifyAccountCreation(account: Account) {
+        guard let contractMethod = ContractMethods.createAccount.data else {
+            return
+        }
+        
+        let extraData = TransactionExtraData(contractMethod: contractMethod, account: account)
+        transactionService.prepareTransaction(extraData: extraData, to: nil, password: "1") { (data, error) in
+            if let error = error {
+                print(error)
+            }
+            
+            if let data = data {
+                NetworkManager.shared.enqueue(data)
+                Node.shared.addValidatedTransaction(data)
             }
         }
     }

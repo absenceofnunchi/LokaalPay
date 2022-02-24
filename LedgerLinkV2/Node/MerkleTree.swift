@@ -74,7 +74,7 @@ indirect enum MerkleTree<T: Equatable & Encodable & Hashable> {
     
     static func buildTree(fromData data: [T]) throws -> MerkleTree {
         guard data.count > 0 else {
-            throw NodeError.generalError("Data has to be more than one.")
+            throw NodeError.generalError("Data count must be none zero")
         }
         
         /// Calculate the depth of the tree.

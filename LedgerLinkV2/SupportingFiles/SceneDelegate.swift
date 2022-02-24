@@ -23,22 +23,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             
             
             let signupVC = SignupViewController()
-//            let signupNav = UINavigationController(rootViewController: signupVC)
             signupVC.tabBarItem = UITabBarItem(title: "Signup", image: UIImage(named: "lock"), selectedImage: UIImage(named: "lock"))
-//            tabBar.addChild(signupNav)
             
             let mainVC = MainViewController()
             let mainNav = UINavigationController(rootViewController: mainVC)
             mainNav.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(named: "network"), selectedImage: UIImage(named: "network"))
-//            tabBar.addChild(mainNav)
             
             let walletVC = WalletViewController()
-//            let walletNav = UINavigationController(rootViewController: walletVC)
             walletVC.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
-//            tabBar.addChild(walletNav)
+
+            let explorerVC = ExplorerViewController()
+            let explorerNav = UINavigationController(rootViewController: explorerVC)
+            explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
             
             let tabBar = CustomTabBarController()
-            tabBar.setViewControllers([signupVC, mainNav, walletVC], animated: true)
+            tabBar.setViewControllers([signupVC, mainNav, walletVC, explorerNav], animated: true)
             self.window?.rootViewController = tabBar
             self.window?.makeKeyAndVisible()
         }
@@ -79,7 +78,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Save changes in the application's managed object context when the application transitions to the background.
 //        (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
-        LocalStorage.shared.coreDataStack.saveContext()
+        Node.shared.localStorage.coreDataStack.saveContext()
     }
     
 

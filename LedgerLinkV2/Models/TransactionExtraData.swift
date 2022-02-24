@@ -14,4 +14,5 @@ import Foundation
 
 struct TransactionExtraData: Codable {
     var contractMethod: Data
+    var account: Account? = nil
 }

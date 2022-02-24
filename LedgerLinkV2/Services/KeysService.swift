@@ -79,7 +79,7 @@ class KeysService: IKeysService {
         completion(walletModel, nil)
     }
     
-    func createNewWallet(password: String, completion: @escaping (KeyWalletModel?, Error?) -> Void) {
+    func createNewWallet(password: String, completion: @escaping (KeyWalletModel?, WalletError?) -> Void) {
         DispatchQueue.global().async {
             guard let newWallet = try? EthereumKeystoreV3(password: password) else {
                 completion(nil, WalletError.walletCreateError)

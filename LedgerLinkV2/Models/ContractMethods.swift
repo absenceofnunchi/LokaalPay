@@ -9,17 +9,11 @@ import Foundation
 
 enum ContractMethods: String {
     case transferValue
+    case createAccount
     case blockchainDownloadRequest
     case blockchainDownloadResponse
     
     var data: Data? {
-        switch self {
-            case .transferValue:
-                return Data(self.rawValue.utf8)
-            case .blockchainDownloadRequest:
-                return Data(self.rawValue.utf8)
-            case .blockchainDownloadResponse:
-                return Data(self.rawValue.utf8)
-        }
+        return Data(self.rawValue.utf8)
     }
 }
