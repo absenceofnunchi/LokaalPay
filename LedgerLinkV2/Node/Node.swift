@@ -281,6 +281,11 @@ final class Node {
         validatedTransactions.append(treeConfigTx)
     }
     
+    func addValidatedTransaction(_ transaction: EthereumTransaction) {
+        guard let treeConfigTx = try? TreeConfigurableTransaction(data: transaction) else { return }
+        validatedTransactions.append(treeConfigTx)
+    }
+    
     func addValidatedAccount(_ account: Account) {
         guard let treeConfigAcct = try? TreeConfigurableAccount(data: account) else { return }
         validatedAccounts.append(treeConfigAcct)

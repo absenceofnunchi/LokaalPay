@@ -83,6 +83,52 @@ extension LocalStorage {
         }
     }
     
+    func getBlocks(_ number: BigUInt, format: String, completion: @escaping ([LightBlock]?, NodeError?) -> Void) {
+        let convertedNumber = UInt32(number)
+        let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
+        fetchRequest.predicate = NSPredicate(format: format, convertedNumber)
+
+        // Initialize Asynchronous Fetch Request
+        let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+            guard let results = asynchronousFetchResult.finalResult else { return }
+            let blocks: [LightBlock] = results.compactMap { (element: BlockCoreData) in
+                return LightBlock.fromCoreData(crModel: element)
+            }
+            
+            completion(blocks, nil)
+        }
+        
+        do {
+            // Execute Asynchronous Fetch Request
+            let asynchronousFetchResult = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+            
+            if let asynchronousFetchProgress = asynchronousFetchResult?.progress {
+                asynchronousFetchProgress.addObserver(self, forKeyPath: "completedUnitCount", options: NSKeyValueObservingOptions.new, context: nil)
+            }
+        } catch {
+            let fetchError = error as NSError
+            print("\(fetchError), \(fetchError.userInfo)")
+            completion(nil, NodeError.generalError("Unable to fetch data"))
+        }
+    }
+    
+    /// Fetch the latest light block synchronously
+    func getLastestBlockSync() throws -> LightBlock? {
+        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+        requestBlock.fetchLimit = 1
+        requestBlock.returnsObjectsAsFaults = false
+        let sortDescriptor = NSSortDescriptor(key: "number", ascending: false)
+        requestBlock.sortDescriptors = [sortDescriptor]
+        
+        do {
+            let results = try context.fetch(requestBlock)
+            guard let result = results.first else { return nil }
+            return LightBlock.fromCoreData(crModel: result)
+        } catch {
+            throw NodeError.generalError("Unable to fetch blocks")
+        }
+    }
+    
     /// Fetch the latest full block
     func getLatestBlock() throws -> FullBlock? {
         let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()

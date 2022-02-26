@@ -758,4 +758,26 @@ final class CoreDataTests: XCTestCase {
             }
         }
     }
+    
+    func test_test() {
+        let tx = transactions[0]
+        guard let rlpEncoded = tx.encode(),
+        let compressed = rlpEncoded.compressed else { return }
+        
+        let hash = compressed.sha256().toHexString()
+        print("hash", hash)
+        
+        
+        
+        Node.shared.fetch(hash) { (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
+            if let error = error {
+                print(error)
+                return
+            }
+            
+            if let txs = txs {
+                print("txs", txs)
+            }
+        }
+    }
 }

@@ -85,26 +85,52 @@ class KeysService: IKeysService {
                 completion(nil, WalletError.walletCreateError)
                 return
             }
-            
+
             guard newWallet.addresses?.count == 1 else {
                 completion(nil, WalletError.walletCountError)
                 return
             }
-            
+
             guard let keydata = try? JSONEncoder().encode(newWallet.keystoreParams) else {
                 completion(nil, WalletError.walletEncodeError)
                 return
             }
-            
+
             guard let address = newWallet.addresses?.first?.address else {
                 completion(nil, WalletError.walletAddressFetchError)
                 return
             }
-            
+
             let walletModel = KeyWalletModel(address: address, data: keydata)
             completion(walletModel, nil)
         }
     }
+    
+//    func createNewWallet(password: String, completion: @escaping (KeyWalletModel?, WalletError?) -> Void) {
+//
+//        guard let newWallet = try? EthereumKeystoreV3(password: password) else {
+//            completion(nil, WalletError.walletCreateError)
+//            return
+//        }
+//
+//        guard newWallet.addresses?.count == 1 else {
+//            completion(nil, WalletError.walletCountError)
+//            return
+//        }
+//
+//        guard let keydata = try? JSONEncoder().encode(newWallet.keystoreParams) else {
+//            completion(nil, WalletError.walletEncodeError)
+//            return
+//        }
+//
+//        guard let address = newWallet.addresses?.first?.address else {
+//            completion(nil, WalletError.walletAddressFetchError)
+//            return
+//        }
+//
+//        let walletModel = KeyWalletModel(address: address, data: keydata)
+//        completion(walletModel, nil)
+//    }
     
     func getWalletPrivateKey(password: String) throws -> String? {
         guard let selectedWallet = try selectedWallet(), let address = EthereumAddress(selectedWallet.address) else {

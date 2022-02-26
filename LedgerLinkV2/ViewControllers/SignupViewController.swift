@@ -13,6 +13,7 @@ import Combine
 final class SignupViewController: UIViewController {
     var passwordTextField: UITextField!
     var createButton: UIButton!
+    var deleteBlockchainButton: UIButton!
     var addressLabel: UILabel!
     let keysService = KeysService()
     let localStorage = LocalStorage()
@@ -55,6 +56,15 @@ final class SignupViewController: UIViewController {
         createButton.layer.cornerRadius = 10
         createButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(createButton)
+        
+        deleteBlockchainButton = UIButton()
+        deleteBlockchainButton.setTitle("Delete All Blockchain", for: .normal)
+        deleteBlockchainButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
+        deleteBlockchainButton.tag = 1
+        deleteBlockchainButton.backgroundColor = .black
+        deleteBlockchainButton.layer.cornerRadius = 10
+        deleteBlockchainButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(deleteBlockchainButton)
     }
     
     func setConstraints() {
@@ -72,7 +82,12 @@ final class SignupViewController: UIViewController {
             createButton.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 20),
             createButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             createButton.heightAnchor.constraint(equalToConstant: 50),
-            createButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            createButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            deleteBlockchainButton.topAnchor.constraint(equalTo: createButton.bottomAnchor, constant: 20),
+            deleteBlockchainButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            deleteBlockchainButton.heightAnchor.constraint(equalToConstant: 50),
+            deleteBlockchainButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     
@@ -81,15 +96,18 @@ final class SignupViewController: UIViewController {
             case 0:
                 createWallet()
                 break
+            case 1:
+                deleteAllBlockchain()
             default:
                 break
         }
     }
     
-    func createWallet() {
+    private func createWallet() {
 //        guard let password = passwordTextField.text, !password.isEmpty else { return }
         let password = "1"
         
+        /// Start the server to let peers know of the creation of the account
         NetworkManager.shared.start()
         
         Deferred {
@@ -120,6 +138,38 @@ final class SignupViewController: UIViewController {
             }
             .eraseToAnyPublisher()
         }
+        .flatMap { [weak self] (keyWalletModel) -> AnyPublisher<Bool, WalletError> in
+            Future<Bool, WalletError> { [weak self] promise in
+                guard let address = EthereumAddress(keyWalletModel.address) else {
+                    promise(.failure(WalletError.generalError("Unable to generate wallet address")))
+                    return
+                }
+                
+                let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
+                
+                /// Propogate the creation of the new account to peers
+                self?.notifyAccountCreation(account: account, promise: promise)
+                
+                /// Update the UI with the new address
+                DispatchQueue.main.async {
+                    self?.addressLabel.text = keyWalletModel.address
+                }
+                
+                Task {
+                    /// Save the newly created account into Core Data
+                    await Node.shared.save(account) { error in
+                        if let error = error {
+                            print(error)
+                            promise(.failure(.generalError("Wallet save error")))
+                            return
+                        }
+                        
+                        promise(.success(true))
+                    }
+                }
+            }
+            .eraseToAnyPublisher()
+        }
         .sink { [weak self] (completion) in
             switch completion {
                 case .finished:
@@ -127,39 +177,17 @@ final class SignupViewController: UIViewController {
                 case .failure(let error):
                     self?.alert.show(error, for: self)
             }
-        } receiveValue: { [weak self] (keyWalletModel) in
-            guard let address = EthereumAddress(keyWalletModel.address) else {
-                return
-            }
-            
-            let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
-            
-            self?.notifyAccountCreation(account: account)
-            
-            DispatchQueue.main.async {
-                self?.addressLabel.text = keyWalletModel.address
-            }
-            
-            Task {
-                await Node.shared.save(account) { error in
-                    if let error = error {
-                        print(error)
-                    }
-                }
-            }
+        } receiveValue: { (_) in
         }
         .store(in: &storage)
     }
     
-    func notifyAccountCreation(account: Account) {
-        guard let contractMethod = ContractMethods.createAccount.data else {
-            return
-        }
-        
-        let extraData = TransactionExtraData(contractMethod: contractMethod, account: account)
-        transactionService.prepareTransaction(extraData: extraData, to: nil, password: "1") { (data, error) in
+    private func notifyAccountCreation(account: Account, promise:  @escaping (Result<Bool, WalletError>) -> Void) {
+        transactionService.prepareTransaction(.createAccount, to: nil, password: "1") { data, error in
             if let error = error {
-                print(error)
+                print("notify error", error)
+                promise(.failure(.generalError("Notify account creation error")))
+                return
             }
             
             if let data = data {
@@ -167,5 +195,9 @@ final class SignupViewController: UIViewController {
                 Node.shared.addValidatedTransaction(data)
             }
         }
+    }
+    
+    private func deleteAllBlockchain() {
+        Node.shared.deleteAll()
     }
 }

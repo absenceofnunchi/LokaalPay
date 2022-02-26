@@ -13,9 +13,12 @@ class StatusViewController: UIViewController {
     var connectButton: UIButton!
     var isHosting: Bool! {
         didSet {
-            serverStatusLabel?.text = isHosting ? "Server On" : "Server Off"
-            connectButton?.setTitle(isHosting ? "Disconnect" : "Connect", for: .normal)
-            connectButton?.tag = isHosting ? 1 : 0
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.serverStatusLabel?.text = self.isHosting ? "Server On" : "Server Off"
+                self.connectButton?.setTitle(self.isHosting ? "Disconnect" : "Connect", for: .normal)
+                self.connectButton?.tag = self.isHosting ? 1 : 0
+            }
         }
     }
     

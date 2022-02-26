@@ -45,6 +45,9 @@
 		49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49657A7C27ACF45600A19EC3 /* 1.mp3 */; };
 		49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49689F7327B1EBB20062C093 /* Array+Extensions.swift */; };
 		496A9CB927C7FC110089AE84 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CB827C7FC110089AE84 /* AsyncOperation.swift */; };
+		496A9CBC27C815300089AE84 /* Operation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBB27C815300089AE84 /* Operation+Extensions.swift */; };
+		496A9CBE27C855D00089AE84 /* Notification+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBD27C855D00089AE84 /* Notification+Extensions.swift */; };
+		496A9CC027C8617E0089AE84 /* NetworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBF27C8617E0089AE84 /* NetworkTests.swift */; };
 		497633D427C22F360044B426 /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633D327C22F360044B426 /* TestTree.swift */; };
 		4992CB3827C3038600836419 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB3727C3038600836419 /* Node.swift */; };
 		4992CB4627C33A3000836419 /* CoreDataTestings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB4527C33A3000836419 /* CoreDataTestings.swift */; };
@@ -153,6 +156,9 @@
 		49657A7C27ACF45600A19EC3 /* 1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 1.mp3; sourceTree = "<group>"; };
 		49689F7327B1EBB20062C093 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		496A9CB827C7FC110089AE84 /* AsyncOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
+		496A9CBB27C815300089AE84 /* Operation+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Operation+Extensions.swift"; sourceTree = "<group>"; };
+		496A9CBD27C855D00089AE84 /* Notification+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Extensions.swift"; sourceTree = "<group>"; };
+		496A9CBF27C8617E0089AE84 /* NetworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkTests.swift; sourceTree = "<group>"; };
 		497633D327C22F360044B426 /* TestTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
 		4992CB3727C3038600836419 /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		4992CB4527C33A3000836419 /* CoreDataTestings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestings.swift; sourceTree = "<group>"; };
@@ -250,7 +256,6 @@
 			isa = PBXGroup;
 			children = (
 				49FC14F127B31DEC00D215B6 /* Node */,
-				49689F6D27B1B9A60062C093 /* Extensions */,
 				499AF11E27AF6E7C00CAF0EA /* Services */,
 				49C3E76327AB3EB500D989E8 /* Networking */,
 				49C3E76227AB3EAE00D989E8 /* ViewControllers */,
@@ -258,7 +263,7 @@
 				499AF11727AE1D6900CAF0EA /* Views */,
 				49657A7927ACEB5900A19EC3 /* AV */,
 				49C3E76127AB3E7400D989E8 /* SupportingFiles */,
-				499AF11027ADFEF200CAF0EA /* Convenience */,
+				499AF11027ADFEF200CAF0EA /* Extensions */,
 				492EA6A927B05704001C6A1D /* CoreData */,
 			);
 			path = LedgerLinkV2;
@@ -275,6 +280,7 @@
 				49FC14FE27B5E35200D215B6 /* RedBlackTreeTests.swift */,
 				49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */,
 				4992CB4527C33A3000836419 /* CoreDataTestings.swift */,
+				496A9CBF27C8617E0089AE84 /* NetworkTests.swift */,
 				49A7C32727B73DBD00AC7EB0 /* Vectors.swift */,
 			);
 			path = LedgerLinkV2Tests;
@@ -314,6 +320,7 @@
 				490367CD27BCC07D00DFDE2B /* ContractMethods.swift */,
 				49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */,
 				496A9CB827C7FC110089AE84 /* AsyncOperation.swift */,
+				496A9CBA27C815200089AE84 /* AsyncOperation */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -338,19 +345,21 @@
 			path = AV;
 			sourceTree = "<group>";
 		};
-		49689F6D27B1B9A60062C093 /* Extensions */ = {
+		496A9CBA27C815200089AE84 /* AsyncOperation */ = {
+			isa = PBXGroup;
+			children = (
+				496A9CBB27C815300089AE84 /* Operation+Extensions.swift */,
+			);
+			path = AsyncOperation;
+			sourceTree = "<group>";
+		};
+		499AF11027ADFEF200CAF0EA /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
 				49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */,
 				49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */,
 				490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
-		499AF11027ADFEF200CAF0EA /* Convenience */ = {
-			isa = PBXGroup;
-			children = (
+				496A9CBD27C855D00089AE84 /* Notification+Extensions.swift */,
 				499AF11127ADFF0D00CAF0EA /* Date+Extensions.swift */,
 				49C4492127BFF98D00970B8E /* String+Extension.swift */,
 				49689F7327B1EBB20062C093 /* Array+Extensions.swift */,
@@ -360,7 +369,7 @@
 				499AF11327AE18B300CAF0EA /* ConnectionStatus.swift */,
 				49A7C32927B74E1B00AC7EB0 /* TreeConfigurable+Protocols.swift */,
 			);
-			path = Convenience;
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		499AF11727AE1D6900CAF0EA /* Views */ = {
@@ -700,11 +709,13 @@
 				49A7C33027B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift in Sources */,
 				49FC150327B6033000D215B6 /* TreeConfigurableTransaction.swift in Sources */,
 				49F6E13027C72ADD00790A75 /* DetailTableViewController.swift in Sources */,
+				496A9CBC27C815300089AE84 /* Operation+Extensions.swift in Sources */,
 				49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */,
 				49631C4927C44AEC00E5F0EA /* BlockCoreData+CoreDataProperties.swift in Sources */,
 				49631C4427C44AEC00E5F0EA /* WalletCoreData+CoreDataClass.swift in Sources */,
 				49C4492227BFF98D00970B8E /* String+Extension.swift in Sources */,
 				49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */,
+				496A9CBE27C855D00089AE84 /* Notification+Extensions.swift in Sources */,
 				49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */,
 				49631C4327C44AEC00E5F0EA /* StateCoreData+CoreDataProperties.swift in Sources */,
 				49631C3727C415F900E5F0EA /* CoreDataServices+Transaction.swift in Sources */,
@@ -751,6 +762,7 @@
 			files = (
 				49A7C32E27B75EFA00AC7EB0 /* MainTreeTests.swift in Sources */,
 				49FC14F927B32B6300D215B6 /* MerkleTreeTests.swift in Sources */,
+				496A9CC027C8617E0089AE84 /* NetworkTests.swift in Sources */,
 				490367C627BB456B00DFDE2B /* CodableTests.swift in Sources */,
 				49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */,
 				4992CB4627C33A3000836419 /* CoreDataTestings.swift in Sources */,

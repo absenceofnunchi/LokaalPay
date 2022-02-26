@@ -5,6 +5,14 @@
 //  Created by J C on 2022-02-17.
 //
 
+/*
+ Transactions are to be sent out as soon as they're created.
+ The receieved transactions are to be relayed immediately as well.
+ The blocks, however, are created and added on a regular interval.
+ 
+ When a node receives a transaction, check the block number to see if latest blocks have to be downloaded from other nodes before processing the transactions to a new block.
+ */
+
 import Foundation
 import MultipeerConnectivity
 import MediaPlayer
@@ -29,6 +37,7 @@ final class NetworkManager: NSObject {
     private var transactions: [Data] = [] // transactions to be sent
     private let transactionService = TransactionService()
     var blockchainReceiveHandler: ((String) -> Void)?
+    let notificationCenter = NotificationCenter.default
 
     override init() {
         super.init()
@@ -97,25 +106,32 @@ final class NetworkManager: NSObject {
         print("autoRelay")
         guard isServerRunning else { return }
         
+        /// This is going to be used for dispatching blocks only
+        
         Node.shared.createBlock { [weak self] (blockNumber) in
-            guard let transactions = self?.transactions else { return }
+            guard let transactions = self?.transactions,
+                  transactions.count > 0,
+                  let compressed = transactions.compressed else { return }
+                  
+            self?.sendDataToAllPeers(data: compressed)
+            self?.transactions.removeAll()
             
-            var dict: [String : Data] = [:]
-            
-            do {
-                let encodedTransactions = try JSONEncoder().encode(transactions)
-                let encodedBlockNumber = try JSONEncoder().encode(blockNumber)
-                
-                dict.updateValue(encodedTransactions, forKey: "transactions")
-                dict.updateValue(encodedBlockNumber, forKey: "blockNumber")
-                
-                guard let compressedData = dict.compressed else { return }
-                
-                self?.sendDataToAllPeers(data: compressedData)
-                self?.transactions.removeAll()
-            } catch {
-                print(error)
-            }
+//            var dict: [String : Data] = [:]
+//
+//            do {
+//                let encodedTransactions = try JSONEncoder().encode(transactions)
+//                let encodedBlockNumber = try JSONEncoder().encode(blockNumber)
+//
+//                dict.updateValue(encodedTransactions, forKey: "transactions")
+//                dict.updateValue(encodedBlockNumber, forKey: "blockNumber")
+//
+//                guard let compressedData = dict.compressed else { return }
+//
+//                self?.sendDataToAllPeers(data: compressedData)
+//                self?.transactions.removeAll()
+//            } catch {
+//                print(error)
+//            }
         }
     }
     
@@ -195,86 +211,118 @@ extension NetworkManager: MCSessionDelegate {
      */
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         print("didReceive", data)
-        
-        guard let dataDict = data.decompressedToDict,
-              let transactionsData = dataDict["transactions"],
-              var transactionsArray = transactionsData.decompressedToArray,
-              let blockNumberData = dataDict["blockNumber"],
-              let blockNumber = try? JSONDecoder().decode(BigUInt.self, from: blockNumberData) else {
-            return
-        }
-        
-        /// My transactions that are to be sent out also have to be treated like transactions from another device and processsed in order.
-        transactionsArray.append(contentsOf: transactions)
+        let queue = OperationQueue()
+
+//        let decoded = try? JSONDecoder().decode([String: Any].self, from: data)
+//        guard let contractMethod = ContractMethods(rawValue: decoded.key) else
+//            return
+//        }
+//                
+//        
+        /// No need to go through the transaction processing for certain data
+        if let blocks = try? JSONDecoder().decode([LightBlock].self, from: data) {
+            /// Data received as a response to a request for a portion of blockchain
+            Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
+                if let error = error {
+                    print(error)
+                    return
+                }
                 
-        for data in transactionsArray {
-            /// First check and see if the transaction already exists in the node and, if it does, simply return, if it doesn't, propagate right away (don't wait for the predefined interval) then validate.
-            /// If valid, include it in the block and mine. If not valid, do nothing.
-            guard let decodedTx = EthereumTransaction.fromRaw(data),// RLP -> EthereumTransaction
-                  let publicKey = decodedTx.recoverPublicKey(),
-                  let senderAddress = Web3.Utils.publicToAddressString(publicKey),
-                  let senderAddressToBeCompared = decodedTx.sender?.address,
-                  senderAddress == senderAddressToBeCompared.lowercased(),
-                  let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedTx.data) else {
-                      continue
-                  }
-            
-            
-            
-            let contractMethodString = String(decoding: decodedExtraData.contractMethod, as: UTF8.self)
-            guard let contractMethod = ContractMethods(rawValue: contractMethodString) else {
-                return
-            }
-            print("contractMethod", contractMethod as Any)
-            
-            switch contractMethod {
-                case .transferValue:
-                    print("transferValue")
-                    Node.shared.transfer(transaction: decodedTx)
-                    break
-                case .createAccount:
-                    print("createAccount")
+                guard let block = block else {
+                    return
+                }
+                
+                /// Only save the blocks that are greater in its block number than then the already existing blocks.
+                let nonExistingBlocks = blocks.filter { $0.number > block.number }
+                /// There is a chance that the local blockchain size might have increased during the transfer. If so, ignore the received block
+                if nonExistingBlocks.count > 0 {
                     Task {
-                        guard let newAccount = decodedExtraData.account else { return }
-                        /// validated accounts are to be included in the block 
-                        Node.shared.addValidatedAccount(newAccount)
-                        await Node.shared.save(newAccount) { error in
-                            print(error as Any)
+                        await Node.shared.save(nonExistingBlocks) { [weak self] error in
+                            if let error = error {
+                                print(error)
+                                return
+                            }
+                            
+                            self?.notificationCenter.post(name: .didReceiveBlockchain, object: nil)
                         }
                     }
-                    break
-                case .blockchainDownloadRequest:
-                    print("blockchainDownloadRequest")
-                    relayBlockchain(peerID: peerID)
-                    break
-                case .blockchainDownloadResponse:
-                    print("blockchainDownloadResponse")
-                    if let handler = blockchainReceiveHandler {
-                        handler("blockchainDownloadResponse")
-                    }
-                    break
+                } else {
+                    self.notificationCenter.post(name: .didReceiveBlockchain, object: nil)
+                }
+
             }
-            
-            Node.shared.addValidatedTransaction(data)
+        } else if let blockNumber = try? JSONDecoder().decode(BigUInt.self, from: data) {
+            /// Sending over the requested portion of blockchain
+            sendBlockchain(blockNumber, format: "number < %i", peerID: peerID)
+        } else if let rlpDataArray = data.decompressedToArray {
+            /// Parse an array of RLP-encoded transactions sent from peers and add them to the queue
+            for rlpData in rlpDataArray {
+                let parseOperation = ParseTransactionOperation(rlpData: rlpData, peerID: peerID)
+                let contractMethodOperation = ContractMethodOperation()
+                contractMethodOperation.addDependency(parseOperation)
+                
+                queue.addOperations([parseOperation, contractMethodOperation], waitUntilFinished: true)
+                print("Operation finished with: \(contractMethodOperation.result!)")
+            }
+        } else {
+            /// Parse a single uncompressed, RLP-encoded transaction and add it to the queue. Account creation and value transfer are sent this way.
+            let parseOperation = ParseTransactionOperation(rlpData: data, peerID: peerID)
+            let contractMethodOperation = ContractMethodOperation()
+            contractMethodOperation.addDependency(parseOperation)
+            queue.addOperations([parseOperation, contractMethodOperation], waitUntilFinished: true)
+            print("Operation finished with: \(contractMethodOperation.result!)")
         }
     }
+
     
     /// When another device asks for a copy of a blockchain to download, first check to see if you have a blockchain that's up-to-date, and if yes, forward the blockchain
-    private func relayBlockchain(peerID: MCPeerID) {
-        print("peerID", peerID)
-        /// TODO: get the entire blockchain from Core Data and send it
-        
-        guard let contractMethod = ContractMethods.blockchainDownloadResponse.data else {
-            return
+    func requestBlockchain(peerID: MCPeerID, completion: @escaping (NodeError?) -> Void) {
+        do {
+            let block: LightBlock? = try Node.shared.localStorage.getLastestBlockSync()
+            /// local blockchain may or may not exists
+            let dict = [
+                ContractMethods.blockchainDownloadRequest.rawValue: block?.number ?? 0
+            ]
+            let data = try JSONEncoder().encode(dict)
+            self.sendData(data: data, peers: [peerID], mode: .reliable)
+        } catch {
+            print(error)
+            completion(.generalError("request block error"))
         }
-        let extraData = TransactionExtraData(contractMethod: contractMethod)
-        transactionService.prepareTransaction(extraData: extraData, to: nil, password: "1") { [weak self] (data, error) in
+        
+//        Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
+//            if let error = error {
+//                completion(error)
+//            }
+//
+//            if let block = block {
+//                guard let blockNumber = try? JSONEncoder().encode(block.number) else { return }
+//                self.sendData(data: blockNumber, peers: [peerID], mode: .reliable)
+//            }
+//
+//            guard let blockNumber = try? JSONEncoder().encode(0) else { return }
+//            self.sendData(data: blockNumber, peers: [peerID], mode: .reliable)
+//        }
+    }
+    
+    func sendBlockchain(_ blockNumber: BigUInt, format: String, peerID: MCPeerID) {
+        Node.shared.localStorage.getBlocks(blockNumber, format: format) { blocks, error in
             if let error = error {
-                print("blockchain download response error", error)
+                print(error as Any)
+                return
             }
             
-            if let data = data, let compressed = [data].compressed {
-                self?.sendData(data: compressed, peers: [peerID], mode: .reliable)
+            if let blocks = blocks {
+                do {
+                    let dict = [
+                        ContractMethods.blockchainDownloadResponse.rawValue: blocks
+                    ]
+                    let encoded = try JSONEncoder().encode(dict)
+                    NetworkManager.shared.sendData(data: encoded, peers: [peerID], mode: .reliable)
+                } catch {
+                    print(error as Any)
+                    return
+                }
             }
         }
     }

@@ -195,12 +195,8 @@ final class WalletViewController: UIViewController {
               let value = BigUInt(sendAmount) else {
             throw TxError.generalError("Amount cannot be zero.")
         }
-
-        guard let contractMethod = ContractMethods.transferValue.data else {
-            throw TxError.generalError("Unable to encode contract parameters")
-        }
-        let extraData = TransactionExtraData(contractMethod: contractMethod)
-        transactionService.prepareTransaction(extraData: extraData, to: toAddress, value: value, password: "1") { (data, error) in
+        
+        transactionService.prepareTransaction(.transferValue, to: toAddress, value: value, password: "1") { data, error in
             if let error = error {
                 print(error)
             }

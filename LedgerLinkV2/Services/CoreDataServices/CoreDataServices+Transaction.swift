@@ -85,6 +85,11 @@ extension LocalStorage {
         container.performBackgroundTask { context in
             do {
                 let results = try context.fetch(request)
+                if results.count == 0 {
+                    completion(nil, nil)
+                    return
+                }
+                
                 guard let result = results.first,
                       let data = result.data,
                       let decompressed = data.decompressed,
@@ -115,6 +120,11 @@ extension LocalStorage {
         container.performBackgroundTask { context in
             do {
                 let results = try context.fetch(request)
+                if results.count == 0 {
+                    completion(nil, nil)
+                    return
+                }
+                
                 guard let result = results.first,
                       let data = result.data,
                       let id = result.id else {

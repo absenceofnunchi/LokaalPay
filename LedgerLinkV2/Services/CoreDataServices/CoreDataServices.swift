@@ -94,6 +94,7 @@ final class LocalStorage: NSObject {
     func newBatchInsertRequest<T: LightConfigurable>(with elements: [T]) -> NSBatchInsertRequest? {
         var index = 0
         let total = elements.count
+        guard total > 0 else { return nil }
 
         var entity: NSEntityDescription!
         switch elements[0] {
