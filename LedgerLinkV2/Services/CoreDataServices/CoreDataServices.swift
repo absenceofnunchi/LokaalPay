@@ -137,11 +137,11 @@ extension LocalStorage {
             guard let result = results.first else { return nil }
             return KeyWalletModel.fromCoreData(crModel: result)
         } catch {
-            throw WalletError.walletRetrievalError
+            throw NodeError.walletRetrievalError
         }
     }
     
-    func saveWallet(wallet: KeyWalletModel, completion: @escaping (WalletError?) throws -> Void) {
+    func saveWallet(wallet: KeyWalletModel, completion: @escaping (NodeError?) throws -> Void) {
         container.performBackgroundTask { [weak self](context) in
             
             self?.deleteWallet { (error) throws in
@@ -163,7 +163,7 @@ extension LocalStorage {
         }
     }
     
-    func deleteWallet(completion: @escaping (WalletError?) throws -> Void) {
+    func deleteWallet(completion: @escaping (NodeError?) throws -> Void) {
         let requestWallet: NSFetchRequest<WalletCoreData> = WalletCoreData.fetchRequest()
         
         do {

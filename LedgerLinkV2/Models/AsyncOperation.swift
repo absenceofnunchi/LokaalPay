@@ -161,6 +161,12 @@ extension ChainedAsyncResultOperation: ChainedOperationOutputProviding {
     }
 }
 
+/// Preliminary process prior to executing the contract methods. Parse the transaction so that:
+/// 1. Checks if the transaction already exists.
+/// 2. Checks if the local blockchain is up-to-date
+///     A. If it is, proceed to the execution of the contract methods.
+///     B. If not up-to-date, download the blockchain.
+///     C. If the local is more up-to-date then the peer, send the rest of the blockchain to the peer.
 final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (TransactionExtraData, EthereumTransaction), NodeError> {
     private var rlpData: Data // RLP encoded transaction
     private var peerID: MCPeerID
@@ -203,7 +209,7 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
             return
         }
         
-        /// 2. Check if the transaction already exists.
+        /// 2. Check if the transaction already exists. Abort if it already exists
         Node.shared.fetch(compressed.sha256().toHexString()) { [weak self] (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
             if let error = error {
                 self?.finish(with: .failure(error))
@@ -257,7 +263,7 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
                     NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(self.received), name: .didReceiveBlockchain, object: nil)
                     
                     /// Prevent the isFinished KVO from being triggered until the blockchain is full updated.
-                    NetworkManager.shared.requestBlockchain(peerID: peerID) { error in
+                    NetworkManager.shared.requestBlockchain(peerIDs: [peerID]) { error in
                         if let error = error {
                             self.finish(with: .failure(error))
                             return
@@ -280,6 +286,7 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
     }
 }
 
+///
 final class ContractMethodOperation: ChainedAsyncResultOperation<(TransactionExtraData, EthereumTransaction), Bool, NodeError> {
     override final public func main() {
         NetworkManager.shared.notificationCenter.removeObserver(self, name: .didReceiveBlockchain, object: nil)

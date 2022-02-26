@@ -31,7 +31,7 @@ extension IKeysService {
         do {
             fetchedWallet = try selectedWallet()
         } catch {
-            throw WalletError.walletRetrievalError
+            throw NodeError.walletRetrievalError
         }
         
         guard let data = fetchedWallet?.data else {
@@ -48,30 +48,30 @@ class KeysService: IKeysService {
         return try localStorage.getWallet()
     }
     
-    func addNewWalletWithPrivateKey(key: String, password: String, completion: @escaping (KeyWalletModel?, WalletError?) -> Void) {
+    func addNewWalletWithPrivateKey(key: String, password: String, completion: @escaping (KeyWalletModel?, NodeError?) -> Void) {
         let text = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let data = Data.fromHex(text) else {
-            completion(nil, WalletError.hexConversionError)
+            completion(nil, NodeError.hexConversionError)
             return
         }
         
         guard let newWallet = try? EthereumKeystoreV3(privateKey: data, password: password) else {
-            completion(nil, WalletError.walletCreateError)
+            completion(nil, NodeError.walletCreateError)
             return
         }
         
         guard newWallet.addresses?.count == 1 else {
-            completion(nil, WalletError.walletCountError)
+            completion(nil, NodeError.walletCountError)
             return
         }
         
         guard let keyData = try? JSONEncoder().encode(newWallet.keystoreParams) else {
-            completion(nil, WalletError.walletEncodeError)
+            completion(nil, NodeError.walletEncodeError)
             return
         }
         
         guard let address = newWallet.addresses?.first?.address else {
-            completion(nil, WalletError.walletAddressFetchError)
+            completion(nil, NodeError.walletAddressFetchError)
             return
         }
         
@@ -79,25 +79,25 @@ class KeysService: IKeysService {
         completion(walletModel, nil)
     }
     
-    func createNewWallet(password: String, completion: @escaping (KeyWalletModel?, WalletError?) -> Void) {
+    func createNewWallet(password: String, completion: @escaping (KeyWalletModel?, NodeError?) -> Void) {
         DispatchQueue.global().async {
             guard let newWallet = try? EthereumKeystoreV3(password: password) else {
-                completion(nil, WalletError.walletCreateError)
+                completion(nil, NodeError.walletCreateError)
                 return
             }
 
             guard newWallet.addresses?.count == 1 else {
-                completion(nil, WalletError.walletCountError)
+                completion(nil, NodeError.walletCountError)
                 return
             }
 
             guard let keydata = try? JSONEncoder().encode(newWallet.keystoreParams) else {
-                completion(nil, WalletError.walletEncodeError)
+                completion(nil, NodeError.walletEncodeError)
                 return
             }
 
             guard let address = newWallet.addresses?.first?.address else {
-                completion(nil, WalletError.walletAddressFetchError)
+                completion(nil, NodeError.walletAddressFetchError)
                 return
             }
 
@@ -134,25 +134,25 @@ class KeysService: IKeysService {
     
     func getWalletPrivateKey(password: String) throws -> String? {
         guard let selectedWallet = try selectedWallet(), let address = EthereumAddress(selectedWallet.address) else {
-            print(WalletError.walletAddressFetchError)
+            print(NodeError.walletAddressFetchError)
             return nil
         }
         let data = try keystoreManager()?.UNSAFE_getPrivateKeyData(password: password, account: address)
         return data?.toHexString()
     }
     
-    func resetPassword(oldPassword: String, newPassword: String, completion: @escaping (KeyWalletModel?, WalletError?) -> Void) {
+    func resetPassword(oldPassword: String, newPassword: String, completion: @escaping (KeyWalletModel?, NodeError?) -> Void) {
         var fetchedWallet: KeyWalletModel!
         do {
             fetchedWallet = try selectedWallet()
         } catch {
-            completion(nil, WalletError.walletRetrievalError)
+            completion(nil, NodeError.walletRetrievalError)
         }
         
         guard let data = fetchedWallet.data,
               let ks = EthereumKeystoreV3(data) else {
                   DispatchQueue.main.async {
-                      completion(nil, WalletError.failureToFetchOldPassword)
+                      completion(nil, NodeError.failureToFetchOldPassword)
                   }
                   return
               }
@@ -171,7 +171,7 @@ class KeysService: IKeysService {
             }
         } catch {
             DispatchQueue.main.async {
-                completion(nil, WalletError.failureToRegeneratePassword)
+                completion(nil, NodeError.failureToRegeneratePassword)
             }
         }
     }

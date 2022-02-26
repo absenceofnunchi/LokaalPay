@@ -7,7 +7,8 @@
 
 import Foundation
 
-public enum WalletError: Error {
+public enum NodeError: Error {
+    case encodingError
     case walletRetrievalError
     case walletDeleteError
     case walletSaveError
@@ -18,18 +19,6 @@ public enum WalletError: Error {
     case walletEncodeError
     case failureToFetchOldPassword
     case failureToRegeneratePassword
-    case generalError(String)
-}
-
-public enum TxError: Error {
-    case encodingError
-    case generalError(String)
-    case walletError(WalletError)
-    case nodeError(NodeError)
-}
-
-public enum NodeError: Error {
-    case encodingError
     case rlpEncodingError
     case decodingError
     case merkleTreeBuildError

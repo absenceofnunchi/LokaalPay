@@ -50,12 +50,16 @@ final class Node {
         await localStorage.save(element, completion: completion)
     }
     
-    func save<T: LightConfigurable>(_ element: [T], completion: @escaping (NodeError?) -> Void) async {
-        await localStorage.save(element, completion: completion)
+    func save<T: LightConfigurable>(_ elements: [T], completion: @escaping (NodeError?) -> Void) async {
+        await localStorage.save(elements, completion: completion)
     }
     
     func save<T>(_ element: [T], completion: @escaping (NodeError?) -> Void) async {
         await localStorage.save(element, completion: completion)
+    }
+    
+    func saveSync<T: LightConfigurable>(_ elements: [T], completion: @escaping (NodeError?) -> Void) {
+        localStorage.saveSync(elements, completion: completion)
     }
     
     func fetch<T: CoreDatable>(_ predicateString: String? = nil, completion: @escaping ([T]?, NodeError?) -> Void) {

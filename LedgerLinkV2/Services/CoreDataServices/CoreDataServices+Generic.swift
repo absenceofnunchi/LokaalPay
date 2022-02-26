@@ -113,7 +113,7 @@ extension LocalStorage {
         taskContext.transactionAuthor = "transactionSaver"
         
         do {
-            /// - Tag: performAndWait
+            /// - Tag: perform
             try await taskContext.perform {
                 // Execute the batch insert.
                 /// - Tag: batchInsertRequest
@@ -127,6 +127,36 @@ extension LocalStorage {
                     return
                 }
                 print("Failed to execute batch insert request.")
+                throw NodeError.generalError("Batch insert error")
+            }
+            
+            print("Successfully inserted data.")
+        } catch {
+            completion(NodeError.generalError("Unable to save"))
+        }
+    }
+    
+    /// Save an array of LightConfigurables synchronously
+    func saveSync<T: LightConfigurable>( _ elements: [T], completion: @escaping (NodeError?) -> Void) {
+        let taskContext = newTaskContext()
+        // Add name and author to identify source of persistent history changes.
+        taskContext.name = "saveTransactionContext"
+        taskContext.transactionAuthor = "transactionSaver"
+        
+        do {
+            /// - Tag: performAndWait
+            try taskContext.performAndWait {
+                // Execute the batch insert.
+                /// - Tag: batchInsertRequest
+                guard let batchInsertRequest = self.newBatchInsertRequest(with: elements) else {
+                    completion(NodeError.generalError("Unable to create a request"))
+                    return
+                }
+                if let fetchResult = try? taskContext.execute(batchInsertRequest),
+                   let batchInsertResult = fetchResult as? NSBatchInsertResult,
+                   let success = batchInsertResult.result as? Bool, success {
+                    return
+                }
                 throw NodeError.generalError("Batch insert error")
             }
             

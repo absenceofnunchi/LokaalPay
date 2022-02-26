@@ -213,31 +213,22 @@ extension NetworkManager: MCSessionDelegate {
         print("didReceive", data)
         let queue = OperationQueue()
 
-//        let decoded = try? JSONDecoder().decode([String: Any].self, from: data)
-//        guard let contractMethod = ContractMethods(rawValue: decoded.key) else
-//            return
-//        }
-//                
-//        
         /// No need to go through the transaction processing for certain data
         if let blocks = try? JSONDecoder().decode([LightBlock].self, from: data) {
-            /// Data received as a response to a request for a portion of blockchain
-            Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
+            /// Blockchain data received as a response to a request for a portion of blockchain
+            /// Bring the local blockchian up-to-date
+            Node.shared.localStorage.getLatestBlock { [weak self] (block: LightBlock?, error: NodeError?) in
                 if let error = error {
                     print(error)
                     return
                 }
                 
-                guard let block = block else {
-                    return
-                }
-                
-                /// Only save the blocks that are greater in its block number than then the already existing blocks.
-                let nonExistingBlocks = blocks.filter { $0.number > block.number }
-                /// There is a chance that the local blockchain size might have increased during the transfer. If so, ignore the received block
-                if nonExistingBlocks.count > 0 {
-                    Task {
-                        await Node.shared.save(nonExistingBlocks) { [weak self] error in
+                if let block = block {
+                    /// Only save the blocks that are greater in its block number than then the already existing blocks.
+                    let nonExistingBlocks = blocks.filter { $0.number > block.number }
+                    /// There is a chance that the local blockchain size might have increased during the transfer. If so, ignore the received block
+                    if nonExistingBlocks.count > 0 {
+                        Node.shared.saveSync(nonExistingBlocks) { [weak self] error in
                             if let error = error {
                                 print(error)
                                 return
@@ -245,11 +236,20 @@ extension NetworkManager: MCSessionDelegate {
                             
                             self?.notificationCenter.post(name: .didReceiveBlockchain, object: nil)
                         }
+                    } else {
+                        self?.notificationCenter.post(name: .didReceiveBlockchain, object: nil)
                     }
                 } else {
-                    self.notificationCenter.post(name: .didReceiveBlockchain, object: nil)
+                    /// no local blockchain exists yet because it's a brand new account
+                    /// delete potentially existing ones since no transactions could've/should've been occured
+                    Node.shared.deleteAll(of: .blockCoreData)
+                    Node.shared.saveSync(blocks) { error in
+                        if let error = error {
+                            print(error)
+                            return
+                        }
+                    }
                 }
-
             }
         } else if let blockNumber = try? JSONDecoder().decode(BigUInt.self, from: data) {
             /// Sending over the requested portion of blockchain
@@ -276,15 +276,13 @@ extension NetworkManager: MCSessionDelegate {
 
     
     /// When another device asks for a copy of a blockchain to download, first check to see if you have a blockchain that's up-to-date, and if yes, forward the blockchain
-    func requestBlockchain(peerID: MCPeerID, completion: @escaping (NodeError?) -> Void) {
+    func requestBlockchain(peerIDs: [MCPeerID], completion: @escaping (NodeError?) -> Void) {
         do {
             let block: LightBlock? = try Node.shared.localStorage.getLastestBlockSync()
             /// local blockchain may or may not exists
-            let dict = [
-                ContractMethods.blockchainDownloadRequest.rawValue: block?.number ?? 0
-            ]
-            let data = try JSONEncoder().encode(dict)
-            self.sendData(data: data, peers: [peerID], mode: .reliable)
+            let blockNumber = block?.number ?? BigUInt(0)
+            let data = try JSONEncoder().encode(blockNumber)
+            self.sendData(data: data, peers: peerIDs, mode: .reliable)
         } catch {
             print(error)
             completion(.generalError("request block error"))
@@ -305,6 +303,11 @@ extension NetworkManager: MCSessionDelegate {
 //        }
     }
     
+    func requestBlockchainFromAllPeers(completion: @escaping(NodeError?) -> Void) {
+        guard !session.connectedPeers.isEmpty else { return }
+        requestBlockchain(peerIDs: session.connectedPeers, completion: completion)
+    }
+    
     func sendBlockchain(_ blockNumber: BigUInt, format: String, peerID: MCPeerID) {
         Node.shared.localStorage.getBlocks(blockNumber, format: format) { blocks, error in
             if let error = error {
@@ -314,10 +317,7 @@ extension NetworkManager: MCSessionDelegate {
             
             if let blocks = blocks {
                 do {
-                    let dict = [
-                        ContractMethods.blockchainDownloadResponse.rawValue: blocks
-                    ]
-                    let encoded = try JSONEncoder().encode(dict)
+                    let encoded = try JSONEncoder().encode(blocks)
                     NetworkManager.shared.sendData(data: encoded, peers: [peerID], mode: .reliable)
                 } catch {
                     print(error as Any)

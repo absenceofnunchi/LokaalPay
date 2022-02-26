@@ -64,7 +64,7 @@ class GuestViewController: StatusViewController {
     
     private func downloadChain() throws {
         guard let contractMethod = ContractMethods.blockchainDownloadRequest.data else {
-            throw TxError.generalError("Unable to encode contract parameters")
+            throw NodeError.generalError("Unable to encode contract parameters")
         }
 //        let extraData = TransactionExtraData(contractMethod: contractMethod)
 //        transactionService.prepareTransaction(extraData: extraData, to: nil, password: "1") { (data, error) in

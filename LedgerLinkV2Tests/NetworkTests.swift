@@ -61,7 +61,7 @@ class NetworkTests: XCTestCase {
         }
     }
     
-    func test_test() {
+    func test_transaction_creation() {
         Deferred {
             Future<KeyWalletModel, NodeError> { [weak self] promise in
                 KeysService().createNewWallet(password: self!.password) { (keyWalletModel, error) in
@@ -133,7 +133,7 @@ class NetworkTests: XCTestCase {
         .store(in: &storage)
     }
     
-    func test_test1() {
+    func test_asynchronous_operation() {
         class First: ChainedAsyncResultOperation<String, String, NodeError> {
             
             init(input: String) {
@@ -178,5 +178,41 @@ class NetworkTests: XCTestCase {
         
         guard case .success(let msg) = second.result else { return }
         XCTAssertEqual(msg, "First Success!!! and Final Success!!!")
+    }
+    
+    func test_test3() {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10), execute: {
+            print("first")
+        })
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            print("Timer fired!")
+        }
+        
+        Deferred {
+            Future<Bool, NodeError> { promise in
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10), execute: {
+                    print("first")
+                    promise(.success(true))
+                })
+            }
+        }
+        .eraseToAnyPublisher()
+        .buffer(size: 1, prefetch: .keepFull, whenFull: .dropOldest)
+        .flatMap(maxPublishers: .max(1)) { _ -> AnyPublisher<Bool, NodeError> in
+            Future<Bool, NodeError> { promise in
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10), execute: {
+                    print("second")
+                    promise(.success(true))
+                })
+            }
+            .eraseToAnyPublisher()
+        }
+        .sink { completion in
+            print(completion)
+        } receiveValue: { _ in
+            print("final")
+        }
+        .store(in: &storage)
     }
 }

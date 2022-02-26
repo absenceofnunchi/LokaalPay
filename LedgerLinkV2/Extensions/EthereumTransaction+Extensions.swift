@@ -50,7 +50,7 @@ extension EthereumTransaction {
             do {
                 km = try KeysService().keystoreManager()
             } catch {
-                throw WalletError.walletRetrievalError
+                throw NodeError.walletRetrievalError
             }
         }
         

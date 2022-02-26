@@ -419,6 +419,8 @@ final class CoreDataTests: XCTestCase {
                 print("hashingError")
             case .generalError(let string):
                 print(string)
+            default:
+                print("other error: ", error as Any)
         }
     }
     

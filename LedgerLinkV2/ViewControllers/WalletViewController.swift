@@ -188,12 +188,12 @@ final class WalletViewController: UIViewController {
         
         guard let address = receivedTextField.text,
               let toAddress = EthereumAddress(address) else {
-            throw TxError.generalError("Your address could not be prepared.")
+            throw NodeError.generalError("Your address could not be prepared.")
         }
         
         guard let sendAmount = sendAmountLabel.text,
               let value = BigUInt(sendAmount) else {
-            throw TxError.generalError("Amount cannot be zero.")
+            throw NodeError.generalError("Amount cannot be zero.")
         }
         
         transactionService.prepareTransaction(.transferValue, to: toAddress, value: value, password: "1") { data, error in
