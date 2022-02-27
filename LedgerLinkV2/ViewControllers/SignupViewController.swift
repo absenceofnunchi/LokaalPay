@@ -9,6 +9,7 @@ import UIKit
 import BigInt
 import web3swift
 import Combine
+import MultipeerConnectivity
 
 final class SignupViewController: UIViewController {
     var passwordTextField: UITextField!
@@ -20,12 +21,29 @@ final class SignupViewController: UIViewController {
     let alert = AlertView()
     var storage = Set<AnyCancellable>()
     let transactionService = TransactionService()
+    var createWalletMode: Bool = false
+    var isPeerConnected: Bool = false {
+        didSet {
+            if isPeerConnected, createWalletMode {
+                print("isPeerConnected", isPeerConnected)
+                createWallet()
+            }
+        }
+    }
+    private let dispatchQueue = DispatchQueue(label: "taskQueue", qos: .background)
+    private let semaphore = DispatchSemaphore(value: 1)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configureUI()
         setConstraints()
+        
+        NetworkManager.shared.peerConnectedHandler = peerConnectedHandler
+    }
+    
+    func peerConnectedHandler(_ peerID: MCPeerID) {
+        isPeerConnected = true
     }
     
     func configureUI() {
@@ -94,7 +112,7 @@ final class SignupViewController: UIViewController {
     @objc func buttonPressed(_ sender: UIButton) {
         switch sender.tag {
             case 0:
-                createWallet()
+                initiateConnectionAndCreateWallet()
                 break
             case 1:
                 deleteAllBlockchain()
@@ -103,105 +121,237 @@ final class SignupViewController: UIViewController {
         }
     }
     
+    private func initiateConnectionAndCreateWallet() {
+        /// Start the server to download blockchain and to sent a trasaction regarding the account creation.
+        NetworkManager.shared.start()
+        createWalletMode = true
+        Node.shared.deleteAll(of: .blockCoreData)
+    }
+    
+//    private func createWallet() {
+////        guard let password = passwordTextField.text, !password.isEmpty else { return }
+//        let password = "1"
+//
+//        Deferred {
+//            Future<Bool, NodeError> { promise in
+//                NetworkManager.shared.requestBlockchainFromAllPeers { error in
+//                    if let error = error {
+//                        promise(.failure(error))
+//                    }
+//                    print("0")
+//                    let action = Action {
+//                        print("1")
+//                        promise(.success(true))
+//                    }
+//                    NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(action.action), name: .didReceiveBlockchain, object: nil)
+//                }
+//            }
+//            .eraseToAnyPublisher()
+//        }
+//        .buffer(size: 1, prefetch: .keepFull, whenFull: .dropOldest)
+//        .flatMap(maxPublishers: .max(1), { _ -> AnyPublisher<KeyWalletModel, NodeError> in
+//            Future<KeyWalletModel, NodeError> { [weak self] promise in
+//                self?.keysService.createNewWallet(password: password) { (keyWalletModel, error) in
+//                    if let error = error {
+//                        promise(.failure(error))
+//                        return
+//                    }
+//
+//                    if let keyWalletModel = keyWalletModel {
+//                        print("2")
+//                        promise(.success(keyWalletModel))
+//                    }
+//                }
+//            }
+//            .eraseToAnyPublisher()
+//        })
+//        .flatMap { (keyWalletModel) -> AnyPublisher<KeyWalletModel, NodeError> in
+//            Future<KeyWalletModel, NodeError> { [weak self] promise in
+//                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) throws in
+//                    if let error = error {
+//                        promise(.failure(error))
+//                        return
+//                    }
+//
+//                    print("3")
+//                    promise(.success(keyWalletModel))
+//                })
+//            }
+//            .eraseToAnyPublisher()
+//        }
+//        .flatMap { [weak self] (keyWalletModel) -> AnyPublisher<Bool, NodeError> in
+//            Future<Bool, NodeError> { [weak self] promise in
+//                guard let address = EthereumAddress(keyWalletModel.address) else {
+//                    promise(.failure(NodeError.generalError("Unable to generate wallet address")))
+//                    return
+//                }
+//
+//                let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
+//                guard let treeConfigAcct = try? TreeConfigurableAccount(data: account) else {
+//                    promise(.failure(NodeError.generalError("Unable to save the new account")))
+//                    return
+//                }
+//
+//                /// Propogate the creation of the new account to peers
+//                self?.notifyAccountCreation(account: account, promise: promise)
+//
+//                /// Update the UI with the new address
+//                DispatchQueue.main.async {
+//                    self?.addressLabel.text = keyWalletModel.address
+//                }
+//
+//                /// Save the newly created account into Core Data
+//                Node.shared.saveSync([treeConfigAcct]) { error in
+//                    if let error = error {
+//                        print(error)
+//                        promise(.failure(.generalError("Wallet save error")))
+//                        return
+//                    }
+//                    print("4")
+//                    promise(.success(true))
+//                }
+//
+//            }
+//            .eraseToAnyPublisher()
+//        }
+//        .sink { [weak self] (completion) in
+//            switch completion {
+//                case .finished:
+//                    print("finished")
+//                    break
+//                case .failure(let error):
+//                    self?.alert.show(error, for: self)
+//            }
+//        } receiveValue: { (_) in
+//        }
+//        .store(in: &storage)
+//
+//        createWalletMode = false
+//    }
+    
+    private func createWallet1() {
+
+        
+//        Node.shared.deleteAll(of: .blockCoreData)
+        self.createWalletMode = true
+        NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(didReceiveBlockchain), name: .didReceiveBlockchain, object: nil)
+        NetworkManager.shared.requestBlockchainFromAllPeers { error in
+            if let error = error {
+                print(error)
+                return
+            }
+            
+            print("stage 0")
+            let action = Action {
+                print("stage 1")
+            }
+            NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(action.action), name: .didReceiveBlockchain, object: nil)
+  
+            self.createWalletMode = false
+        }
+    }
+    
     private func createWallet() {
-//        guard let password = passwordTextField.text, !password.isEmpty else { return }
         let password = "1"
         
-        /// Start the server to let peers know of the creation of the account
-        NetworkManager.shared.start()
+//        NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(didReceiveBlockchain), name: .didReceiveBlockchain, object: nil)
+
+        print("start")
+        let group = DispatchGroup()
         
-        Deferred {
-            Future<Bool, NodeError> { promise in
-                NetworkManager.shared.requestBlockchainFromAllPeers { error in
-                    if let error = error {
-                        promise(.failure(error))
-                    }
-                    print("0")
-                    let action = Action {
-                        print("1")
-                        promise(.success(true))
-                    }
-                    NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(action.action), name: .didReceiveBlockchain, object: nil)
+        group.enter()
+        self.dispatchQueue.async {
+            self.semaphore.wait()
+            NetworkManager.shared.requestBlockchainFromAllPeers { error in
+                if let error = error {
+                    print(error)
+                    group.leave()
+                    return
                 }
-            }
-            .eraseToAnyPublisher()
-        }
-        .buffer(size: 1, prefetch: .keepFull, whenFull: .dropOldest)
-        .flatMap(maxPublishers: .max(1), { _ -> AnyPublisher<KeyWalletModel, NodeError> in
-            Future<KeyWalletModel, NodeError> { [weak self] promise in
-                self?.keysService.createNewWallet(password: password) { (keyWalletModel, error) in
-                    if let error = error {
-                        promise(.failure(error))
-                        return
-                    }
-                    
-                    if let keyWalletModel = keyWalletModel {
-                        print("2")
-                        promise(.success(keyWalletModel))
-                    }
+                let action = Action {
+                    print("stage 0")
+                    self.semaphore.signal()
+                    group.leave()
                 }
+                NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(action.action), name: .didReceiveBlockchain, object: nil)
+                
+                print("stage 1")
+                self.semaphore.signal()
+                group.leave()
             }
-            .eraseToAnyPublisher()
-        })
-        .flatMap { (keyWalletModel) -> AnyPublisher<KeyWalletModel, NodeError> in
-            Future<KeyWalletModel, NodeError> { [weak self] promise in
-                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) throws in
-                    if let error = error {
-                        promise(.failure(error))
-                        return
-                    }
-                    
-                    print("3")
-                    promise(.success(keyWalletModel))
-                })
-            }
-            .eraseToAnyPublisher()
         }
-        .flatMap { [weak self] (keyWalletModel) -> AnyPublisher<Bool, NodeError> in
-            Future<Bool, NodeError> { [weak self] promise in
-                guard let address = EthereumAddress(keyWalletModel.address) else {
-                    promise(.failure(NodeError.generalError("Unable to generate wallet address")))
+        
+        group.enter()
+        self.dispatchQueue.async { [weak self] in
+            self?.semaphore.wait()
+            self?.keysService.createNewWallet(password: password) { (keyWalletModel, error) in
+                if let error = error {
+                    print(error)
+                    group.leave()
+                    self?.semaphore.signal()
                     return
                 }
                 
-                let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
-                guard let treeConfigAcct = try? TreeConfigurableAccount(data: account) else {
-                    promise(.failure(NodeError.generalError("Unable to save the new account")))
+                guard let keyWalletModel = keyWalletModel else {
+                    group.leave()
                     return
                 }
                 
-                /// Propogate the creation of the new account to peers
-                self?.notifyAccountCreation(account: account, promise: promise)
-                
-                /// Update the UI with the new address
-                DispatchQueue.main.async {
-                    self?.addressLabel.text = keyWalletModel.address
-                }
-                
-                /// Save the newly created account into Core Data
-                Node.shared.saveSync([treeConfigAcct]) { error in
+                print("stage 2")
+                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) in
                     if let error = error {
                         print(error)
-                        promise(.failure(.generalError("Wallet save error")))
+                        group.leave()
                         return
                     }
-                    print("4")
-                    promise(.success(true))
-                }
-
+                    
+                    print("stage 2.5")
+                    
+                    /// Propogate the creation of the new account to peers
+                    self?.transactionService.prepareTransaction(.createAccount, to: nil, password: "1") { data, error in
+                        if let error = error {
+                            print("notify error", error)
+                            group.leave()
+                            return
+                        }
+                        
+                        guard let data = data else {
+                            group.leave()
+                            return
+                        }
+                        
+                        print("stage 3")
+                        NetworkManager.shared.sendDataToAllPeers(data: data)
+                        Node.shared.addValidatedTransaction(data)
+                        
+                        /// Update the UI with the new address
+                        DispatchQueue.main.async {
+                            self?.addressLabel.text = keyWalletModel.address
+                        }
+                        
+                        print("stage 4")
+                        self?.semaphore.signal()
+                        group.leave()
+                    }
+                })
             }
-            .eraseToAnyPublisher()
         }
-        .sink { [weak self] (completion) in
-            switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    self?.alert.show(error, for: self)
-            }
-        } receiveValue: { (_) in
+        
+//        group.enter()
+//        self.dispatchQueue.async { [weak self] in
+//            self?.semaphore.wait()
+//            print("5")
+//
+//        }
+        
+        group.notify(queue: .main) { [weak self] in
+            
+            // Perform any task once all the intermediate tasks (fetchA(), fetchB(), fetchC()) are completed.
+            // This block of code will be called once all the enter and leave statement counts are matched.
+            print("stage 5")
+            self?.createWalletMode = false
         }
-        .store(in: &storage)
+        print("incomplete")
     }
     
     private func notifyAccountCreation(account: Account, promise:  @escaping (Result<Bool, NodeError>) -> Void) {
@@ -221,6 +371,10 @@ final class SignupViewController: UIViewController {
     
     private func deleteAllBlockchain() {
         Node.shared.deleteAll()
+    }
+    
+    @objc func didReceiveBlockchain() {
+        print("didReceive notification")
     }
 }
 

@@ -40,10 +40,9 @@ extension LocalStorage {
     }
     
     /// Fetch a light block by its block number
-    func getBlock(_ number: BigUInt) throws -> LightBlock? {
-        let convertedNumber = UInt32(number)
+    func getBlock(_ number: Int32) throws -> LightBlock? {
         let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
-        requestBlock.predicate = NSPredicate(format: "number == %i", convertedNumber)
+        requestBlock.predicate = NSPredicate(format: "number == %i", number)
         do {
             let results = try context.fetch(requestBlock)
             guard let result = results.first else { return nil }
@@ -54,10 +53,9 @@ extension LocalStorage {
     }
     
     /// Fetch a full block by its block number
-    func getBlock(_ number: BigUInt) throws -> FullBlock? {
-        let convertedNumber = Int32(number)
+    func getBlock(_ number: Int32) throws -> FullBlock? {
         let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
-        requestBlock.predicate = NSPredicate(format: "number == %i", convertedNumber)
+        requestBlock.predicate = NSPredicate(format: "number == %i", number)
         
         do {
             let results = try context.fetch(requestBlock)
@@ -83,10 +81,15 @@ extension LocalStorage {
         }
     }
     
-    func getBlocks(_ number: BigUInt, format: String, completion: @escaping ([LightBlock]?, NodeError?) -> Void) {
-        let convertedNumber = UInt32(number)
+    func getBlocks(from number: Int32, format: String, completion: @escaping ([LightBlock]?, NodeError?) -> Void) {
+        guard number >= 0 else {
+            completion(nil, .generalError("The block number has to be greater than 0"))
+            return
+        }
+        
+//        let convertedNumber = Int32(number)
         let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
-        fetchRequest.predicate = NSPredicate(format: format, convertedNumber)
+        fetchRequest.predicate = NSPredicate(format: format, number)
 
         // Initialize Asynchronous Fetch Request
         let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in

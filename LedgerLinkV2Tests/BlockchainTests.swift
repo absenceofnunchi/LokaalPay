@@ -352,7 +352,7 @@ final class BlockchainTests: XCTestCase {
                 }
                 XCTAssertEqual(fetchedBlock, block)
                 
-                guard let fetchedFullBlock: FullBlock = try Node.shared.localStorage.getBlock(lightBlock.number) else {
+                guard let fetchedFullBlock: FullBlock = try Node.shared.localStorage.getBlock((lightBlock.number)) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchedFullBlock, block)
@@ -362,7 +362,7 @@ final class BlockchainTests: XCTestCase {
                 }
                 XCTAssertEqual(fetchLightBlock, lightBlock)
                 
-                guard let fetchedFullBlock1: LightBlock = try Node.shared.localStorage.getBlock(lightBlock.number) else {
+                guard let fetchedFullBlock1: LightBlock = try Node.shared.localStorage.getBlock((lightBlock.number)) else {
                     fatalError()
                 }
                 XCTAssertEqual(fetchedFullBlock1, lightBlock)

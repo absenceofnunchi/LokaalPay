@@ -247,8 +247,9 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
                 } else if block.number > decodedExtraData.latestBlockNumber {
                     print("2")
                     /// Send a portion of the blockchain to the peer whose blockchain isn't up-to-date and proceed with the rest of the transaction.
-                    guard let self = self else { return }
-                    NetworkManager.shared.sendBlockchain(decodedExtraData.latestBlockNumber, format: "number < %i", peerID: self.peerID)
+                    guard let self = self,
+                          let convertedNumber = Int32(decodedExtraData.latestBlockNumber.description) else { return }
+                    NetworkManager.shared.sendBlockchain(convertedNumber, format: "number > %i", peerID: self.peerID)
                     self.finish(with: .success((decodedExtraData, decodedTx)))
                 } else if block.number < decodedExtraData.latestBlockNumber {
                     print("3")
@@ -297,6 +298,8 @@ final class ContractMethodOperation: ChainedAsyncResultOperation<(TransactionExt
         } catch {
             self.finish(with: .failure(error as! NodeError))
         }
+        
+        self.finish(with: .success(true))
     }
     
     func executeContractMethod(extraData: TransactionExtraData, decodedTx: EthereumTransaction) throws {

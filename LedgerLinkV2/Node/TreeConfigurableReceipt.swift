@@ -8,16 +8,10 @@
 import Foundation
 import web3swift
 
-public struct TreeConfigurableReceipt: LightConfigurable {
+public struct TreeConfigurableReceipt: LightConfigurable, PropertyLoopable {
     typealias T = TransactionReceipt
     var id: String // Receipt hash
     var data: Data // RLP encoded then compressed TransactionReceipt
-    var dictionaryValue: [String: Any] {
-        [
-            "id": id,
-            "data": data
-        ]
-    }
     
     public init(id: String, data: Data) {
         self.id = id

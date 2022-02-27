@@ -427,7 +427,7 @@ extension LocalStorage {
                         guard let id = element.id,
                               let data = element.data else { return nil }
                         let number = element.number
-                        return LightBlock(id: id, number: BigUInt(number), data: data)
+                        return LightBlock(id: id, number: number, data: data)
                     }
                     
                     completion(fullBlocks as? [T], nil)

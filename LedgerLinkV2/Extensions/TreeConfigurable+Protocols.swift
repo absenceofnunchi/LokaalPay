@@ -14,11 +14,10 @@ import Compression
  Hashable because the Merkle tree needs to hash the converted data.
  Comparable because the Red Black tree needs to sort.
  */
-protocol LightConfigurable: Codable, Hashable, Comparable, CoreDatable {
+protocol LightConfigurable: Codable, Hashable, Comparable, CoreDatable, PropertyLoopable {
     associatedtype T
     var id: String { get set }
     var data: Data { get set }
-    var dictionaryValue: [String: Any] { get } // The keys must have the same name as the attributes of the StateCoreData, TransactionCoreEntity, etc entities. For newBatchInsertRequest in Core Data.
     init(data: T) throws
     func decode() -> T?
 }
@@ -58,3 +57,24 @@ extension LightConfigurable {
     }
 }
 
+// MARK: - PropertyLoopable
+
+protocol PropertyLoopable {
+    func allProperties() throws -> [String: Any]
+}
+
+extension PropertyLoopable {
+    func allProperties() throws -> [String: Any] {
+        var result: [String: Any] = [:]
+        let mirror = Mirror(reflecting: self)
+        for (labelMaybe, valueMaybe) in mirror.children {
+            guard let label = labelMaybe else {
+                continue
+            }
+            
+            result[label] = valueMaybe
+        }
+        
+        return result
+    }
+}

@@ -345,24 +345,19 @@ fileprivate func decodeHexToBigUInt<T>(_ container: KeyedDecodingContainer<T>, k
 
 /*
  To be used for saving the full-ledged ChainBlock into Core Data. Better space complexity compared to ChainBlock
+ PropertyLoopable protocol is used to extract the dictionary value of the properties for NSBatchInsertRequest instead of using a regular [String: Any] as one of the properties because it's not Codable
+ The resulting keys must have the same name as the attributes of the StateCoreData, TransactionCoreEntity and other such entities.
  */
 
-struct LightBlock: LightConfigurable {
+struct LightBlock: LightConfigurable, PropertyLoopable {    
     typealias T = FullBlock
     var id: String
-    var number: BigUInt
+    var number: Int32
     var data: Data
-    var dictionaryValue: [String: Any] {
-        [
-            "id": id,
-            "number": Int32(number),
-            "data": data
-        ]
-    }
     
     init(data: FullBlock) throws {
         self.id = data.hash.toHexString()
-        self.number = data.number
+        self.number = Int32(data.number)
 
         do {
             let encoded = try JSONEncoder().encode(data)
@@ -375,9 +370,15 @@ struct LightBlock: LightConfigurable {
         }
     }
     
-    init(id: String, number: BigUInt, data: Data) {
+    init(id: String, number: Int32, data: Data) {
         self.id = id
         self.number = number
+        self.data = data
+    }
+    
+    init(id: String, number: BigUInt, data: Data) {
+        self.id = id
+        self.number = Int32(number)
         self.data = data
     }
 
@@ -397,8 +398,8 @@ struct LightBlock: LightConfigurable {
     static func fromCoreData(crModel: BlockCoreData) -> LightBlock? {
         guard let id = crModel.id,
               let data = crModel.data else { return nil }
-        let convertedNumber = BigUInt(crModel.number)
-        return LightBlock(id: id, number: convertedNumber, data: data)
+        
+        return LightBlock(id: id, number: crModel.number, data: data)
     }
     
     static func fromCoreData(crModel: BlockCoreData) -> FullBlock? {
@@ -428,7 +429,6 @@ struct LightBlock: LightConfigurable {
         return (lhs.id < rhs.id) && (lhs.data.toHexString() < rhs.data.toHexString())
     }
 }
-
 
 // MARK: - BlockModel
 

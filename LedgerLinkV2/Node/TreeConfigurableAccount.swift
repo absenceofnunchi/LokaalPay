@@ -17,17 +17,11 @@ import Foundation
 import BigInt
 import web3swift
 
-public struct TreeConfigurableAccount: LightConfigurable {
+public struct TreeConfigurableAccount: LightConfigurable, PropertyLoopable {
     typealias T = Account
     var id: String /// Address
     var data: Data /// RLP encoded and compressed Account
-    var dictionaryValue: [String: Any] {
-        [
-            "id": id,
-            "data": data
-        ]
-    }
-    
+
     /// Account is already RLP encoded
     public init(address: String, rlpAccount: Data) throws {
         guard let compressed = rlpAccount.compressed else {

@@ -44,14 +44,23 @@ extension LocalStorage {
         
         do {
             let results = try context.fetch(request)
-            guard let result = results.first,
-                  let data = result.data else {
-                      throw NodeError.generalError("Parsing error")
-                  }
+            print("results", results as Any)
+            guard let result = results.first else {
+                throw NodeError.generalError("Parsing error")
+            }
+            
+            guard let data = result.data else {
+                throw NodeError.generalError("Parsing error2")
+            }
+            
+//            guard let result = results.first,
+//                  let data = result.data else {
+//                      throw NodeError.generalError("Parsing error")
+//                  }
             
             return try Account(data)
         } catch {
-            throw NodeError.generalError("Unable to fetch blocks")
+            throw NodeError.generalError("Unable to fetch Account")
         }
     }
     
@@ -110,6 +119,35 @@ extension LocalStorage {
             return accountArr
         } catch {
             throw NodeError.generalError("Unable to fetch blocks")
+        }
+    }
+    
+    func getAllAccountsSync(completion: @escaping ([TreeConfigurableAccount]?, NodeError?) -> Void) {
+        let taskContext = newTaskContext()
+        // Add name and author to identify source of persistent history changes.
+        taskContext.name = "stateContext"
+        taskContext.transactionAuthor = "stateSaver"
+        
+        let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
+
+        /// - Tag: perform
+        taskContext.performAndWait {
+            do {
+                let results = try context.fetch(request)
+                let accountArr: [TreeConfigurableAccount] = results.compactMap {
+                    guard let data = $0.data else {
+                        return nil
+                    }
+                    guard let acct = try? Account(data) else {
+                        return nil
+                    }
+                    
+                    return try? TreeConfigurableAccount(data: acct)
+                }
+                completion(accountArr, nil)
+            } catch {
+                completion(nil, NodeError.generalError("Unable to fetch blocks"))
+            }
         }
     }
     

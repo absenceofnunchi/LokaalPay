@@ -118,8 +118,19 @@ final class LocalStorage: NSObject {
         // Provide one dictionary at a time when the closure is called.
         let batchInsertRequest = NSBatchInsertRequest(entity: entity, dictionaryHandler: { dictionary in
             guard index < total else { return true }
-            dictionary.addEntries(from: elements[index].dictionaryValue)
-            index += 1
+            
+            do {
+                let dictionaryValue = try elements[index].allProperties()
+                dictionary.addEntries(from: dictionaryValue)
+                
+//                dictionary.addEntries(from: elements[index].dictionaryValue)
+
+                index += 1
+            } catch {
+                print("NSBatchInsertRequest error", error)
+                return true
+            }
+
             return false
         })
         return batchInsertRequest
@@ -141,23 +152,51 @@ extension LocalStorage {
         }
     }
     
-    func saveWallet(wallet: KeyWalletModel, completion: @escaping (NodeError?) throws -> Void) {
+    func saveWallet(wallet: KeyWalletModel, completion: @escaping (NodeError?) -> Void) {
         container.performBackgroundTask { [weak self](context) in
             
-            self?.deleteWallet { (error) throws in
+            /// Delete the existing keystore
+            self?.deleteWallet { (error) in
                 if let error = error {
-                    try completion(error)
+                    completion(error)
                 }
                 
-                guard let entity = NSEntityDescription.insertNewObject(forEntityName: EntityName.walletCoreData.rawValue, into: context) as? WalletCoreData else { return }
+                /// Save a new keystore
+                guard let entity = NSEntityDescription.insertNewObject(forEntityName: EntityName.walletCoreData.rawValue, into: context) as? WalletCoreData else {
+                    completion(.generalError("Unable to save keystore"))
+                    return
+                }
                 entity.address = wallet.address
                 entity.data = wallet.data
                 
+                guard let address = EthereumAddress(wallet.address) else {
+                    completion(.generalError("Unable to instantiate address in saveWallet"))
+                    return
+                }
+                
+                /// Create a new Account using the newly created address
+                let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
+                guard let treeConfigAcct = try? TreeConfigurableAccount(data: account) else {
+                    completion(.generalError("Unable to instantiate address in saveWallet"))
+                    return
+                }
+                
+                /// Delete potentially existing state with the same address
+                Node.shared.delete(account)
+                
+                /// Delete the newly created Account
+                guard let stateEntity = NSEntityDescription.insertNewObject(forEntityName: EntityName.stateCoreData.rawValue, into:context) as? StateCoreData else {
+                    completion(.generalError("Unable to save state"))
+                    return
+                }
+                stateEntity.id = treeConfigAcct.id
+                stateEntity.data = treeConfigAcct.data
+                
                 do {
                     try context.save()
-                    try completion(nil)
+                    completion(nil)
                 } catch {
-                    try completion(.walletSaveError)
+                    completion(.walletSaveError)
                 }
             }
         }

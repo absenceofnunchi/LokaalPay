@@ -66,6 +66,69 @@ final class Node {
         localStorage.fetch(predicateString, completion: completion)
     }
     
+    func fetchAll(completion: @escaping ([Bool]?, NodeError?) -> Void) {
+//        let accounts = {
+//            Deferred { [weak self] in
+//                Future<[TreeConfigurableAccount], NodeError> { promise in
+//                    self?.localStorage.fetch { (accounts: [TreeConfigurableAccount]?, error: NodeError?) in
+//                        if let error = error {
+//                            promise(.failure(error))
+//                        }
+//
+//                        if let accounts = accounts {
+//                            promise(.success(accounts))
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        
+//        let accounts = Deferred { [weak self] in
+//            Future<[TreeConfigurableAccount], NodeError> { promise in
+//                self?.localStorage.fetch { (accounts: [TreeConfigurableAccount]?, error: NodeError?) in
+//                    if let error = error {
+//                        promise(.failure(error))
+//                    }
+//                    
+//                    if let accounts = accounts {
+//                        promise(.success(accounts))
+//                    }
+//                }
+//            }
+//        }
+//        
+//        let transactions = Deferred { [weak self] in
+//            Future<[TreeConfigurableTransaction], NodeError> { promise in
+//                self?.localStorage.fetch { (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
+//                    if let error = error {
+//                        promise(.failure(error))
+//                    }
+//                    
+//                    if let txs = txs {
+//                        promise(.success(txs))
+//                    }
+//                }
+//            }
+//        }
+//
+//        Publishers.MergeMany([accounts, transactions])
+//            .collect()
+//            .eraseToAnyPublisher()
+//            .flatMap { (results) -> AnyPublisher<Bool, NodeError>  in
+//                Future<Bool, NodeError> { promise in
+//                    promise(.success(true))
+//                }
+//                .eraseToAnyPublisher()
+//            }
+//            .sink { completion in
+//                print(completion)
+//            } receiveValue: { finalValue in
+//                print(finalValue)
+//            }
+//            .store(in: &storage)
+
+    }
+    
     func delete<T: CoreDatable>(_ element: T) {
         localStorage.delete(element)
     }
