@@ -53,66 +53,83 @@ class WalletTests: XCTestCase {
         }
     }
     
-    func test_test1() {
-        let accounts = Future<[TreeConfigurableAccount], NodeError> { [weak self] (promise) in
-            Node.shared.localStorage.fetch { (accts: [TreeConfigurableAccount]?, error: NodeError?) in
-                if let error = error {
-                    promise(.failure(error))
-                }
-                
-                if let accts = accts {
-                    promise(.success(accts))
-                }
+    func test_test1() async {
+        Node.shared.deleteAll()
+        try? Node.shared.localStorage.saveStatesAsync(accounts)
+        await Node.shared.save(blocks) { error in
+            if let error = error {
+                print(error)
             }
         }
         
-        let transactions = Future<[TreeConfigurableTransaction], NodeError> { [weak self] promise in
-            Node.shared.localStorage.fetch { (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
-                if let error = error {
-                    promise(.failure(error))
-                }
-                
-                if let txs = txs {
-                    promise(.success(txs))
+        await Node.shared.save(transactions) { [weak self] (error) in
+            if let error = error {
+                print(error)
+                return
+            }
+            
+            let accts = Future<[TreeConfigurableAccount]?, NodeError> { promise in
+                Node.shared.localStorage.getAllAccountsSync { (accts: [TreeConfigurableAccount]?, error: NodeError?) in
+                    if let error = error {
+                        promise(.failure(error))
+                        return
+                    }
+                    
+                    if let accts = accts {
+                        promise(.success(accts))
+                    }
                 }
             }
+            
+            let txs = Future<[TreeConfigurableTransaction], NodeError> { promise in
+                Node.shared.localStorage.getAllTransactionsAsync { (tx: [TreeConfigurableTransaction]?, error: NodeError?) in
+                    if let error = error {
+                        promise(.failure(error))
+                        return
+                    }
+                    if let tx = tx {
+                        promise(.success(tx))
+                    }
+                }
+            }
+            
+            let blocks = Future<[LightBlock], NodeError> { promise in
+                Node.shared.localStorage.getBlocks(from: 0, format: "number > %i") { (blocks: [LightBlock]?, error: NodeError?) in
+                    if let error = error {
+                        promise(.failure(error))
+                        return
+                    }
+                    
+                    if let blocks = blocks {
+                        promise(.success(blocks))
+                    }
+                }
+            }
+            
+            guard let self = self else { return }
+            Publishers.CombineLatest3(accts, txs, blocks)
+                .collect()
+                .eraseToAnyPublisher()
+                .flatMap({ (results) -> AnyPublisher<Bool, NodeError> in
+                    Future<Bool, NodeError> { promise in
+//                        results.forEach { print("for each", $0)}
+                        
+                        for (acct, tx, blocks) in results {
+                            print("acct", acct as Any)
+                            print("tx", tx as Any)
+                            print("blocks", blocks as Any)
+                        }
+                        promise(.success(true))
+                    }
+                    .eraseToAnyPublisher()
+                })
+                .sink { completion in
+                    print(completion)
+                    Node.shared.deleteAll()
+                } receiveValue: { finalValue in
+                    print("finalValue", finalValue)
+                }
+                .store(in: &self.storage)
         }
-        
-//        let accts = Future<[TreeConfigurableAccount]?, NodeError> { [weak self] promise in
-//            do {
-//                let accounts: [TreeConfigurableAccount]? = try Node.shared.localStorage.getAllAccounts()
-//                promise(.success(accounts))
-//            } catch NodeError.generalError(let error) {
-//                promise(.failure(.generalError(error)))
-//            } catch {
-//                promise(.failure(.generalError("Unable to fetch accounts")))
-//            }
-//        }
-        
-        let accts = Future<[TreeConfigurableAccount]?, NodeError> { [weak self] promise in
-            Node.shared.localStorage.getAllAccountsSync { (accts: [TreeConfigurableAccount]?, error: NodeError?) in
-                if let error = error {
-                    promise(.failure(error))
-                }
-                
-                if let accts = accts {
-                    promise(.success(accts))
-                }
-            }
-        }
-        
-//        let txs = Future<[TreeConfigurableTransaction], NodeError> { [weak self] promise in
-//            Node.shared.localStorage.getall
-//        }
-        
-        Publishers.MergeMany([accts])
-            .collect()
-            .eraseToAnyPublisher()
-            .sink { completion in
-                print(completion)
-            } receiveValue: { finalValue in
-                print("finalValue", finalValue)
-            }
-            .store(in: &storage)
     }
 }

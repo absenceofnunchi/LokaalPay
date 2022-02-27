@@ -64,6 +64,7 @@ extension LocalStorage {
                 
                 /// Delete if a duplicate exists and update a new one
                 try taskContext.save()
+                completion(nil)
             } catch {
                 completion(NodeError.generalError("Block save error"))
             }
@@ -131,6 +132,7 @@ extension LocalStorage {
             }
             
             print("Successfully inserted data.")
+            completion(nil)
         } catch {
             completion(NodeError.generalError("Unable to save"))
         }
@@ -161,6 +163,7 @@ extension LocalStorage {
             }
             
             print("Successfully inserted data.")
+            completion(nil)
         } catch {
             completion(NodeError.generalError("Unable to save"))
         }

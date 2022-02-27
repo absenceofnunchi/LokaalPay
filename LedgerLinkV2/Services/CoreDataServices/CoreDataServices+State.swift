@@ -443,38 +443,6 @@ extension LocalStorage {
     }
     
     func getAllAccountsAsync(completion: @escaping ([Account]?, NodeError?) -> Void) async {
-        //        let taskContext = newTaskContext()
-        //        // Add name and author to identify source of persistent history changes.
-        //        taskContext.name = "stateContext"
-        //        taskContext.transactionAuthor = "stateSaver"
-        //
-        //        /// - Tag: perform
-        //        await taskContext.perform {
-        //            let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        //            do {
-        //                let results = try taskContext.fetch(request)
-        //                let accountArr: [Account] = results.compactMap {
-        //                    print("fetched address", $0.id as Any)
-        //                    guard let data = $0.data else {
-        //                        print("nil returned")
-        //                        return nil
-        //                    }
-        //
-        ////                    return try? Account(data)
-        //                    do {
-        //                        return try Account(data)
-        //                    } catch {
-        //                        print("Account instantiation error", error)
-        //                        return nil
-        //                    }
-        //                }
-        //                completion(accountArr, nil)
-        //            } catch {
-        //                completion(nil, NodeError.generalError("Unable to fetch blocks"))
-        //            }
-        //        }
-        
-        
         let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
         
         // Initialize Asynchronous Fetch Request
@@ -520,28 +488,6 @@ extension LocalStorage {
     }
     
     func deleteAccountAsync(_ address: EthereumAddress, completion: @escaping (NodeError?) -> Void) async {
-        //        let taskContext = newTaskContext()
-        //        // Add name and author to identify source of persistent history changes.
-        //        taskContext.name = "stateContext"
-        //        taskContext.transactionAuthor = "stateSaver"
-        //
-        //        /// - Tag: perform
-        //        await taskContext.perform {
-        //            let request: NSFetchRequest<StateCoreData> = StateCoreData.fetchRequest()
-        //            request.predicate = NSPredicate(format: "id == %@", address.address)
-        //
-        //            do {
-        //                let result = try taskContext.fetch(request)
-        //                for item in result {
-        //                    taskContext.delete(item)
-        //                }
-        //
-        //                try taskContext.save()
-        //            } catch {
-        //                completion(NodeError.generalError("Block deletion error"))
-        //            }
-        //        }
-        // Makes sure changes are saved to be deleted
         coreDataStack.saveContext()
         
         // Create Fetch Request
@@ -564,12 +510,12 @@ extension LocalStorage {
             
             // Reset Managed Object Context
             context.reset()
-            
+            completion(nil)
         } catch {
             let updateError = error as NSError
             print("\(updateError), \(updateError.userInfo)")
+            completion(.generalError("Unable to delete account"))
         }
-        
     }
     
     func deleteAccountAsync(_ addressString: String, completion: @escaping (NodeError?) -> Void) async throws {

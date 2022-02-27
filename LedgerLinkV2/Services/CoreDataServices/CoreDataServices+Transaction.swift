@@ -174,6 +174,32 @@ extension LocalStorage {
         }
     }
     
+    func getAllTransactionsAsync(completion: @escaping ([TreeConfigurableTransaction]?, NodeError?) -> Void) {
+        let request: NSFetchRequest<TransactionCoreData> = TransactionCoreData.fetchRequest()
+        
+        let taskContext = newTaskContext()
+        // Add name and author to identify source of persistent history changes.
+        taskContext.name = "saveTransactionContext"
+        taskContext.transactionAuthor = "transactionSaver"
+        
+        /// - Tag: performAndWait
+        taskContext.performAndWait {
+            do {
+                let results = try context.fetch(request)
+                let convertedArr: [TreeConfigurableTransaction] = results.compactMap {
+                    guard let id = $0.id,
+                          let data = $0.data else { return nil }
+                          
+                    return TreeConfigurableTransaction(id: id, data: data)
+                }
+                
+                completion(convertedArr, nil)
+            } catch {
+                completion(nil, NodeError.generalError("Unable to fetch blocks"))
+            }
+        }
+    }
+    
     func deleteTransactionAsync(_ hexString: String) async throws {
         let request: NSFetchRequest<TransactionCoreData> = TransactionCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", hexString)
