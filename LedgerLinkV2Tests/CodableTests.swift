@@ -142,7 +142,6 @@ class CodableTests: XCTestCase {
             XCTAssertEqual(decoded.size, block.size)
             XCTAssertTrue(abs(decoded.timestamp.timeIntervalSince(block.timestamp)) < 1)
             XCTAssertEqual(decoded.transactions, block.transactions)
-            XCTAssertEqual(decoded.miner, block.miner)
             XCTAssertEqual(decoded, block)
         }
     }

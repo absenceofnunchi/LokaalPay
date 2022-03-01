@@ -138,8 +138,54 @@ extension LocalStorage {
         }
     }
     
+    func saveSync<T>( _ elements: [T], completion: @escaping (NodeError?) -> Void) {
+        if let accounts = elements as? [Account] {
+            do {
+                let treeConfigAccounts = try accounts.map { try TreeConfigurableAccount(data: $0) }
+                saveSync(treeConfigAccounts, completion: completion)
+            } catch {
+                completion(NodeError.generalError("Unable to prepare state to save"))
+            }
+        } else if let treeConfigAccounts = elements as? [TreeConfigurableAccount] {
+            saveSync(treeConfigAccounts, completion: completion)
+        } else if let transactions = elements as? [EthereumTransaction] {
+            do {
+                let treeConfigTxs = try transactions.map { try TreeConfigurableTransaction(data: $0) }
+                saveSync(treeConfigTxs, completion: completion)
+            } catch {
+                completion(NodeError.generalError("Unable to prepare transaction to save"))
+            }
+        } else if let treeConfigTxs = elements as? [TreeConfigurableTransaction] {
+            saveSync(treeConfigTxs, completion: completion)
+        } else if let receipts = elements as? [TransactionReceipt] {
+            do {
+                let treeConfigReceipts = try receipts.map { try TreeConfigurableReceipt(data: $0) }
+                saveSync(treeConfigReceipts, completion: completion)
+            } catch {
+                completion(NodeError.generalError("Unable to prepare receipt to save"))
+            }
+        } else if let blocks = elements as? [FullBlock] {
+            do {
+                let lightBlocks = try blocks.map { try LightBlock(data: $0) }
+                saveSync(lightBlocks, completion: completion)
+            } catch {
+                completion(NodeError.generalError("Unable to prepare block to save"))
+            }
+        } else if let blocks = elements as? [LightBlock] {
+            saveSync(blocks, completion: completion)
+        } else {
+            completion(NodeError.generalError("Wrong type"))
+        }
+    }
+    
     /// Save an array of LightConfigurables synchronously
     func saveSync<T: LightConfigurable>( _ elements: [T], completion: @escaping (NodeError?) -> Void) {
+        guard elements.count > 0 else { return }
+        
+        if let accounts = elements as? [TreeConfigurableAccount] {
+            accounts.forEach{ delete($0) }
+        }
+        
         let taskContext = newTaskContext()
         // Add name and author to identify source of persistent history changes.
         taskContext.name = "saveTransactionContext"

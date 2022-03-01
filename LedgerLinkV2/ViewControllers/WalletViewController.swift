@@ -162,6 +162,7 @@ final class WalletViewController: UIViewController {
     @objc private func buttonPressed(_ sender: UIButton) {
         switch sender.tag {
             case 0:
+                /// Send value
                 do {
                     try send()
                 } catch {
@@ -183,6 +184,7 @@ final class WalletViewController: UIViewController {
         }
     }
     
+    /// Send value to a peer
     private func send() throws {
         view.endEditing(true)
         

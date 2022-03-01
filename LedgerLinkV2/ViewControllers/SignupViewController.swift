@@ -24,7 +24,7 @@ final class SignupViewController: UIViewController {
     var createWalletMode: Bool = false
     var isPeerConnected: Bool = false {
         didSet {
-            if isPeerConnected, createWalletMode {
+            if isPeerConnected && createWalletMode {
                 print("isPeerConnected", isPeerConnected)
                 createWallet()
             }
@@ -254,8 +254,7 @@ final class SignupViewController: UIViewController {
     private func createWallet() {
         let password = "1"
         
-//        NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(didReceiveBlockchain), name: .didReceiveBlockchain, object: nil)
-
+        showSpinner()
         print("start")
         let group = DispatchGroup()
         
@@ -268,13 +267,7 @@ final class SignupViewController: UIViewController {
                     group.leave()
                     return
                 }
-                let action = Action {
-                    print("stage 0")
-                    self.semaphore.signal()
-                    group.leave()
-                }
-                NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(action.action), name: .didReceiveBlockchain, object: nil)
-                
+         
                 print("stage 1")
                 self.semaphore.signal()
                 group.leave()
@@ -350,6 +343,7 @@ final class SignupViewController: UIViewController {
             // This block of code will be called once all the enter and leave statement counts are matched.
             print("stage 5")
             self?.createWalletMode = false
+            self?.hideSpinner()
         }
         print("incomplete")
     }

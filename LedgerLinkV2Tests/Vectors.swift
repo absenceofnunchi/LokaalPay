@@ -91,7 +91,7 @@ struct Vectors {
     static var transactions: [EthereumTransaction] {
         var txArray = [EthereumTransaction]()
         for i in 0 ..< addresses.count {
-            let tx = EthereumTransaction(gasPrice: BigUInt(i), gasLimit: BigUInt(i), to: addresses[i], value: BigUInt(i), data: Data())
+            let tx = EthereumTransaction(gasPrice: BigUInt(i), gasLimit: BigUInt(i + 100), to: addresses[i], value: BigUInt(i), data: Data())
             txArray.append(tx)
         }
         return txArray
@@ -131,7 +131,7 @@ struct Vectors {
     static var blocks: [FullBlock] {
         var blocks = [FullBlock]()
         for i in 0 ..< binaryHashes.count {
-            guard let block = try? FullBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [treeConfigurableTransactions[i].id]) else { fatalError("blocks vector error") }
+            guard let block = try? FullBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [], accounts: []) else { fatalError("blocks vector error") }
             blocks.append(block)
         }
         return blocks
@@ -146,4 +146,3 @@ struct Vectors {
         return lBlocks
     }
 }
-

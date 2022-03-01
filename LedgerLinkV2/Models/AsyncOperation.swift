@@ -258,17 +258,16 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
                         self?.finish(with: .failure(NodeError.generalError("Unable to parse PeerID")))
                         return
                     }
-                    
-                    /// Add an observer for when the peer sends back the requested blockchain
-                    guard let self = self else { return }
-                    NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(self.received), name: .didReceiveBlockchain, object: nil)
+
                     
                     /// Prevent the isFinished KVO from being triggered until the blockchain is full updated.
                     NetworkManager.shared.requestBlockchain(peerIDs: [peerID]) { error in
                         if let error = error {
-                            self.finish(with: .failure(error))
+                            self?.finish(with: .failure(error))
                             return
                         }
+                        
+                        self?.finish(with: .success((decodedExtraData, decodedTx)))
                     }
                 }
             }
@@ -277,13 +276,6 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
     
     override func cancel() {
         super.cancel()
-    }
-    
-    @objc func received(notification: Notification) {
-        print("notification received")
-        guard let decodedTx = decodedTx,
-              let decodedExtraData = decodedExtraData else { return }
-        finish(with: .success((decodedExtraData, decodedTx)))
     }
 }
 
@@ -303,31 +295,34 @@ final class ContractMethodOperation: ChainedAsyncResultOperation<(TransactionExt
     }
     
     func executeContractMethod(extraData: TransactionExtraData, decodedTx: EthereumTransaction) throws {
-        let contractMethodString = String(decoding: extraData.contractMethod, as: UTF8.self)
-        guard let contractMethod = ContractMethods(rawValue: contractMethodString) else {
-            throw NodeError.generalError("Unable to parse the contract method")
-        }
-        print("contractMethod", contractMethod as Any)
-        
-        switch contractMethod {
-            case .transferValue:
-                print("transferValue")
-                Node.shared.transfer(transaction: decodedTx)
-                break
-            case .createAccount:
-                print("createAccount")
-                Task {
-                    guard let newAccount = extraData.account else { return }
-                    /// validated accounts are to be included in the block
-                    Node.shared.addValidatedAccount(newAccount)
-                    await Node.shared.save(newAccount) { error in
-                        print(error as Any)
-                    }
-                }
-                break
-            default:
-                break
-        }
+//        let contractMethodString = String(decoding: extraData.contractMethod, as: UTF8.self)
+//        guard let contractMethod = ContractMethods(rawValue: contractMethodString) else {
+//            throw NodeError.generalError("Unable to parse the contract method")
+//        }
+//        print("contractMethod", contractMethod as Any)
+//        
+//        switch contractMethod {
+//            case .transferValue:
+//                print("transferValue")
+//                Node.shared.transfer(transaction: decodedTx)
+//                break
+//            case .createAccount:
+//                print("createAccount")
+//                guard let newAccount = extraData.account else { return }
+//                /// validated accounts are to be included in the block
+//                Node.shared.addValidatedAccount(newAccount)
+//                print("newAccount", newAccount as Any)
+//                Node.shared.saveSync([newAccount]) { error in
+//                    if let error = error {
+//                        print(error as Any)
+//                        return
+//                    }
+//                    print("saved")
+//                }
+//                break
+//            default:
+//                break
+//        }
     }
     
     override final public func cancel() {

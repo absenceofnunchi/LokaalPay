@@ -16,6 +16,7 @@ let hashes = Vectors.hashes
 let treeConfigurableAccounts = Vectors.treeConfigurableAccounts
 let treeConfigurableTransactions = Vectors.treeConfigurableTransactions
 let treeConfigurableReceipts = Vectors.treeConfigurableReceipts
+let addresses = Vectors.addresses
 let accounts = Vectors.accounts
 let transactions = Vectors.transactions
 let receipts = Vectors.receipts

@@ -221,7 +221,7 @@ final class BlockchainTests: XCTestCase {
         guard let address = EthereumAddress(hash) else { return }
         let tx = EthereumTransaction(gasPrice: BigUInt(10), gasLimit: BigUInt(10), to: address, value: BigUInt(10), data: Data())
         guard let treeConfigTx = try? TreeConfigurableTransaction(data: tx) else { return }
-        guard let block = try? FullBlock(number: BigUInt(100), parentHash: hashData, transactionsRoot: hashData, stateRoot: hashData, receiptsRoot: hashData, transactions: [treeConfigTx.id]) else { return }
+        guard let block = try? FullBlock(number: BigUInt(100), parentHash: hashData, transactionsRoot: hashData, stateRoot: hashData, receiptsRoot: hashData, transactions: [treeConfigTx], accounts: treeConfigurableAccounts) else { return }
 
         guard let lightBlock = try? LightBlock(data: block) else { return }
         Deferred {
@@ -417,35 +417,55 @@ final class BlockchainTests: XCTestCase {
     }
     
     func test_batch_save() async {
-//        Node.shared.localStorage.deleteAllBlocks { error in
-//            if let error = error {
-//                XCTAssertNil(error)
-//            }
-//            
-//            do {
-//                let results: [LightBlock] = try Node.shared.localStorage.getAllBlocks()
-//                XCTAssertEqual(results.count, 0)
-//            } catch {
-//                fatalError(error.localizedDescription)
-//            }
-//        }
-//        
-//        do {
-//            try await Node.shared.localStorage.saveBlocks(blocks: blocks) { error in
-//                if let error = error {
-//                    XCTAssertNil(error)
-//                }
-//            }
-//        } catch {
-//            fatalError(error.localizedDescription)
-//        }
-//        
-//        let _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Core Data wait")], timeout: 5.0)
-//        do {
-//            let allBlocks: [FullBlock] = try Node.shared.localStorage.getAllBlocks()
-//            XCTAssertEqual(allBlocks.count, blocks.count)
-//        } catch {
-//            fatalError(error.localizedDescription)
-//        }
+        Node.shared.localStorage.deleteAllBlocks { error in
+            if let error = error {
+                XCTAssertNil(error)
+            }
+            
+            do {
+                let results: [LightBlock] = try Node.shared.localStorage.getAllBlocks()
+                XCTAssertEqual(results.count, 0)
+            } catch {
+                fatalError(error.localizedDescription)
+            }
+        }
+        
+        do {
+            try await Node.shared.localStorage.saveBlocks(blocks: blocks) { error in
+                if let error = error {
+                    XCTAssertNil(error)
+                }
+            }
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+        
+        let _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Core Data wait")], timeout: 5.0)
+        do {
+            let allBlocks: [FullBlock] = try Node.shared.localStorage.getAllBlocks()
+            XCTAssertEqual(allBlocks.count, blocks.count)
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    func test_createBlock() {
+        accounts.forEach { Node.shared.addValidatedAccount($0) }
+        transactions.forEach { Node.shared.addValidatedTransaction($0) }
+        
+        Node.shared.createBlock { block in
+            XCTAssertEqual(block.number, 1)
+        }
+        
+        Node.shared.deleteAll()
+    }
+    
+    func test_test() {
+        var lBlocks = lightBlocks
+        lBlocks.sort { $0.number < $1.number }
+        lBlocks.forEach { print($0.number) }
+        print(lBlocks.last)
+     
+        
     }
 }

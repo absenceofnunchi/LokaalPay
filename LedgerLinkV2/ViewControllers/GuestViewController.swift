@@ -50,32 +50,15 @@ class GuestViewController: StatusViewController {
         
         switch sender.tag {
             case 2:
-                do {
-                    try downloadChain()
-                } catch {
-                    print("error", error)
-                }
+//                do {
+//                    try downloadChain()
+//                } catch {
+//                    print("error", error)
+//                }
                 
                 break
             default:
                 break
         }
-    }
-    
-    private func downloadChain() throws {
-        guard let contractMethod = ContractMethods.blockchainDownloadRequest.data else {
-            throw NodeError.generalError("Unable to encode contract parameters")
-        }
-//        let extraData = TransactionExtraData(contractMethod: contractMethod)
-//        transactionService.prepareTransaction(extraData: extraData, to: nil, password: "1") { (data, error) in
-//            if let error = error {
-//                print(error)
-//            }
-//            
-//            if let data = data {
-//                /// add to the queue to be sent
-//                NetworkManager.shared.enqueue(data)
-//            }
-//        }
     }
 }

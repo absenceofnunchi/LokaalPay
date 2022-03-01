@@ -526,6 +526,35 @@ final class CoreDataTests: XCTestCase {
         Node.shared.deleteAll(of: .receiptCoreData)
     }
     
+    func test_generic_saveSync() {
+        /// Multiple saves of accounts should only results in unique instances
+        Node.shared.deleteAll(of: .stateCoreData)
+        Node.shared.saveSync(accounts) { error in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+
+            Node.shared.saveSync(accounts) { error in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                Node.shared.fetch { (accts: [Account]?, error: NodeError?) in
+                    if let error = error {
+                        fatalError(error.localizedDescription)
+                    }
+                    
+                    if let accts = accts {
+                        print("accounts.count", accounts.count)
+                        print("accts.count", accts.count)
+                        XCTAssertEqual(accounts.count, accts.count)
+                    }
+                }
+            }
+            
+        }
+    }
+    
     // MARK: - test_generic_fetch
     func test_generic_fetch() async {
         Node.shared.deleteAll()

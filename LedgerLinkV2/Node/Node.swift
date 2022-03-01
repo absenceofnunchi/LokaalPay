@@ -39,8 +39,10 @@ final class Node {
     static let shared = Node()
     let localStorage = LocalStorage()
     var storage = Set<AnyCancellable>()
-    private var validatedTransactions: [TreeConfigurableTransaction] = [] // validated transactions to be added to a block
+    private var validatedTransactions: [TreeConfigurableTransaction] = [] /// validated transactions to be added to a block
     private var validatedAccounts: [TreeConfigurableAccount] = []
+    private var unvalidatedBlocks: [LightBlock] = [] /// The light blocks received from peers to be validated prior to sending out a new one. Validating entails checking the number and the parent hash.
+    private var unvalidatedTransactions: [TreeConfigurableTransaction] = []
     
     func save<T: LightConfigurable>(_ element: T, completion: @escaping (NodeError?) -> Void) async {
         await localStorage.save(element, completion: completion)
@@ -58,75 +60,16 @@ final class Node {
         await localStorage.save(element, completion: completion)
     }
     
+    func saveSync<T>(_ elements: [T], completion: @escaping (NodeError?) -> Void) {
+        localStorage.saveSync(elements, completion: completion)
+    }
+    
     func saveSync<T: LightConfigurable>(_ elements: [T], completion: @escaping (NodeError?) -> Void) {
         localStorage.saveSync(elements, completion: completion)
     }
     
     func fetch<T: CoreDatable>(_ predicateString: String? = nil, completion: @escaping ([T]?, NodeError?) -> Void) {
         localStorage.fetch(predicateString, completion: completion)
-    }
-    
-    func fetchAll(completion: @escaping ([Bool]?, NodeError?) -> Void) {
-//        let accounts = {
-//            Deferred { [weak self] in
-//                Future<[TreeConfigurableAccount], NodeError> { promise in
-//                    self?.localStorage.fetch { (accounts: [TreeConfigurableAccount]?, error: NodeError?) in
-//                        if let error = error {
-//                            promise(.failure(error))
-//                        }
-//
-//                        if let accounts = accounts {
-//                            promise(.success(accounts))
-//                        }
-//                    }
-//                }
-//            }
-//        }
-        
-//        let accounts = Deferred { [weak self] in
-//            Future<[TreeConfigurableAccount], NodeError> { promise in
-//                self?.localStorage.fetch { (accounts: [TreeConfigurableAccount]?, error: NodeError?) in
-//                    if let error = error {
-//                        promise(.failure(error))
-//                    }
-//                    
-//                    if let accounts = accounts {
-//                        promise(.success(accounts))
-//                    }
-//                }
-//            }
-//        }
-//        
-//        let transactions = Deferred { [weak self] in
-//            Future<[TreeConfigurableTransaction], NodeError> { promise in
-//                self?.localStorage.fetch { (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
-//                    if let error = error {
-//                        promise(.failure(error))
-//                    }
-//                    
-//                    if let txs = txs {
-//                        promise(.success(txs))
-//                    }
-//                }
-//            }
-//        }
-//
-//        Publishers.MergeMany([accounts, transactions])
-//            .collect()
-//            .eraseToAnyPublisher()
-//            .flatMap { (results) -> AnyPublisher<Bool, NodeError>  in
-//                Future<Bool, NodeError> { promise in
-//                    promise(.success(true))
-//                }
-//                .eraseToAnyPublisher()
-//            }
-//            .sink { completion in
-//                print(completion)
-//            } receiveValue: { finalValue in
-//                print(finalValue)
-//            }
-//            .store(in: &storage)
-
     }
     
     func delete<T: CoreDatable>(_ element: T) {
@@ -216,19 +159,25 @@ final class Node {
             .eraseToAnyPublisher()
         }
         .sink(receiveCompletion: { completion in
-            print(completion)
+            switch completion {
+                case .failure(let error):
+                    print("error in transfer value", error)
+                    break
+                case .finished:
+                    print("finished in transfer value")
+                    break
+            }
         }, receiveValue: { [weak self] (accounts) in
             /// Accounts to be added to a block
             self?.addValidatedAccounts(accounts)
             
             /// Save both accounts with the updated balances
-            Task {
-                await Node.shared.save(accounts, completion: { error in
-                    if let error = error {
-                        print(error)
-                    }
-                })
-            }
+            Node.shared.saveSync(accounts, completion: { error in
+                if let error = error {
+                    print(error)
+                }
+                print("Save both accounts with the updated balances")
+            })
         })
         .store(in: &storage)
     }
@@ -251,10 +200,14 @@ final class Node {
         }
     }
     
+    func executeTransactions() {
+        
+    }
+    
     /// Block number parameter is to be used for sending out to peer nodes.
     /// Letting other nodes know about the current block number is to ensure that your and other nodes are up-to-date.
     /// If your node or other nodes are behind, then a request to provide the discrepency is made.
-    func createBlock(completion: @escaping (BigUInt) -> Void) {
+    func createBlock(completion: @escaping (LightBlock) -> Void) {
         Deferred {
             Future<FullBlock?, NodeError> { promise in
                 Node.shared.localStorage.getLatestBlock { (block: FullBlock?, error: NodeError?) in
@@ -267,8 +220,8 @@ final class Node {
             }
             .eraseToAnyPublisher()
         }
-        .flatMap({ [weak self] (lastBlock) -> AnyPublisher<FullBlock, NodeError> in
-            Future<FullBlock, NodeError> { promise in
+        .flatMap({ [weak self] (lastBlock) -> AnyPublisher<LightBlock, NodeError> in
+            Future<LightBlock, NodeError> { promise in
                 guard let self = self else {
                     promise(.failure(NodeError.generalError("Unable to create a new block")))
                     return
@@ -277,9 +230,10 @@ final class Node {
                 /// Create the stateRoot and transactionRoot from the validated data using the Merkle tree.
                 let accountArr = self.validatedAccounts.map { $0.data }
                 let txDataArr = self.validatedTransactions.map { $0.data }
-                let txIdArr = self.validatedTransactions.map { $0.id }
                 do {
-                    guard let defaultData = "0x0000000000000000000000000000000000000000".data(using: .utf8) else {
+                    /// Use default data if no validated transactions or account exist to create the merkle root hash
+                    let defaultString = "0x0000000000000000000000000000000000000000"
+                    guard let defaultData = defaultString.data(using: .utf8) else {
                         promise(.failure(NodeError.generalError("Unable to create a new block")))
                         return
                     }
@@ -308,39 +262,60 @@ final class Node {
                     }
                     
                     /// Create a new block
-                    let newBlock = try FullBlock(number: blockNumber + 1, parentHash: parentHash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), miner: nil, difficulty:nil, totalDifficulty: nil, extraData: nil, gasLimit: nil, gasUsed: nil, transactions: txIdArr, uncles: nil)
+                    let newBlock = try FullBlock(number: blockNumber + 1, parentHash: parentHash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, transactions: self.validatedTransactions, accounts: self.validatedAccounts)
                     
-                    promise(.success(newBlock))
+                    let lightBlock = try LightBlock(data: newBlock)
+                    promise(.success(lightBlock))
                 } catch {
                     promise(.failure(.generalError("Unable to create a new block")))
                 }
             }
             .eraseToAnyPublisher()
         })
-        .flatMap { (newBlock) -> AnyPublisher<FullBlock, NodeError> in
-            Future<FullBlock, NodeError> { promise in
-                Task { [weak self] in
-                    await Node.shared.save(newBlock) { error in
-                        if let error = error {
-                            print(error)
-                            return
-                        }
-                        
-                        self?.validatedTransactions.removeAll()
-                        self?.validatedAccounts.removeAll()
-                        
-                        promise(.success(newBlock))
+        .flatMap { (newBlock) -> AnyPublisher<LightBlock, NodeError> in
+            Future<LightBlock, NodeError> { promise in
+                Node.shared.saveSync([newBlock]) { [weak self] error in
+                    if let error = error {
+                        print(error)
+                        return
                     }
+                    
+                    self?.validatedTransactions.removeAll()
+                    self?.validatedAccounts.removeAll()
+                    
+                    promise(.success(newBlock))
                 }
             }
             .eraseToAnyPublisher()
         }
         .sink { completion in
-            print(completion)
+            switch completion {
+                case .finished:
+                    print("block created")
+                case .failure(let error):
+                    print("block creation error", error)
+            }
         } receiveValue: { (block) in
-            completion(block.number)
+            completion(block)
         }
         .store(in: &storage)
+    }
+    
+    func validateBlock(_ lastBlock: LightBlock) {
+        /// Select the block with the largest number
+        
+        var blockSet = Multiset<LightBlock>()
+        unvalidatedBlocks.forEach { blockSet.add($0) }
+        
+        
+        unvalidatedBlocks.sort { $0.number < $1.number }
+        guard let largestBlock = unvalidatedBlocks.last else { return }
+        
+        if largestBlock.number == lastBlock.number + 1 {
+            
+        } else if largestBlock.number > lastBlock.number + 1 {
+            
+        }
     }
     
     func addValidatedTransaction(_ rlpData: Data) {
@@ -360,5 +335,9 @@ final class Node {
     
     func addValidatedAccounts(_ accounts: [Account]) {
         accounts.forEach { addValidatedAccount($0) }
+    }
+    
+    func addUnvalidatedBlock(_ block: LightBlock) {
+        unvalidatedBlocks.append(block)
     }
 }

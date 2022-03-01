@@ -24,6 +24,7 @@
 		492D985327A998C0003BFAB4 /* LedgerLinkV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985227A998C0003BFAB4 /* LedgerLinkV2Tests.swift */; };
 		492D985D27A998C0003BFAB4 /* LedgerLinkV2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985C27A998C0003BFAB4 /* LedgerLinkV2UITests.swift */; };
 		492D985F27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985E27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift */; };
+		4932600E27CC23DB009B8390 /* UIViewController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4932600D27CC23DA009B8390 /* UIViewController+Extensions.swift */; };
 		4950591F27B05B6A006B9294 /* CoreDataServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950591E27B05B6A006B9294 /* CoreDataServices.swift */; };
 		4950592227B06140006B9294 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592127B06140006B9294 /* Errors.swift */; };
 		4950592827B08B40006B9294 /* SigninViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592727B08B40006B9294 /* SigninViewController.swift */; };
@@ -48,6 +49,7 @@
 		496A9CBC27C815300089AE84 /* Operation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBB27C815300089AE84 /* Operation+Extensions.swift */; };
 		496A9CBE27C855D00089AE84 /* Notification+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBD27C855D00089AE84 /* Notification+Extensions.swift */; };
 		496A9CC027C8617E0089AE84 /* NetworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBF27C8617E0089AE84 /* NetworkTests.swift */; };
+		496CC5A227CCA60E0016B1C5 /* Multiset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496CC5A127CCA60E0016B1C5 /* Multiset.swift */; };
 		497633D427C22F360044B426 /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633D327C22F360044B426 /* TestTree.swift */; };
 		4992CB3827C3038600836419 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB3727C3038600836419 /* Node.swift */; };
 		4992CB4627C33A3000836419 /* CoreDataTestings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB4527C33A3000836419 /* CoreDataTestings.swift */; };
@@ -135,6 +137,7 @@
 		492D985827A998C0003BFAB4 /* LedgerLinkV2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LedgerLinkV2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		492D985C27A998C0003BFAB4 /* LedgerLinkV2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinkV2UITests.swift; sourceTree = "<group>"; };
 		492D985E27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinkV2UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		4932600D27CC23DA009B8390 /* UIViewController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Extensions.swift"; sourceTree = "<group>"; };
 		4950591E27B05B6A006B9294 /* CoreDataServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataServices.swift; sourceTree = "<group>"; };
 		4950592127B06140006B9294 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		4950592727B08B40006B9294 /* SigninViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigninViewController.swift; sourceTree = "<group>"; };
@@ -159,6 +162,7 @@
 		496A9CBB27C815300089AE84 /* Operation+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Operation+Extensions.swift"; sourceTree = "<group>"; };
 		496A9CBD27C855D00089AE84 /* Notification+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Extensions.swift"; sourceTree = "<group>"; };
 		496A9CBF27C8617E0089AE84 /* NetworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkTests.swift; sourceTree = "<group>"; };
+		496CC5A127CCA60E0016B1C5 /* Multiset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Multiset.swift; sourceTree = "<group>"; };
 		497633D327C22F360044B426 /* TestTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
 		4992CB3727C3038600836419 /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		4992CB4527C33A3000836419 /* CoreDataTestings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestings.swift; sourceTree = "<group>"; };
@@ -368,6 +372,7 @@
 				4950592B27B09F50006B9294 /* ViewController+Extensions.swift */,
 				499AF11327AE18B300CAF0EA /* ConnectionStatus.swift */,
 				49A7C32927B74E1B00AC7EB0 /* TreeConfigurable+Protocols.swift */,
+				4932600D27CC23DA009B8390 /* UIViewController+Extensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -447,6 +452,7 @@
 				49FC14F227B3236D00D215B6 /* Blocks.swift */,
 				497633D327C22F360044B426 /* TestTree.swift */,
 				490367BC27BB25FF00DFDE2B /* Mine.swift */,
+				496CC5A127CCA60E0016B1C5 /* Multiset.swift */,
 			);
 			path = Node;
 			sourceTree = "<group>";
@@ -699,6 +705,7 @@
 				49631C4627C44AEC00E5F0EA /* ReceiptCoreData+CoreDataClass.swift in Sources */,
 				499AF11627AE1A1700CAF0EA /* CustomTabBarController.swift in Sources */,
 				499AF10B27ADABF500CAF0EA /* HostViewController.swift in Sources */,
+				4932600E27CC23DB009B8390 /* UIViewController+Extensions.swift in Sources */,
 				49631C4E27C44E7900E5F0EA /* CoreDataServices+Block.swift in Sources */,
 				49C3E76F27AB3FAE00D989E8 /* PasscodeViewController.swift in Sources */,
 				49A7C32A27B74E1C00AC7EB0 /* TreeConfigurable+Protocols.swift in Sources */,
@@ -726,6 +733,7 @@
 				4950592827B08B40006B9294 /* SigninViewController.swift in Sources */,
 				497633D427C22F360044B426 /* TestTree.swift in Sources */,
 				492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */,
+				496CC5A227CCA60E0016B1C5 /* Multiset.swift in Sources */,
 				49FC150527B62B4D00D215B6 /* TreeConfigurableAccount.swift in Sources */,
 				492D984327A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld in Sources */,
 				49631C4727C44AEC00E5F0EA /* ReceiptCoreData+CoreDataProperties.swift in Sources */,

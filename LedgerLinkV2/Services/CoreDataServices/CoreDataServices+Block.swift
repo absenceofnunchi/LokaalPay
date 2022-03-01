@@ -208,7 +208,11 @@ extension LocalStorage {
                 return LightBlock.fromCoreData(crModel: element)
             }
             
-            completion(blocks.first, nil)
+            if blocks.count == 0 {
+                completion(nil, nil)
+            } else {
+                completion(blocks.first, nil)
+            }
         }
         
         do {

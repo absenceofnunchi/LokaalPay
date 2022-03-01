@@ -9,49 +9,62 @@ import XCTest
 import Combine
 @testable import LedgerLinkV2
 
-class WalletTests: XCTestCase {
+final class WalletTests: XCTestCase {
     let block = lightBlocks[0]
-    private let dispatchQueue = DispatchQueue(label: "taskQueue", qos: .userInteractive)
     //value 1 indicate only one task will be performed at once.
-    private let semaphore = DispatchSemaphore(value: 1)
     private var storage = Set<AnyCancellable>()
+    private let transactionService = TransactionService()
+    private let keysService = KeysService()
+    private let localStorage = LocalStorage()
     
-    func test_test() {
-        
-        print("start")
-        let group = DispatchGroup()
-        
-        group.enter()
-        self.dispatchQueue.async {
-            self.semaphore.wait()
-            print("1")
-            self.semaphore.signal()
-            group.leave()
-        }
-        
-        group.enter()
-        self.dispatchQueue.async {
-            self.semaphore.wait()
-            print("2")
-            self.semaphore.signal()
-            group.leave()
-        }
-        
-        group.enter()
-        self.dispatchQueue.async {
-            self.semaphore.wait()
-            print("3")
-            self.semaphore.signal()
-            group.leave()
-        }
-        
-        group.notify(queue: .main) {
-            
-            // Perform any task once all the intermediate tasks (fetchA(), fetchB(), fetchC()) are completed.
-            // This block of code will be called once all the enter and leave statement counts are matched.
-            print("4")
+    func test_createWallet() async {
+        await Node.shared.save(block) { [weak self] (error) in
+            if let error = error {
+                print(error)
+                return
+            }
+            print("stage 0")
+
+            self?.keysService.createNewWallet(password: "1") { (keyWalletModel, error) in
+                if let error = error {
+                    print(error)
+                    return
+                }
+                print("stage 1")
+
+                guard let keyWalletModel = keyWalletModel else {
+                    return
+                }
+                
+                print("stage 2")
+                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) in
+                    if let error = error {
+                        print(error)
+                        return
+                    }
+                    
+                    print("stage 2.5")
+                    
+                    /// Propogate the creation of the new account to peers
+                    self?.transactionService.prepareTransaction(.createAccount, to: nil, password: "1") { data, error in
+                        if let error = error {
+                            print("notify error", error)
+                            return
+                        }
+                        
+                        guard let data = data else {
+                            return
+                        }
+                        
+                        print("stage 3")
+                        print(data as Any)
+                    }
+                })
+            }
         }
     }
+    
+
     
     func test_test1() async {
         Node.shared.deleteAll()
@@ -132,4 +145,6 @@ class WalletTests: XCTestCase {
                 .store(in: &self.storage)
         }
     }
+    
+    
 }

@@ -12,207 +12,284 @@ import BigInt
 import Combine
 @testable import LedgerLinkV2
 
-class NetworkTests: XCTestCase {
+public struct TestBlock: Codable {
+    public var number: BigUInt
+    public var hash: Data = Data()
+    public var parentHash: Data
+    public var nonce: Data?
+    public var transactionsRoot: Data
+    public var stateRoot: Data
+    public var receiptsRoot: Data
+    public var extraData: Data?
+    public var size: BigUInt
+    public var gasLimit: BigUInt?
+    public var gasUsed: BigUInt?
+    public var timestamp: Date
+    public var transactions: [TreeConfigurableTransaction]?
+    public var accounts: [TreeConfigurableAccount]?
+    
+    enum CodingKeys: String, CodingKey {
+        case number
+        case hash
+        case parentHash
+        case nonce
+        case transactionsRoot
+        case stateRoot
+        case receiptsRoot
+        case extraData
+        case size
+        case gasLimit
+        case gasUsed
+        case timestamp
+        case transactions
+        case accounts
+    }
+    
+    public init(number: BigUInt, parentHash: Data, nonce: Data? = nil, transactionsRoot: Data, stateRoot: Data, receiptsRoot: Data, extraData: Data? = nil, gasLimit: BigUInt? = nil, gasUsed: BigUInt? = nil, transactions: [TreeConfigurableTransaction]?, accounts: [TreeConfigurableAccount]?) throws {
+        self.number = number
+        self.parentHash = parentHash
+        self.nonce = nonce
+        self.transactionsRoot = transactionsRoot
+        self.stateRoot = stateRoot
+        self.receiptsRoot = receiptsRoot
+        self.extraData = extraData
+        self.gasLimit = gasLimit
+        self.gasUsed = gasUsed
+        self.timestamp = Date()
+        self.transactions = transactions
+        self.accounts = accounts
+        self.size = BigUInt(10)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var encoder = encoder.container(keyedBy: CodingKeys.self)
+        try encoder.encode(number.serialize().toHexString(), forKey: .number)
+        try encoder.encode(hash.toHexString(), forKey: .hash)
+        try encoder.encode(parentHash.toHexString(), forKey: .parentHash)
+        try encoder.encode(nonce?.toHexString(), forKey: .nonce)
+        try encoder.encode(transactionsRoot.toHexString(), forKey: .transactionsRoot)
+        try encoder.encode(stateRoot.toHexString(), forKey: .stateRoot)
+        try encoder.encode(receiptsRoot.toHexString(), forKey: .receiptsRoot)
+        try encoder.encode(extraData?.toHexString(), forKey: .extraData)
+        try encoder.encode(size.serialize().toHexString(), forKey: .size)
+        try encoder.encode(gasLimit?.serialize().toHexString(), forKey: .gasLimit)
+        try encoder.encode(gasUsed?.serialize().toHexString(), forKey: .gasUsed)
+        let dateInt = Int(timestamp.timeIntervalSince1970)
+        let dateHex = String(dateInt, radix: 16, uppercase: true)
+        try encoder.encode(dateHex, forKey: .timestamp)
+        try encoder.encode(transactions, forKey: .transactions)
+        try encoder.encode(accounts, forKey: .accounts)
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        guard let number = try decodeHexToBigUInt(container, key: .number) else {throw Web3Error.dataError}
+        self.number = number
+        
+        guard let hash = try decodeHexToData(container, key: .hash) else {throw Web3Error.dataError}
+        self.hash = hash
+        
+        guard let parentHash = try decodeHexToData(container, key: .parentHash) else {throw Web3Error.dataError}
+        self.parentHash = parentHash
+        
+        let nonce = try decodeHexToData(container, key: .nonce, allowOptional: true)
+        self.nonce = nonce
+
+        guard let transactionsRoot = try decodeHexToData(container, key: .transactionsRoot) else {throw Web3Error.dataError}
+        self.transactionsRoot = transactionsRoot
+
+        guard let stateRoot = try decodeHexToData(container, key: .stateRoot) else {throw Web3Error.dataError}
+        self.stateRoot = stateRoot
+
+        guard let receiptsRoot = try decodeHexToData(container, key: .receiptsRoot) else {throw Web3Error.dataError}
+        self.receiptsRoot = receiptsRoot
+
+        let extraData = try decodeHexToData(container, key: .extraData, allowOptional: true)
+        self.extraData = extraData
+
+        guard let size = try decodeHexToBigUInt(container, key: .size) else {throw Web3Error.dataError}
+        self.size = size
+
+        let gasLimit = try decodeHexToBigUInt(container, key: .gasLimit, allowOptional: true)
+        self.gasLimit = gasLimit
+
+        let gasUsed = try decodeHexToBigUInt(container, key: .gasUsed, allowOptional: true)
+        self.gasUsed = gasUsed
+
+        let timestampString = try container.decode(String.self, forKey: .timestamp).stripHexPrefix()
+        guard let timestampInt = UInt64(timestampString, radix: 16) else {throw Web3Error.dataError}
+        let timestamp = Date(timeIntervalSince1970: TimeInterval(timestampInt))
+        self.timestamp = timestamp
+
+        let transactions = try container.decodeIfPresent([TreeConfigurableTransaction].self, forKey: .transactions)
+        self.transactions = transactions
+
+        let accounts = try container.decodeIfPresent([TreeConfigurableAccount].self, forKey: .accounts)
+        self.accounts = accounts
+    }
+}
+
+
+fileprivate func decodeHexToData<T>(_ container: KeyedDecodingContainer<T>, key: KeyedDecodingContainer<T>.Key, allowOptional:Bool = false) throws -> Data? {
+    if (allowOptional) {
+        let string = try? container.decode(String.self, forKey: key)
+        if string != nil {
+            guard let data = Data.fromHex(string!) else {throw Web3Error.dataError}
+            return data
+        }
+        return nil
+    } else {
+        let string = try container.decode(String.self, forKey: key)
+        guard let data = Data.fromHex(string) else {throw Web3Error.dataError}
+        return data
+    }
+}
+
+fileprivate func decodeHexToBigUInt<T>(_ container: KeyedDecodingContainer<T>, key: KeyedDecodingContainer<T>.Key, allowOptional:Bool = false) throws -> BigUInt? {
+    if (allowOptional) {
+        let string = try? container.decode(String.self, forKey: key)
+        if string != nil {
+            guard let number = BigUInt(string!.stripHexPrefix(), radix: 16) else {throw Web3Error.dataError}
+            return number
+        }
+        return nil
+    } else {
+        let string = try container.decode(String.self, forKey: key)
+        guard let number = BigUInt(string.stripHexPrefix(), radix: 16) else {throw Web3Error.dataError}
+        return number
+    }
+}
+
+final class NetworkTests: XCTestCase {
     let password = "1"
     var storage = Set<AnyCancellable>()
-    
-    func test_asynchronous_updates() {
-        KeysService().createNewWallet(password: password) { (keyWalletModel, error) in
-            if let error = error {
-                print("wallet error", error.localizedDescription)
-                XCTAssertNil(error)
-            }
-            
-            var keystoreManager: KeystoreManager!
-            do {
-                keystoreManager = try KeysService().keystoreManager()
-            } catch {
-                print(error)
-            }
-            
-            let tx = EthereumTransaction.createLocalTransaction(nonce: BigUInt(0), to: EthereumAddress("0xFadAFCE89EA2221fa33005640Acf2C923312F2b9")!, value: BigUInt(10))
-            do {
-                guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: keystoreManager, transaction: tx, from: EthereumAddress("0xFadAFCE89EA2221fa33005640Acf2C923312F2b9")!, password: self.password) else {
-                    print("sign error1")
-                    return
-                }
-                
-                print("signedTx", signedTx as Any)
 
-                guard let rlpData = signedTx.encode() else {
-                    print("sign error2")
-                    return
-                }
+    func test_hello() {
+        do {
+            let bigint = BigUInt(100)
+            let encoded = try JSONEncoder().encode(bigint)
+            print(encoded)
+            
+            let hex = BigUInt(100).serialize().toHexString()
+            let encoded1 = try JSONEncoder().encode(hex)
+            print("1", encoded1)
+        } catch {
+            print(error)
+        }
+    }
+    
+    func test_codable() {
+        for i in 0...10 {
+            let testBlock = try? TestBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: [], accounts: [])
+            
+            do {
+                let encoded = try JSONEncoder().encode(testBlock)
+                print("encoded", encoded)
+                guard let compressed = encoded.compressed else { return }
+                print("compressed", compressed)
                 
-                print("rlpData", rlpData)
+                guard let decompressed = compressed.decompressed else { return }
+                print("de", decompressed)
                 
-//                let queue = OperationQueue()
-//                let peerID = MCPeerID(displayName: "J")
-//                let parseOperation = ParseTransactionOperation(rlpData: rlpData, peerID: peerID)
-//                let contractMethodOperation = ContractMethodOperation()
-//                contractMethodOperation.addDependency(parseOperation)
-//
-//                queue.addOperations([parseOperation, contractMethodOperation], waitUntilFinished: true)
-//                print("Operation finished with: \(contractMethodOperation.result!)")
+                let decoded = try JSONDecoder().decode(TestBlock.self, from: decompressed)
+                print("decoded", decoded)
             } catch {
-                XCTAssertNil(error)
                 print(error)
             }
         }
     }
     
-    func test_transaction_creation() {
-        Deferred {
-            Future<KeyWalletModel, NodeError> { [weak self] promise in
-                KeysService().createNewWallet(password: self!.password) { (keyWalletModel, error) in
-                    if let error = error {
-                        print(error)
-                        promise(.failure(NodeError.generalError("0")))
-                        return
-                    }
-                    
-                    if let keyWalletModel = keyWalletModel {
-                        promise(.success(keyWalletModel))
-                    }
-                }
+    func test_createNewBlock() {
+        for _ in 0...5 {
+            Node.shared.createBlock { lightBlock in
+                print("lightblock", lightBlock)
             }
-            .eraseToAnyPublisher()
         }
-        .flatMap { (_) -> AnyPublisher<EthereumTransaction, NodeError> in
-            Future<EthereumTransaction, NodeError> { promise in
-                var keystoreManager: KeystoreManager!
-                do {
-                    keystoreManager = try KeysService().keystoreManager()
-                } catch {
-                    promise(.failure(.generalError("1")))
-                }
-                
-                let tx = EthereumTransaction.createLocalTransaction(nonce: BigUInt(0), to: EthereumAddress("0xFadAFCE89EA2221fa33005640Acf2C923312F2b9")!, value: BigUInt(10))
-                do {
-                    guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: keystoreManager, transaction: tx, from: EthereumAddress("0xFadAFCE89EA2221fa33005640Acf2C923312F2b9")!, password: self.password) else {
-                        promise(.failure(.generalError("2")))
-                        return
-                    }
-                    
-                    print("signedTx", signedTx as Any)
-                    
-                    guard let rlpData = signedTx.encode() else {
-                        promise(.failure(.generalError("3")))
-                        return
-                    }
-                    
-                    print("rlpData", rlpData)
-                    promise(.success(signedTx))
-                    
-                    //                let queue = OperationQueue()
-                    //                let peerID = MCPeerID(displayName: "J")
-                    //                let parseOperation = ParseTransactionOperation(rlpData: rlpData, peerID: peerID)
-                    //                let contractMethodOperation = ContractMethodOperation()
-                    //                contractMethodOperation.addDependency(parseOperation)
-                    //
-                    //                queue.addOperations([parseOperation, contractMethodOperation], waitUntilFinished: true)
-                    //                print("Operation finished with: \(contractMethodOperation.result!)")
-                } catch {
-                    XCTAssertNil(error)
-                    promise(.failure(.generalError("4")))
-                }
-            }
-            .eraseToAnyPublisher()
-        }
-        .sink { (completion) in
-            switch completion {
-                case .finished:
-                    print("finished")
-                    break
-                case .failure(let error):
-                   print(error)
-            }
-        } receiveValue: { (finalValue) in
-            print("finalValue", finalValue)
-        }
-        .store(in: &storage)
     }
     
-    func test_asynchronous_operation() {
-        class First: ChainedAsyncResultOperation<String, String, NodeError> {
+    func test_test() {
+//        let date0 = Date()
+//        let date1 = Date().advanced(by: 100)
+//
+//        print("A", date0 < date1)
+//        print("B", date0 > date1)
+        
+        for transaction in transactions {
+            guard let encodedTx = transaction.encode() else { return }
+            let timeStampedTx = [
+                Date(): encodedTx
+            ]
             
-            init(input: String) {
-                super.init(input: input)
-            }
-            
-            override func main() {
-                guard let input = input else {
-                    finish(with: .failure(.generalError("input fail")))
-                    return
+            do {
+                let encoded = try JSONEncoder().encode(timeStampedTx)
+                print("encoded", encoded)
+                guard let result = parse(encoded) else { return }
+                switch result {
+                    case .data(let data):
+                        print("data", data)
+                        break
+                    case .date(let date):
+                        print("date", date)
+                        break
+                    case .timeStampedData(let data):
+                        print("timestamped", data)
+                        break
                 }
-                
-                XCTAssertEqual(input, "Hello!")
-                
-                DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1), execute: {
-                    print("Executing")
-                    self.finish(with: .success("First Success!!!"))
-                })
+            } catch {
+                print(error)
             }
         }
-        
-        class Second: ChainedAsyncResultOperation<String, String, NodeError>  {
-            override func main() {
-                guard let input = input else {
-                    finish(with: .failure(.generalError("input fail")))
-                    return
-                }
-                
-                DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1), execute: {
-                    print("Executing")
-                    self.finish(with: .success("\(input) and Final Success!!!"))
-                })
-            }
-        }
-        
-        let first = First(input: "Hello!")
-        let second = Second()
-        second.addDependency(first)
-        
-        let queue = OperationQueue()
-        queue.addOperations([first, second], waitUntilFinished: true)
-        
-        guard case .success(let msg) = second.result else { return }
-        XCTAssertEqual(msg, "First Success!!! and Final Success!!!")
     }
     
-    func test_test3() {
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10), execute: {
-            print("first")
-        })
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            print("Timer fired!")
+    private func parse(_ data: Data) -> Result? {
+        if let decompressed = data.decompressed {
+            return .data(decompressed)
+        } else if let decoded = try? JSONDecoder().decode(Date.self, from: data) {
+            return .date(decoded)
+        } else if let decoded = try? JSONDecoder().decode([Date: Data].self, from: data) {
+            return .timeStampedData(decoded)
         }
         
-        Deferred {
-            Future<Bool, NodeError> { promise in
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10), execute: {
-                    print("first")
-                    promise(.success(true))
-                })
-            }
-        }
-        .eraseToAnyPublisher()
-        .buffer(size: 1, prefetch: .keepFull, whenFull: .dropOldest)
-        .flatMap(maxPublishers: .max(1)) { _ -> AnyPublisher<Bool, NodeError> in
-            Future<Bool, NodeError> { promise in
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10), execute: {
-                    print("second")
-                    promise(.success(true))
-                })
-            }
-            .eraseToAnyPublisher()
-        }
-        .sink { completion in
-            print(completion)
-        } receiveValue: { _ in
-            print("final")
-        }
-        .store(in: &storage)
+        return nil
     }
+    
+    enum Result {
+        case data(Data)
+        case date(Date)
+        case timeStampedData([Date: Data])
+    }
+    
+    struct Example: Codable {
+        var extraData: Data?
+        
+        enum CodingKeys: String, CodingKey {
+            case extraData
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var encoder = encoder.container(keyedBy: CodingKeys.self)
+            try encoder.encode(extraData, forKey: .extraData)
+        }
+        
+        init(extraData: Data?) {
+            self.extraData = extraData
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.extraData = try container.decodeIfPresent(Data.self, forKey: .extraData)
+        }
+    }
+    
+    func test_test1() {
+        let rlp1 = transactions[0].encode()!
+        let rlp2 = transactions[1].encode()!
+        let rlp3 = transactions[0].encode()!
+        
+        
+        print(rlp1 == rlp2)
+        print(rlp1 == rlp3)
+    }
+  
 }
