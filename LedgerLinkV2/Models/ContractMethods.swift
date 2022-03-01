@@ -9,35 +9,51 @@ import Foundation
 import web3swift
 
 enum ContractMethod: Codable {
-    case createAccount(Data, Date)
-    case blockchainDownloadResponse(Data, Date)
+    case createAccount(Data)
+    case transferValue(Data)
+    case blockchainDownloadRequest(Data)
+    case blockchainDownloadResponse(Data)
     
     enum CodingKeys: String, CodingKey {
         case createAccount
+        case transferValue
+        case blockchainDownloadRequest
         case blockchainDownloadResponse
+        
+        var data: Data? {
+            return Data(self.rawValue.utf8)
+        }
     }
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
         switch self {
-            case .createAccount(let rlpEncoded, let date):
-                try container.encodeValues(rlpEncoded, date, for: .createAccount)
-            case .blockchainDownloadResponse(let data, let date):
-                try container.encodeValues(data, date, for: .blockchainDownloadResponse)
-            
+            case .createAccount(let rlpEncoded):
+                try container.encode(rlpEncoded, forKey: .createAccount)
+            case .transferValue(let rlpEncoded):
+                try container.encode(rlpEncoded, forKey: .transferValue)
+            case .blockchainDownloadRequest(let blockNumber):
+                try container.encode(blockNumber, forKey: .blockchainDownloadRequest)
+            case .blockchainDownloadResponse(let data):
+                try container.encode(data, forKey: .blockchainDownloadResponse)
         }
     }
     
     static func encode(_ method: ContractMethod) throws -> Data? {
         switch method {
-            case .createAccount(let rlpEncoded, let date):
-                let encoded = try JSONEncoder().encode(ContractMethod.createAccount(rlpEncoded, date))
+            case .createAccount(let rlpEncoded):
+                let encoded = try JSONEncoder().encode(ContractMethod.createAccount(rlpEncoded))
                 return encoded
-            case .blockchainDownloadResponse(let data, let date):
-                let encoded = try JSONEncoder().encode(ContractMethod.blockchainDownloadResponse(data, date))
+            case .transferValue(let rlpEncoded):
+                let encoded = try JSONEncoder().encode(ContractMethod.transferValue(rlpEncoded))
                 return encoded
-                
+            case .blockchainDownloadRequest(let blockNumber):
+                let encoded = try JSONEncoder().encode(ContractMethod.blockchainDownloadRequest(blockNumber))
+                return encoded
+            case .blockchainDownloadResponse(let data):
+                let encoded = try JSONEncoder().encode(ContractMethod.blockchainDownloadResponse(data))
+                return encoded
         }
     }
     
@@ -47,11 +63,17 @@ enum ContractMethod: Codable {
         
         switch key {
             case .createAccount:
-                let (rlpEncoded, date): (Data, Date) = try container.decodeValues(for: .createAccount)
-                self = .createAccount(rlpEncoded, date)
+                let rlpEncoded = try container.decode(Data.self, forKey: .createAccount)
+                self = .createAccount(rlpEncoded)
+            case .transferValue:
+                let rlpEncoded = try container.decode(Data.self, forKey: .transferValue)
+                self = .transferValue(rlpEncoded)
+            case .blockchainDownloadRequest:
+                let blockNumber = try container.decode(Data.self, forKey: .blockchainDownloadRequest)
+                self = .blockchainDownloadRequest(blockNumber)
             case .blockchainDownloadResponse:
-                let (data, date): (Data, Date) = try container.decodeValues(for: .blockchainDownloadResponse)
-                self = .blockchainDownloadResponse(data, date)
+                let data = try container.decode(Data.self, forKey: .blockchainDownloadResponse)
+                self = .blockchainDownloadResponse(data)
             default:
                 throw DecodingError.dataCorrupted(
                     DecodingError.Context(
@@ -59,18 +81,6 @@ enum ContractMethod: Codable {
                         debugDescription: "Unabled to decode enum."
                     )
                 )
-        }
-    }
-
-    
-    enum Name: String {
-        case createAccount
-        case transferValue
-        case blockchainDownloadRequest
-        case blockchainDownloadResponse
-        
-        var data: Data? {
-            return Data(self.rawValue.utf8)
         }
     }
 }

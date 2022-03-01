@@ -279,50 +279,18 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
     }
 }
 
-///
-final class ContractMethodOperation: ChainedAsyncResultOperation<(TransactionExtraData, EthereumTransaction), Bool, NodeError> {
-    override final public func main() {
-        NetworkManager.shared.notificationCenter.removeObserver(self, name: .didReceiveBlockchain, object: nil)
-        guard let input = input else { return finish(with: .failure(.generalError("Unable to process the dependency input"))) }
-        do {
-            try self.executeContractMethod(extraData: input.0, decodedTx: input.1)
-            Node.shared.addValidatedTransaction(input.1)
-        } catch {
-            self.finish(with: .failure(error as! NodeError))
-        }
-        
-        self.finish(with: .success(true))
+/// An operation for transferring value. Gets added to the queue to be executed in order.
+final class TransferValueOperation: ChainedAsyncResultOperation<Void, Bool, NodeError> {
+    var transaction: EthereumTransaction
+    
+    init(transaction: EthereumTransaction) {
+        self.transaction = transaction
     }
     
-    func executeContractMethod(extraData: TransactionExtraData, decodedTx: EthereumTransaction) throws {
-//        let contractMethodString = String(decoding: extraData.contractMethod, as: UTF8.self)
-//        guard let contractMethod = ContractMethods(rawValue: contractMethodString) else {
-//            throw NodeError.generalError("Unable to parse the contract method")
-//        }
-//        print("contractMethod", contractMethod as Any)
-//        
-//        switch contractMethod {
-//            case .transferValue:
-//                print("transferValue")
-//                Node.shared.transfer(transaction: decodedTx)
-//                break
-//            case .createAccount:
-//                print("createAccount")
-//                guard let newAccount = extraData.account else { return }
-//                /// validated accounts are to be included in the block
-//                Node.shared.addValidatedAccount(newAccount)
-//                print("newAccount", newAccount as Any)
-//                Node.shared.saveSync([newAccount]) { error in
-//                    if let error = error {
-//                        print(error as Any)
-//                        return
-//                    }
-//                    print("saved")
-//                }
-//                break
-//            default:
-//                break
-//        }
+    override final public func main() {
+        Node.shared.transfer(transaction: transaction)
+        //            Node.shared.addValidatedTransaction(input.1)
+        self.finish(with: .success(true))
     }
     
     override final public func cancel() {
@@ -330,103 +298,34 @@ final class ContractMethodOperation: ChainedAsyncResultOperation<(TransactionExt
     }
 }
 
-//public typealias ShortURL = URL
-//public typealias LongURL = URL
-//
-//public final class UnfurlURLChainedOperation: ChainedAsyncResultOperation<ShortURL, LongURL, UnfurlURLChainedOperation.Error> {
-//    public enum Error: Swift.Error {
-//        case canceled
-//        case missingInputURL
-//        case missingRedirectURL
-//        case underlying(error: Swift.Error)
-//    }
-//
-//    private var dataTask: URLSessionTask?
-//
-//    public init(shortURL: URL) {
-//        super.init(input: shortURL)
-//    }
-//
-//    override final public func main() {
-//        guard let input = input else { return finish(with: .failure(.missingInputURL)) }
-//
-//        var request = URLRequest(url: input)
-//        request.httpMethod = "HEAD"
-//
-//        dataTask = URLSession.shared.dataTask(with: request, completionHandler: { [weak self] (_, response, error) in
-//            if let error = error {
-//                self?.finish(with: .failure(.underlying(error: error)))
-//                return
-//            }
-//
-//            guard let longURL = response?.url else {
-//                self?.finish(with: .failure(.missingRedirectURL))
-//                return
-//            }
-//
-//            self?.finish(with: .success(longURL))
-//        })
-//        dataTask?.resume()
-//    }
-//
-//    override final public func cancel() {
-//        dataTask?.cancel()
-//        cancel(with: .canceled)
-//    }
-//}
+final class CreateAccount: ChainedAsyncResultOperation<Void, Bool, NodeError> {
+    var extraData: TransactionExtraData
+    
+    init(extraData: TransactionExtraData) {
+        self.extraData = extraData
+    }
+    
+    override final public func main() {
+        guard let newAccount = extraData.account else {
+            self.finish(with: .failure(.generalError("Unable to get the account to be saved")))
+            return
+        }
+        
+        /// validated accounts are to be included in the block
+        Node.shared.addValidatedAccount(newAccount)
+        Node.shared.saveSync([newAccount]) { [weak self] (error) in
+            if let error = error {
+                self?.finish(with: .failure(error))
+                return
+            }
+            print("saved")
+            //            Node.shared.addValidatedTransaction(input.1)
+            self?.finish(with: .success(true))
+        }
+    }
+    
+    override final public func cancel() {
+        cancel(with: .generalError("Cancelled"))
+    }
+}
 
-//
-//public final class FetchTitleChainedOperation: ChainedAsyncResultOperation<URL, String, FetchTitleChainedOperation.Error> {
-//    public enum Error: Swift.Error {
-//        case canceled
-//        case dataParsingFailed
-//        case missingInputURL
-//        case missingPageTitle
-//        case underlying(error: Swift.Error)
-//    }
-//
-//    private var dataTask: URLSessionTask?
-//
-//    override final public func main() {
-//        guard let input = input else { return finish(with: .failure(.missingInputURL)) }
-//
-//        var request = URLRequest(url: input)
-//        request.httpMethod = "GET"
-//
-//        dataTask = URLSession.shared.dataTask(with: request, completionHandler: { [weak self] (data, response, error) in
-//            do {
-//                if let error = error {
-//                    throw error
-//                }
-//
-//                guard let data = data, let html = String(data: data, encoding: .utf8) else {
-//                    throw Error.dataParsingFailed
-//                }
-//
-//                guard let pageTitle = self?.pageTitle(for: html) else {
-//                    throw Error.missingPageTitle
-//                }
-//
-//                self?.finish(with: .success(pageTitle))
-//            } catch {
-//                if let error = error as? Error {
-//                    self?.finish(with: .failure(error))
-//                } else {
-//                    self?.finish(with: .failure(.underlying(error: error)))
-//                }
-//            }
-//        })
-//        dataTask?.resume()
-//    }
-//
-//    private func pageTitle(for html: String) -> String? {
-//        guard let rangeFrom = html.range(of: "<title>")?.upperBound else { return nil }
-//        guard let rangeTo = html[rangeFrom...].range(of: "</title>")?.lowerBound else { return nil }
-//        return String(html[rangeFrom..<rangeTo])
-//    }
-//
-//    override final public func cancel() {
-//        dataTask?.cancel()
-//        cancel(with: .canceled)
-//    }
-//}

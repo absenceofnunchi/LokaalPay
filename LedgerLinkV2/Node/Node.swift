@@ -15,6 +15,7 @@ import Foundation
 import web3swift
 import Combine
 import BigInt
+import MultipeerConnectivity
 
 protocol NodeConfigurable {
     func search(_ data: TreeConfigurableAccount) -> TreeConfigurableAccount?
@@ -39,10 +40,10 @@ final class Node {
     static let shared = Node()
     let localStorage = LocalStorage()
     var storage = Set<AnyCancellable>()
-    private var validatedTransactions: [TreeConfigurableTransaction] = [] /// validated transactions to be added to a block
+    private var validatedTransactions: [Date: EthereumTransaction] = [:] /// validated transactions to be added to the queue as well as to be added to a block
     private var validatedAccounts: [TreeConfigurableAccount] = []
     private var unvalidatedBlocks: [LightBlock] = [] /// The light blocks received from peers to be validated prior to sending out a new one. Validating entails checking the number and the parent hash.
-    private var unvalidatedTransactions: [TreeConfigurableTransaction] = []
+    private let queue = OperationQueue()
     
     func save<T: LightConfigurable>(_ element: T, completion: @escaping (NodeError?) -> Void) async {
         await localStorage.save(element, completion: completion)
@@ -339,5 +340,76 @@ final class Node {
     
     func addUnvalidatedBlock(_ block: LightBlock) {
         unvalidatedBlocks.append(block)
+    }
+    
+    func processTransaction(_ data: Data, peerID: MCPeerID) {
+        
+        do {
+            let decoded = try JSONDecoder().decode(ContractMethod.self, from: data)
+            print("decoded in didReceive", decoded)
+            switch decoded {
+                case .createAccount(let rlpData):
+                    NetworkManager.shared.relay(data: data, peerID: peerID)
+                    validateTransaction(rlpData) { [weak self] (tx, extraData) in
+                        //            let contractMethodOperation = ContractMethodOperation()
+                        //            self?.queue.addOperations([contractMethodOperation], waitUntilFinished: true)
+                        //            print("Operation finished with: \(contractMethodOperation.result!)")
+                        if let extraData = extraData,
+                           let tx = tx {
+                            
+                        }
+                    }
+                    break
+                case .transferValue(let rlpData):
+                    NetworkManager.shared.relay(data: data, peerID: peerID)
+                    validateTransaction(rlpData) { (tx, extraData) in
+                        if let extraData = extraData,
+                           let tx = tx {
+                            
+                        }
+                    }
+                    break
+                case .blockchainDownloadRequest(let blockNumber):
+                    break
+                case .blockchainDownloadResponse(let data):
+                    break
+            }
+        } catch {
+            print("error in didReceive", error)
+        }
+    }
+    
+    func validateTransaction(_ rlpData: Data, completion: @escaping (EthereumTransaction?, TransactionExtraData?) -> Void)  {
+        /// Validate the transaction by recovering the public key.
+        guard let decodedTx = EthereumTransaction.fromRaw(rlpData),// RLP -> EthereumTransaction
+              let publicKey = decodedTx.recoverPublicKey(),
+              let senderAddress = Web3.Utils.publicToAddressString(publicKey),
+              let senderAddressToBeCompared = decodedTx.sender?.address,
+              senderAddress == senderAddressToBeCompared.lowercased(), // If the two info are different, discard the transaction.
+              let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedTx.data),
+              let compressed = rlpData.compressed else {
+                  completion(nil, nil)
+                  return
+              }
+        
+        /// Check if the transaction already exists. Abort if it already exists.
+        Node.shared.fetch(compressed.sha256().toHexString()) { (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
+            if let error = error {
+                print("fetch error", error)
+                completion(nil, nil)
+                return
+            }
+            
+            print("no fetched tx should exist", txs as Any)
+            
+            /// No matching transaction exists in Core Data so proceed to process the transaction
+            guard let txs = txs, txs.count == 0  else {
+                completion(nil, nil)
+                return
+            }
+            
+            
+            completion(decodedTx, decodedExtraData)
+        }
     }
 }

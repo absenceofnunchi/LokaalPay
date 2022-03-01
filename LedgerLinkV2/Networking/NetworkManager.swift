@@ -39,7 +39,8 @@ final class NetworkManager: NSObject {
     var blockchainReceiveHandler: ((String) -> Void)?
     let notificationCenter = NotificationCenter.default
     private var storage = Set<AnyCancellable>()
-    
+    private var relayHistory = [Data: Set<MCPeerID>]()
+
     override init() {
         super.init()
         self.configureSession()
@@ -111,6 +112,8 @@ final class NetworkManager: NSObject {
             start()
         }
 
+        /// The relay history has to be refreshed
+        
         /// Dispatching blocks on a regular interval
 //        Node.shared.createBlock { [weak self] (block) in
 //            guard let encoded = try? JSONEncoder().encode(block),
@@ -185,16 +188,22 @@ extension NetworkManager: MCSessionDelegate {
             let decoded = try JSONDecoder().decode(ContractMethod.self, from: data)
             print("decoded in didReceive", decoded)
             switch decoded {
-                case .createAccount(let transaction, let date):
+                case .createAccount(let transaction):
+                    relay(data: data, peerID: peerID)
+                    
                     break
-                default:
-                    print("default")
+                case .transferValue(let transaction):
+                    relay(data: data, peerID: peerID)
+                    
+                    break
+                case .blockchainDownloadRequest(let blockNumber):
+                    break
+                case .blockchainDownloadResponse(let data):
                     break
             }
         } catch {
             print("error in didReceive", error)
         }
-        
         
 //        let queue = OperationQueue()
 //
@@ -234,6 +243,21 @@ extension NetworkManager: MCSessionDelegate {
     }
     
     
+    func relay(data: Data, peerID: MCPeerID) {
+        /// Check the sent history to prevent duplicate sends
+        if var sentPeersSet = relayHistory[data] {
+            sentPeersSet.insert(peerID)
+            let unsentPeers = Set(session.connectedPeers).subtracting(sentPeersSet)
+            sendData(data: data, peers: Array(unsentPeers), mode: .reliable)
+            unsentPeers.forEach { sentPeersSet.insert($0) }
+            relayHistory.updateValue(sentPeersSet, forKey: data)
+        } else {
+            /// No peers have been contacted regarding this specific data yet
+            let unsentPeers = session.connectedPeers.filter { $0 != peerID }
+            relayHistory.updateValue(Set(unsentPeers), forKey: data)
+            sendData(data: data, peers: session.connectedPeers, mode: .reliable)
+        }
+    }
     
     /// Parses Packet which consists of an array of TreeConfigAccts, TreeConfigTxs, and lightBlocks.
     /// The packets are sent as a response to a request for a portion of or a full blockchain by peers

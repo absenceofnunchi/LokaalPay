@@ -11,7 +11,7 @@ import BigInt
 
 final class TransactionService {
     func prepareTransaction(
-        _ contractMethod: ContractMethod.Name,
+        _ contractMethod: ContractMethod.CodingKeys,
         to: EthereumAddress?,
         value: BigUInt = BigUInt(0),
         password: String,
@@ -78,7 +78,7 @@ final class TransactionService {
 //                      }
                 
                 /// Include the extra data such as the contract method , timestamp, latest block number, and/or a newly created account
-                let extraData = TransactionExtraData(account: account, latestBlockNumber: BigUInt(block?.number ?? 1))
+                let extraData = TransactionExtraData(account: account, timestamp: Date(), latestBlockNumber: BigUInt(block?.number ?? 1))
                 guard let encodedExtraData = try? JSONEncoder().encode(extraData) else {
                     completion(nil, NodeError.encodingError)
                     return
@@ -100,7 +100,7 @@ final class TransactionService {
                     var finalData: Data!
                     switch contractMethod {
                         case .createAccount:
-                            finalData = try ContractMethod.encode(.createAccount(encodedSig, Date()))
+                            finalData = try ContractMethod.encode(.createAccount(encodedSig))
                             break
                         case .transferValue:
                             break
