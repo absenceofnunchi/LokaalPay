@@ -7,6 +7,8 @@
 
 import XCTest
 import Combine
+import web3swift
+import BigInt
 @testable import LedgerLinkV2
 
 final class WalletTests: XCTestCase {
@@ -16,54 +18,6 @@ final class WalletTests: XCTestCase {
     private let transactionService = TransactionService()
     private let keysService = KeysService()
     private let localStorage = LocalStorage()
-    
-    func test_createWallet() async {
-        await Node.shared.save(block) { [weak self] (error) in
-            if let error = error {
-                print(error)
-                return
-            }
-            print("stage 0")
-
-            self?.keysService.createNewWallet(password: "1") { (keyWalletModel, error) in
-                if let error = error {
-                    print(error)
-                    return
-                }
-                print("stage 1")
-
-                guard let keyWalletModel = keyWalletModel else {
-                    return
-                }
-                
-                print("stage 2")
-                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) in
-                    if let error = error {
-                        print(error)
-                        return
-                    }
-                    
-                    print("stage 2.5")
-                    
-                    /// Propogate the creation of the new account to peers
-                    self?.transactionService.prepareTransaction(.createAccount, to: nil, password: "1") { data, error in
-                        if let error = error {
-                            print("notify error", error)
-                            return
-                        }
-                        
-                        guard let data = data else {
-                            return
-                        }
-                        
-                        print("stage 3")
-                        print(data as Any)
-                    }
-                })
-            }
-        }
-    }
-    
 
     
     func test_test1() async {
@@ -146,5 +100,43 @@ final class WalletTests: XCTestCase {
         }
     }
     
-    
+    func test_createPublicSignature() {
+        
+        keysService.createNewWallet(password: "1") { [weak self] (keyWalletModel, error) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            
+            guard let keyWalletModel = keyWalletModel else {
+                fatalError()
+            }
+            
+            self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                do {
+                    let senderAddressOriginal = "0x193d729335a03f2b94a4fae4e34423e66987089e"
+                    // Create a public signature
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: BigUInt(100), to: addresses[1], value: BigUInt(10), data: Data())
+                    guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: self!.keysService.keystoreManager(), transaction: tx, from: EthereumAddress(senderAddressOriginal)!, password: "1") else {
+                        fatalError("Unable to sign transaction")
+                    }
+                    
+                    guard let encodedSig = signedTx.encode(forSignature: false) else {
+                        fatalError("Unable to RLP-encode the signed transaction")
+                    }
+                    
+                    let decoded = EthereumTransaction.fromRaw(encodedSig)
+                    guard let publicKey = decoded?.recoverPublicKey() else { return }
+                    let senderAddress = Web3.Utils.publicToAddressString(publicKey)
+                    XCTAssertEqual(senderAddressOriginal, senderAddress)
+                } catch {
+                    XCTAssertNil(error)
+                }
+            })
+        }
+    }
+
 }

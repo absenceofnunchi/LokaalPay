@@ -40,7 +40,8 @@ final class Node {
     static let shared = Node()
     let localStorage = LocalStorage()
     var storage = Set<AnyCancellable>()
-    private var validatedTransactions: [Date: EthereumTransaction] = [:] /// validated transactions to be added to the queue as well as to be added to a block
+    private var validatedOperations: [TimestampedOperation] = [] /// validated transactions to be added to the queue and executed in order
+    private var validatedTransactions: [TreeConfigurableTransaction] = [] /// validated transactions to be added to the upcoming block
     private var validatedAccounts: [TreeConfigurableAccount] = []
     private var unvalidatedBlocks: [LightBlock] = [] /// The light blocks received from peers to be validated prior to sending out a new one. Validating entails checking the number and the parent hash.
     private let queue = OperationQueue()
@@ -200,9 +201,10 @@ final class Node {
             completion(nil, NodeError.generalError("Unable to fetch the address"))
         }
     }
-    
-    func executeTransactions() {
-        
+
+    struct TimestampedOperation {
+        let timestamp: Date
+        let operation: AsyncOperation
     }
     
     /// Block number parameter is to be used for sending out to peer nodes.
@@ -210,17 +212,29 @@ final class Node {
     /// If your node or other nodes are behind, then a request to provide the discrepency is made.
     func createBlock(completion: @escaping (LightBlock) -> Void) {
         Deferred {
+            Future<Bool, NodeError> { [weak self] promise in
+                guard let sorted = self?.validatedOperations.sorted (by: { $0.timestamp < $1.timestamp }) else {
+                    promise(.failure(.generalError("Unable to sort the timestamped operations")))
+                    return
+                }
+                let operations = sorted.compactMap { $0.operation }
+                self?.queue.addOperations(operations, waitUntilFinished: true)
+                promise(.success(true))
+            }
+            .eraseToAnyPublisher()
+        }
+        .flatMap({ (_) -> AnyPublisher<FullBlock?, NodeError> in
             Future<FullBlock?, NodeError> { promise in
                 Node.shared.localStorage.getLatestBlock { (block: FullBlock?, error: NodeError?) in
                     if let error = error {
                         promise(.failure(error))
                     }
-
+                    
                     promise(.success(block))
                 }
             }
             .eraseToAnyPublisher()
-        }
+        })
         .flatMap({ [weak self] (lastBlock) -> AnyPublisher<LightBlock, NodeError> in
             Future<LightBlock, NodeError> { promise in
                 guard let self = self else {
@@ -231,6 +245,7 @@ final class Node {
                 /// Create the stateRoot and transactionRoot from the validated data using the Merkle tree.
                 let accountArr = self.validatedAccounts.map { $0.data }
                 let txDataArr = self.validatedTransactions.map { $0.data }
+                
                 do {
                     /// Use default data if no validated transactions or account exist to create the merkle root hash
                     let defaultString = "0x0000000000000000000000000000000000000000"
@@ -321,12 +336,54 @@ final class Node {
     
     func addValidatedTransaction(_ rlpData: Data) {
         guard let treeConfigTx = try? TreeConfigurableTransaction(rlpTransaction: rlpData) else { return }
-        validatedTransactions.append(treeConfigTx)
+        
+        let transactionHash = treeConfigTx.id
+        /// Validate the transaction by checking for duplicates in the waiting pool
+        let duplicates = validatedTransactions.filter ({ $0.id == transactionHash })
+        guard duplicates.count == 0 else {
+            return
+        }
+        
+        /// Validate the transaction by checking for duplicates in the blockchain
+        Node.shared.fetch(transactionHash) { [weak self] (txs: [EthereumTransaction]?, error: NodeError?) in
+            if let _ = error {
+                return
+            }
+            
+            
+            /// No matching transaction exists in Core Data so proceed to process the transaction
+            guard let txs = txs, txs.count == 0  else {
+                return
+            }
+            
+            self?.validatedTransactions.append(treeConfigTx)
+        }
     }
     
     func addValidatedTransaction(_ transaction: EthereumTransaction) {
         guard let treeConfigTx = try? TreeConfigurableTransaction(data: transaction) else { return }
-        validatedTransactions.append(treeConfigTx)
+
+        let transactionHash = treeConfigTx.id
+        /// Validate the transaction by checking for duplicates in the waiting pool
+        let duplicates = validatedTransactions.filter ({ $0.id == transactionHash })
+        guard duplicates.count == 0 else {
+            return
+        }
+        
+        /// Validate the transaction by checking for duplicates in the blockchain
+        Node.shared.fetch(transactionHash) { [weak self] (txs: [EthereumTransaction]?, error: NodeError?) in
+            if let _ = error {
+                return
+            }
+            
+            
+            /// No matching transaction exists in Core Data so proceed to process the transaction
+            guard let txs = txs, txs.count == 0  else {
+                return
+            }
+            
+            self?.validatedTransactions.append(treeConfigTx)
+        }
     }
     
     func addValidatedAccount(_ account: Account) {
@@ -342,36 +399,47 @@ final class Node {
         unvalidatedBlocks.append(block)
     }
     
+    /// Process the transactions received from peers according to the contract methods.
     func processTransaction(_ data: Data, peerID: MCPeerID) {
         
         do {
             let decoded = try JSONDecoder().decode(ContractMethod.self, from: data)
-            print("decoded in didReceive", decoded)
             switch decoded {
                 case .createAccount(let rlpData):
                     NetworkManager.shared.relay(data: data, peerID: peerID)
-                    validateTransaction(rlpData) { [weak self] (tx, extraData) in
-                        //            let contractMethodOperation = ContractMethodOperation()
-                        //            self?.queue.addOperations([contractMethodOperation], waitUntilFinished: true)
-                        //            print("Operation finished with: \(contractMethodOperation.result!)")
-                        if let extraData = extraData,
-                           let tx = tx {
-                            
+                    validateTransaction(rlpData) { [weak self] (result, error) in
+                        if let transaction = result.0,
+                           let extraData = result.1 {
+                            let createAccount = CreateAccount(extraData: extraData)
+                            let timestamp = extraData.timestamp
+                            /// Add the operations to be sorted according to the timestamp and to be executed in order
+                            self?.validatedOperations.append(TimestampedOperation(timestamp: timestamp, operation: createAccount))
+                            /// Add the transactions to be added to the upcoming block
+                            guard let treeConfigTx = try? TreeConfigurableTransaction(data: transaction) else { return }
+                            self?.validatedTransactions.append(treeConfigTx)
                         }
                     }
                     break
                 case .transferValue(let rlpData):
                     NetworkManager.shared.relay(data: data, peerID: peerID)
-                    validateTransaction(rlpData) { (tx, extraData) in
-                        if let extraData = extraData,
-                           let tx = tx {
-                            
+                    validateTransaction(rlpData) { [weak self] (result, error) in
+                        if let transaction = result.0,
+                           let extraData = result.1 {
+                            let transferValueOperation = TransferValueOperation(transaction: transaction)
+                            let timestamp = extraData.timestamp
+                            /// Add the operations to be sorted according to the timestamp and to be executed in order
+                            self?.validatedOperations.append(TimestampedOperation(timestamp: timestamp, operation: transferValueOperation))
+                            /// Add the transactions to be added to the upcoming block
+                            guard let treeConfigTx = try? TreeConfigurableTransaction(data: transaction) else { return }
+                            self?.validatedTransactions.append(treeConfigTx)
                         }
                     }
                     break
                 case .blockchainDownloadRequest(let blockNumber):
+                    print(blockNumber)
                     break
                 case .blockchainDownloadResponse(let data):
+                    print(data)
                     break
             }
         } catch {
@@ -379,8 +447,12 @@ final class Node {
         }
     }
     
-    func validateTransaction(_ rlpData: Data, completion: @escaping (EthereumTransaction?, TransactionExtraData?) -> Void)  {
-        /// Validate the transaction by recovering the public key.
+    /// What is a valid transaction?
+    ///  1. The recovered public key should match the sender.
+    ///  2. The transaction should not already exist in the blockchain.
+    ///  3. The transaction should not already exist among validated transaction pool to be added to the upcoming block (no duplicted allowed).
+    private func validateTransaction(_ rlpData: Data, completion: @escaping ((EthereumTransaction?, TransactionExtraData?), NodeError?) -> Void)  {
+        /// 1. Validate the transaction by recovering the public key.
         guard let decodedTx = EthereumTransaction.fromRaw(rlpData),// RLP -> EthereumTransaction
               let publicKey = decodedTx.recoverPublicKey(),
               let senderAddress = Web3.Utils.publicToAddressString(publicKey),
@@ -388,28 +460,42 @@ final class Node {
               senderAddress == senderAddressToBeCompared.lowercased(), // If the two info are different, discard the transaction.
               let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedTx.data),
               let compressed = rlpData.compressed else {
-                  completion(nil, nil)
+                  completion((nil, nil), .generalError("Unable to validate the transaction"))
                   return
               }
         
-        /// Check if the transaction already exists. Abort if it already exists.
-        Node.shared.fetch(compressed.sha256().toHexString()) { (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
+        let transactionHash = compressed.sha256().toHexString()
+        /// 2. Validate the transaction by checking for duplicates in the waiting pool
+        let duplicates = validatedTransactions.filter ({ $0.id == transactionHash })
+        guard duplicates.count == 0 else {
+            completion((nil, nil), .generalError("Duplicate transaction exists"))
+            return
+        }
+        
+        /// 3. Validate the transaction by checking for duplicates in the blockchain
+        Node.shared.fetch(transactionHash) { (txs: [EthereumTransaction]?, error: NodeError?) in
             if let error = error {
                 print("fetch error", error)
-                completion(nil, nil)
+                completion((nil, nil), error)
                 return
             }
             
-            print("no fetched tx should exist", txs as Any)
             
             /// No matching transaction exists in Core Data so proceed to process the transaction
             guard let txs = txs, txs.count == 0  else {
-                completion(nil, nil)
+                completion((nil, nil), .generalError("Duplicate transaction exists in the blockchain"))
                 return
             }
             
-            
-            completion(decodedTx, decodedExtraData)
+            completion((decodedTx, decodedExtraData), nil)
         }
     }
 }
+
+#if DEBUG
+extension Node {
+    func exposeValidateTransaction(_ rlpData: Data, completion: @escaping ((EthereumTransaction?, TransactionExtraData?), NodeError?) -> Void) {
+        return validateTransaction(rlpData, completion: completion)
+    }
+}
+#endif

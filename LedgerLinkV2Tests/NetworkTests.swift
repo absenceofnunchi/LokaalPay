@@ -6,16 +6,11 @@
 //
 
 import XCTest
-import MultipeerConnectivity
 import web3swift
 import BigInt
-import Combine
 @testable import LedgerLinkV2
 
 final class NetworkTests: XCTestCase {
-    let password = "1"
-    var storage = Set<AnyCancellable>()
-
     
     func test_createNewBlock() {
         Node.shared.deleteAll()
@@ -38,137 +33,154 @@ final class NetworkTests: XCTestCase {
         Node.shared.deleteAll()
     }
     
-    func test_test() {
-//        let date0 = Date()
-//        let date1 = Date().advanced(by: 100)
-//
-//        print("A", date0 < date1)
-//        print("B", date0 > date1)
-        
-        for transaction in transactions {
-            guard let encodedTx = transaction.encode() else { return }
-            let timeStampedTx = [
-                Date(): encodedTx
-            ]
+    /// Attempt to validate a non-signed data. Should fail.
+    func test_transactionValidation() {
+        let transaction = transactions[0]
+        Node.shared.saveSync([transaction]) { error in
+            if let error = error {
+                XCTAssertNil(error)
+            }
             
-            do {
-                let encoded = try JSONEncoder().encode(timeStampedTx)
-                print("encoded", encoded)
-                guard let result = parse(encoded) else { return }
-                switch result {
-                    case .data(let data):
-                        print("data", data)
-                        break
-                    case .date(let date):
-                        print("date", date)
-                        break
-                    case .timeStampedData(let data):
-                        print("timestamped", data)
-                        break
+            guard let rlpData = transaction.encode() else {
+                fatalError()
+            }
+            
+            Node.shared.exposeValidateTransaction(rlpData) { result, error in
+                if case .generalError(let msg) = error {
+                    XCTAssertEqual(msg, "Unable to validate the transaction")
                 }
-            } catch {
-                print(error)
+                
+                Node.shared.deleteAll()
             }
         }
     }
     
-    private func parse(_ data: Data) -> Result? {
-        if let decompressed = data.decompressed {
-            return .data(decompressed)
-        } else if let decoded = try? JSONDecoder().decode(Date.self, from: data) {
-            return .date(decoded)
-        } else if let decoded = try? JSONDecoder().decode([Date: Data].self, from: data) {
-            return .timeStampedData(decoded)
-        }
+    /// Create a transaction and successfully validate it
+    func test_transactionValidation2() {
+        let originalSender = addresses[0]
+        let transaction = EthereumTransaction(nonce: BigUInt(100), to: originalSender, value: BigUInt(10), data: Data())
         
-        return nil
-    }
-    
-    enum Result {
-        case data(Data)
-        case date(Date)
-        case timeStampedData([Date: Data])
-    }
-    
-    struct Example: Codable {
-        var extraData: Data?
-        
-        enum CodingKeys: String, CodingKey {
-            case extraData
-        }
-        
-        func encode(to encoder: Encoder) throws {
-            var encoder = encoder.container(keyedBy: CodingKeys.self)
-            try encoder.encode(extraData, forKey: .extraData)
-        }
-        
-        init(extraData: Data?) {
-            self.extraData = extraData
-        }
-        
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.extraData = try container.decodeIfPresent(Data.self, forKey: .extraData)
-        }
-    }
-    
-    func test_test1() {
-//        guard let rlp1 = transactions[0].encode() else {
-//            print("no")
-//            return
-//        }
-//        let rlp2 = transactions[1].encode()!
-//        let rlp3 = transactions[0].encode()!
-//
-//
-//        print("1", rlp1 == rlp2)
-//        print("2", rlp1 == rlp3)
-//
-//        let decoded = EthereumTransaction.fromRaw(rlp1)
-//        print(decoded)
-        
-        do {
-            var keystoreManager: KeystoreManager?
-            do {
-                keystoreManager = try KeysService().keystoreManager()
-                print("keystoreManager", keystoreManager?.addresses?.first)
-            } catch {
-                print("keystore error", error)
+        KeysService().createNewWallet(password: "1") { (keyWalletModel, error) in
+            if let error = error {
+                fatalError(error.localizedDescription)
             }
             
-            // Create a public signature
-            let tx = EthereumTransaction.createLocalTransaction(nonce: BigUInt(100), to: addresses[1], value: BigUInt(10), data: Data())
-            guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: keystoreManager, transaction: tx, from: EthereumAddress("0x193d729335a03f2b94a4fae4e34423e66987089e")!, password: "1") else {
-                print("Unable to sign transaction")
-                return
+            guard let keyWalletModel = keyWalletModel else {
+                fatalError()
             }
             
-            guard let encodedSig = signedTx.encode(forSignature: false) else {
-                print("Unable to RLP-encode the signed transaction")
-                return
-            }
-
-            print("encodedSig", encodedSig)
-
-            let decoded = EthereumTransaction.fromRaw(encodedSig)
-            guard let publicKey = decoded?.recoverPublicKey() else { return }
-            print("publicKey", publicKey)
-            let senderAddress = Web3.Utils.publicToAddressString(publicKey)
-            print("sender", senderAddress)
-        } catch {
-            print("sig error", error)
+            Node.shared.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                do {
+                    // Create a public signature
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data)
+                    guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: KeysService().keystoreManager(), transaction: tx, from: originalSender, password: "1") else {
+                        fatalError("Unable to sign transaction")
+                    }
+                    
+                    guard let encodedSig = signedTx.encode(forSignature: false) else {
+                        fatalError("Unable to RLP-encode the signed transaction")
+                    }
+                    
+                    let decoded = EthereumTransaction.fromRaw(encodedSig)
+                    guard let publicKey = decoded?.recoverPublicKey() else { return }
+                    let senderAddress = Web3.Utils.publicToAddressString(publicKey)
+                    XCTAssertEqual(originalSender.address, senderAddress)
+                    
+                    Node.shared.exposeValidateTransaction(encodedSig) { result, error in
+                        if let error = error {
+                            fatalError(error.localizedDescription)
+                        }
+                        
+                        guard let fetchedTx = result.0 else {
+                            fatalError()
+                        }
+                        
+                        XCTAssertEqual(fetchedTx.nonce, transaction.nonce)
+                        XCTAssertEqual(fetchedTx.to, transaction.to)
+                        XCTAssertEqual(fetchedTx.value, transaction.value)
+                        XCTAssertEqual(fetchedTx.data, transaction.data)
+                    }
+                } catch {
+                    XCTAssertNil(error)
+                }
+            })
         }
     }
     
-    func test_test5() {
-        let set0: Set<Int> = [1, 2, 3]
-        let set1: Set<Int> = [3, 4, 5]
-        let final = set0.subtracting(set1)
-        print("f", final)
-        print("array", Array(final))
+    /// Create a transaction and fail to validate due to duplicates
+    func test_transactionValidation3() {
+        let originalSender = addresses[0]
+        let transaction = EthereumTransaction(nonce: BigUInt(100), to: originalSender, value: BigUInt(10), data: Data())
+        Node.shared.addValidatedTransaction(transaction) /// Add first to create a duplicate
         
-        let final1 = set0.filter { !set1.contains($0) }
-        print("f1", final1)
+        KeysService().createNewWallet(password: "1") { (keyWalletModel, error) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            
+            guard let keyWalletModel = keyWalletModel else {
+                fatalError()
+            }
+            
+            Node.shared.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                do {
+                    // Create a public signature
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data)
+                    guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: KeysService().keystoreManager(), transaction: tx, from: originalSender, password: "1") else {
+                        fatalError("Unable to sign transaction")
+                    }
+                    
+                    guard let encodedSig = signedTx.encode(forSignature: false) else {
+                        fatalError("Unable to RLP-encode the signed transaction")
+                    }
+                    
+                    let decoded = EthereumTransaction.fromRaw(encodedSig)
+                    guard let publicKey = decoded?.recoverPublicKey() else { return }
+                    let senderAddress = Web3.Utils.publicToAddressString(publicKey)
+                    XCTAssertEqual(originalSender.address, senderAddress)
+                    
+                    Node.shared.exposeValidateTransaction(encodedSig) { result, error in
+                        if let error = error {
+                            fatalError(error.localizedDescription)
+                        }
+                        
+                        guard let fetchedTx = result.0 else {
+                            fatalError()
+                        }
+                        
+                        XCTAssertEqual(fetchedTx.nonce, transaction.nonce)
+                        XCTAssertEqual(fetchedTx.to, transaction.to)
+                        XCTAssertEqual(fetchedTx.value, transaction.value)
+                        XCTAssertEqual(fetchedTx.data, transaction.data)
+                    }
+                    
+                } catch {
+                    fatalError(error.localizedDescription)
+                }
+            })
+        }
     }
-  
+    
+    func test_test() {
+        KeysService().createNewWallet(password: "1") { (keyWalletModel, error) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            
+            guard let keyWalletModel = keyWalletModel else {
+                fatalError()
+            }
+         
+            print("error", error)
+            print("key", keyWalletModel)
+        }
+    }
 }
