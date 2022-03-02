@@ -11,14 +11,16 @@ import web3swift
 enum ContractMethod: Codable {
     case createAccount(Data)
     case transferValue(Data)
-    case blockchainDownloadRequest(Data)
-    case blockchainDownloadResponse(Data)
+    case blockchainDownloadRequest(Int32)
+    case blockchainDownloadResponse(Packet)
+    case sendBlock(LightBlock)
     
     enum CodingKeys: String, CodingKey {
         case createAccount
         case transferValue
         case blockchainDownloadRequest
         case blockchainDownloadResponse
+        case sendBlock
         
         var data: Data? {
             return Data(self.rawValue.utf8)
@@ -35,27 +37,40 @@ enum ContractMethod: Codable {
                 try container.encode(rlpEncoded, forKey: .transferValue)
             case .blockchainDownloadRequest(let blockNumber):
                 try container.encode(blockNumber, forKey: .blockchainDownloadRequest)
-            case .blockchainDownloadResponse(let data):
-                try container.encode(data, forKey: .blockchainDownloadResponse)
+            case .blockchainDownloadResponse(let packet):
+                let encoded = try JSONEncoder().encode(packet)
+                guard let compressed = encoded.compressed else { return }
+                try container.encode(compressed, forKey: .blockchainDownloadResponse)
+            case .sendBlock(let lightBlock):
+                let encoded = try JSONEncoder().encode(lightBlock)
+                guard let compressed = encoded.compressed else { return }
+                try container.encode(compressed, forKey: .sendBlock)
         }
     }
     
-    static func encode(_ method: ContractMethod) throws -> Data? {
-        switch method {
-            case .createAccount(let rlpEncoded):
-                let encoded = try JSONEncoder().encode(ContractMethod.createAccount(rlpEncoded))
-                return encoded
-            case .transferValue(let rlpEncoded):
-                let encoded = try JSONEncoder().encode(ContractMethod.transferValue(rlpEncoded))
-                return encoded
-            case .blockchainDownloadRequest(let blockNumber):
-                let encoded = try JSONEncoder().encode(ContractMethod.blockchainDownloadRequest(blockNumber))
-                return encoded
-            case .blockchainDownloadResponse(let data):
-                let encoded = try JSONEncoder().encode(ContractMethod.blockchainDownloadResponse(data))
-                return encoded
-        }
-    }
+    /// The difference between the regularing encoding and this method's encoding is:
+    ///  1. Can be encoded statically and directly from the contract method instance
+//    static func encode(_ method: ContractMethod) throws -> Data? {
+//        switch method {
+//            case .createAccount(let rlpEncoded):
+//                let encoded = try JSONEncoder().encode(ContractMethod.createAccount(rlpEncoded))
+//                return encoded
+//            case .transferValue(let rlpEncoded):
+//                let encoded = try JSONEncoder().encode(ContractMethod.transferValue(rlpEncoded))
+//                return encoded
+//            case .blockchainDownloadRequest(let blockNumber):
+//                let encoded = try JSONEncoder().encode(ContractMethod.blockchainDownloadRequest(blockNumber))
+//                return encoded
+//            case .blockchainDownloadResponse(let data):
+//                guard let compressed = data.compressed else { return nil }
+//                let encodedFinal = try JSONEncoder().encode(ContractMethod.blockchainDownloadResponse(compressed))
+//                return encodedFinal
+//            case .sendBlock(let data):
+//                guard let compressed = data.compressed else { return nil }
+//                let encoded = try JSONEncoder().encode(ContractMethod.sendBlock(compressed))
+//                return encoded
+//        }
+//    }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -69,11 +84,18 @@ enum ContractMethod: Codable {
                 let rlpEncoded = try container.decode(Data.self, forKey: .transferValue)
                 self = .transferValue(rlpEncoded)
             case .blockchainDownloadRequest:
-                let blockNumber = try container.decode(Data.self, forKey: .blockchainDownloadRequest)
+                let blockNumber = try container.decode(Int32.self, forKey: .blockchainDownloadRequest)
                 self = .blockchainDownloadRequest(blockNumber)
             case .blockchainDownloadResponse:
                 let data = try container.decode(Data.self, forKey: .blockchainDownloadResponse)
-                self = .blockchainDownloadResponse(data)
+                guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode blockchain response in ContractMethod") }
+                let decoded = try JSONDecoder().decode(Packet.self, from: decompressed)
+                self = .blockchainDownloadResponse(decoded)
+            case .sendBlock:
+                let data = try container.decode(Data.self, forKey: .sendBlock)
+                guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode sendBlock in ContractMethod") }
+                let decoded = try JSONDecoder().decode(LightBlock.self, from: decompressed)
+                self = .sendBlock(decoded)
             default:
                 throw DecodingError.dataCorrupted(
                     DecodingError.Context(

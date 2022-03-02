@@ -145,4 +145,24 @@ class CodableTests: XCTestCase {
             XCTAssertEqual(decoded, block)
         }
     }
+    
+    func test_pakcet() {
+        let packet = Packet(accounts: treeConfigurableAccounts, transactions: treeConfigurableTransactions, blocks: lightBlocks)
+
+        do {
+//            let encoded = try JSONEncoder().encode(packet) // 1
+//            guard let compressed = encoded.compressed else { return } // 2
+            let contractMethod = ContractMethod.blockchainDownloadResponse(packet) // 3
+            let finalEncoding = try JSONEncoder().encode(contractMethod) // 4
+            let decoded = try JSONDecoder().decode(ContractMethod.self, from: finalEncoding) // 4
+            guard case .blockchainDownloadResponse(let data) = decoded else { return } // 3
+//            guard let decompressed = data.decompressed else { return } // 2
+//            print(decompressed)
+//            let finalDecoding = try JSONDecoder().decode(Packet.self, from: data)
+            print(data)
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+
+    }
 }

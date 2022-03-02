@@ -317,23 +317,6 @@ final class Node {
         .store(in: &storage)
     }
     
-    func validateBlock(_ lastBlock: LightBlock) {
-        /// Select the block with the largest number
-        
-        var blockSet = Multiset<LightBlock>()
-        unvalidatedBlocks.forEach { blockSet.add($0) }
-        
-        
-        unvalidatedBlocks.sort { $0.number < $1.number }
-        guard let largestBlock = unvalidatedBlocks.last else { return }
-        
-        if largestBlock.number == lastBlock.number + 1 {
-            
-        } else if largestBlock.number > lastBlock.number + 1 {
-            
-        }
-    }
-    
     func addValidatedTransaction(_ rlpData: Data) {
         guard let treeConfigTx = try? TreeConfigurableTransaction(rlpTransaction: rlpData) else { return }
         
@@ -406,7 +389,7 @@ final class Node {
             let decoded = try JSONDecoder().decode(ContractMethod.self, from: data)
             switch decoded {
                 case .createAccount(let rlpData):
-                    NetworkManager.shared.relay(data: data, peerID: peerID)
+                    NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
                     validateTransaction(rlpData) { [weak self] (result, error) in
                         if let transaction = result.0,
                            let extraData = result.1 {
@@ -421,7 +404,7 @@ final class Node {
                     }
                     break
                 case .transferValue(let rlpData):
-                    NetworkManager.shared.relay(data: data, peerID: peerID)
+                    NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
                     validateTransaction(rlpData) { [weak self] (result, error) in
                         if let transaction = result.0,
                            let extraData = result.1 {
@@ -436,10 +419,18 @@ final class Node {
                     }
                     break
                 case .blockchainDownloadRequest(let blockNumber):
-                    print(blockNumber)
+                    /// Blockchain request by the sender. Therefore, send the requested blockchain.
+                    NetworkManager.shared.sendBlockchain(blockNumber, format: "number > %i", peerID: peerID)
                     break
                 case .blockchainDownloadResponse(let data):
-                    print(data)
+                    /// Parse the requested blockchain
+                    /// Non-transactions don't have to go through the queue such as the blockchain data sent from peers as a response to the request to update the local blockchain
+                    /// Blockchain data received from peers to update the local blockchain.  This means your device has requested the blockchain info from another peer either during the creation of wallet or during the contract method execution.
+                    parsePacket(packet)
+                    break
+                case .sendBlock(let data):
+                    /// Light blocks sent from peers on a regular interval
+                    parseBlock(decoded)
                     break
             }
         } catch {
@@ -489,6 +480,69 @@ final class Node {
             
             completion((decodedTx, decodedExtraData), nil)
         }
+    }
+    
+    /// Parses Packet which consists of an array of TreeConfigAccts, TreeConfigTxs, and lightBlocks.
+    /// The packets are sent as a response to a request for a portion of or a full blockchain by peers
+    func parsePacket(_ packet: Packet) {
+        /// Calculate the blocks that don't exist locally and save them.
+        if let blocks = packet.blocks, blocks.count > 0 {
+            Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
+                if let error = error {
+                    print(error)
+                    return
+                }
+                
+                if let block = block {
+                    /// Only save the blocks that are greater in its block number than then the already existing blocks.
+                    let nonExistingBlocks = blocks.filter { $0.number > block.number }
+                    /// There is a chance that the local blockchain size might have increased during the transfer. If so, ignore the received block
+                    if nonExistingBlocks.count > 0 {
+                        Node.shared.saveSync(nonExistingBlocks) { error in
+                            if let error = error {
+                                print(error)
+                                return
+                            }
+                        }
+                    }
+                } else {
+                    /// no local blockchain exists yet because it's a brand new account
+                    /// delete potentially existing ones since no transactions could've/should've been occured
+                    Node.shared.deleteAll(of: .blockCoreData)
+                    Node.shared.saveSync(blocks) { error in
+                        if let error = error {
+                            print("block save error", error)
+                            return
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// Save the transactions.
+        if let transactions = packet.transactions, transactions.count > 0 {
+            Node.shared.saveSync(transactions) { error in
+                if let error = error {
+                    print("transaction save error", error)
+                    return
+                }
+            }
+        }
+        
+        /// Save the accounts.
+        if let accounts = packet.accounts, accounts.count > 0 {
+            Node.shared.saveSync(accounts) { error in
+                if let error = error {
+                    print("accounts save error", error)
+                    return
+                }
+            }
+        }
+    }
+    
+    func parseBlock(_ block: LightBlock) {
+        /// Receive the block sent from peers, compare against the local block's number and add the greater one to Core Data
+        Node.shared.addUnvalidatedBlock(block)
     }
 }
 

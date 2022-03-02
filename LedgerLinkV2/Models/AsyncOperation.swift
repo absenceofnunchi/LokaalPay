@@ -289,7 +289,6 @@ final class TransferValueOperation: ChainedAsyncResultOperation<Void, Bool, Node
     
     override final public func main() {
         Node.shared.transfer(transaction: transaction)
-        //            Node.shared.addValidatedTransaction(input.1)
         self.finish(with: .success(true))
     }
     
@@ -319,7 +318,6 @@ final class CreateAccount: ChainedAsyncResultOperation<Void, Bool, NodeError> {
                 return
             }
             print("saved")
-            //            Node.shared.addValidatedTransaction(input.1)
             self?.finish(with: .success(true))
         }
     }

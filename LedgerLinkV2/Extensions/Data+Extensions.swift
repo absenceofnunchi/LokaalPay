@@ -13,7 +13,7 @@ extension Data {
             return nil
         }
         
-        return Data(compressed)
+        return Data(referencing: compressed)
     }
     
     var decompressedToArray: [Data]? {
@@ -63,6 +63,6 @@ extension Data {
             return nil
         }
         
-        return Data(decompressed)
+        return Data(referencing: decompressed)
     }
 }

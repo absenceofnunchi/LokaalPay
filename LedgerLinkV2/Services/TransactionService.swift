@@ -97,18 +97,19 @@ final class TransactionService {
                         return
                     }
                     
-                    var finalData: Data!
+                    var method: ContractMethod!
                     switch contractMethod {
                         case .createAccount:
-                            finalData = try ContractMethod.encode(.createAccount(encodedSig))
+                            method = ContractMethod.createAccount(encodedSig)
                             break
                         case .transferValue:
+                            method = ContractMethod.transferValue(encodedSig)
                             break
-                        case .blockchainDownloadRequest:
-                            break
-                        case .blockchainDownloadResponse:
+                        default:
                             break
                     }
+                    
+                    let finalData = try JSONEncoder().encode(method)
                     
                     completion(finalData, nil)
                     

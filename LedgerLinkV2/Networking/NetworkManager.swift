@@ -85,14 +85,14 @@ final class NetworkManager: NSObject {
     func suspend() {
         nearbyServiceAdvertiser?.stopAdvertisingPeer()
         nearbyBrowser.stopBrowsingForPeers()
-        player = nil
-        playerLooper = nil
-        timer?.invalidate()
-        isServerRunning = false
     }
     
     func disconnect() {
         suspend()
+        player = nil
+        playerLooper = nil
+        timer?.invalidate()
+        isServerRunning = false
         session.disconnect()
     }
     
@@ -115,11 +115,16 @@ final class NetworkManager: NSObject {
         /// The relay history has to be refreshed
         
         /// Dispatching blocks on a regular interval
-//        Node.shared.createBlock { [weak self] (block) in
-//            guard let encoded = try? JSONEncoder().encode(block),
-//                  let compressed = encoded.compressed else { return }
-//            self?.sendDataToAllPeers(data: compressed)
-//        }
+        Node.shared.createBlock { [weak self] (block) in
+
+            do {
+                let contractMethod = ContractMethod.sendBlock(block)
+                let encoded = try JSONEncoder().encode(contractMethod)
+                self?.sendDataToAllPeers(data: encoded)
+            } catch {
+                print("block send error", error)
+            }
+        }
     }
     
     // MARK: - `MPCSession` private methods.
@@ -184,26 +189,8 @@ extension NetworkManager: MCSessionDelegate {
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         print("didReceive", data)
         
-        do {
-            let decoded = try JSONDecoder().decode(ContractMethod.self, from: data)
-            print("decoded in didReceive", decoded)
-            switch decoded {
-                case .createAccount(let transaction):
-                    relay(data: data, peerID: peerID)
-                    
-                    break
-                case .transferValue(let transaction):
-                    relay(data: data, peerID: peerID)
-                    
-                    break
-                case .blockchainDownloadRequest(let blockNumber):
-                    break
-                case .blockchainDownloadResponse(let data):
-                    break
-            }
-        } catch {
-            print("error in didReceive", error)
-        }
+        Node.shared.processTransaction(data, peerID: peerID)
+       
         
 //        let queue = OperationQueue()
 //
@@ -243,7 +230,24 @@ extension NetworkManager: MCSessionDelegate {
     }
     
     
-    func relay(data: Data, peerID: MCPeerID) {
+    func relayBlock(_ lastBlock: LightBlock) {
+        /// Select the block with the largest number
+        
+//        var blockSet = Multiset<LightBlock>()
+//        unvalidatedBlocks.forEach { blockSet.add($0) }
+//        
+//        
+//        unvalidatedBlocks.sort { $0.number < $1.number }
+//        guard let largestBlock = unvalidatedBlocks.last else { return }
+//        
+//        if largestBlock.number == lastBlock.number + 1 {
+//            
+//        } else if largestBlock.number > lastBlock.number + 1 {
+//            
+//        }
+    }
+    
+    func relayTransaction(data: Data, peerID: MCPeerID) {
         /// Check the sent history to prevent duplicate sends
         if var sentPeersSet = relayHistory[data] {
             sentPeersSet.insert(peerID)
@@ -258,69 +262,6 @@ extension NetworkManager: MCSessionDelegate {
             sendData(data: data, peers: session.connectedPeers, mode: .reliable)
         }
     }
-    
-    /// Parses Packet which consists of an array of TreeConfigAccts, TreeConfigTxs, and lightBlocks.
-    /// The packets are sent as a response to a request for a portion of or a full blockchain by peers
-    private func parsePacket(_ packet: Packet) {
-        /// Calculate the blocks that don't exist locally and save them.
-        if let blocks = packet.blocks, blocks.count > 0 {
-            Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
-                if let error = error {
-                    print(error)
-                    return
-                }
-                
-                if let block = block {
-                    /// Only save the blocks that are greater in its block number than then the already existing blocks.
-                    let nonExistingBlocks = blocks.filter { $0.number > block.number }
-                    /// There is a chance that the local blockchain size might have increased during the transfer. If so, ignore the received block
-                    if nonExistingBlocks.count > 0 {
-                        Node.shared.saveSync(nonExistingBlocks) { error in
-                            if let error = error {
-                                print(error)
-                                return
-                            }
-                        }
-                    }
-                } else {
-                    /// no local blockchain exists yet because it's a brand new account
-                    /// delete potentially existing ones since no transactions could've/should've been occured
-                    Node.shared.deleteAll(of: .blockCoreData)
-                    Node.shared.saveSync(blocks) { error in
-                        if let error = error {
-                            print("block save error", error)
-                            return
-                        }
-                    }
-                }
-            }
-        }
-        
-        /// Save the transactions.
-        if let transactions = packet.transactions, transactions.count > 0 {
-            Node.shared.saveSync(transactions) { error in
-                if let error = error {
-                    print("transaction save error", error)
-                    return
-                }
-            }
-        }
-        
-        /// Save the accounts.
-        if let accounts = packet.accounts, accounts.count > 0 {
-            Node.shared.saveSync(accounts) { error in
-                if let error = error {
-                    print("accounts save error", error)
-                    return
-                }
-            }
-        }
-    }
-    
-    private func parseBlock(_ block: LightBlock) {
-        /// Receive the block sent from peers, compare against the local block's number and add the greater one to Core Data
-        Node.shared.addUnvalidatedBlock(block)
-    }
 
     func requestBlockchainFromAllPeers(completion: @escaping(NodeError?) -> Void) {
         guard !session.connectedPeers.isEmpty else {
@@ -330,15 +271,15 @@ extension NetworkManager: MCSessionDelegate {
         requestBlockchain(peerIDs: session.connectedPeers, completion: completion)
     }
     
-    /// When another device asks for a copy of a blockchain to download, first check to see if you have a blockchain that's up-to-date, and if yes, forward the blockchain
+    /// Download blockchain by requesting it from another peer
     func requestBlockchain(peerIDs: [MCPeerID], completion: @escaping (NodeError?) -> Void) {
         do {
             let block: LightBlock? = try Node.shared.localStorage.getLastestBlockSync()
             print("latestBlock", block as Any)
             /// local blockchain may or may not exists
             let blockNumber = block?.number ?? Int32(0)
-            let data = try JSONEncoder().encode(blockNumber)
-            print("encoded latest block", data)
+            let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
+            let data = try JSONEncoder().encode(contractMethod)
             self.sendData(data: data, peers: peerIDs, mode: .reliable)
             completion(nil)
         } catch {
@@ -418,12 +359,9 @@ extension NetworkManager: MCSessionDelegate {
                     }
                     
                     do {
-                        let encoded = try JSONEncoder().encode(packet)
-                        guard let compressed = encoded.compressed else {
-                            promise(.failure(.generalError("Unable to compress data")))
-                            return
-                        }
-                        promise(.success(compressed))
+                        let contractMethod = ContractMethod.blockchainDownloadResponse(packet)
+                        let encodedMethod = try JSONEncoder().encode(contractMethod)
+                        promise(.success(encodedMethod))
                     } catch {
                         promise(.failure(.generalError("Unable to encode data")))
                         return
@@ -615,4 +553,15 @@ struct Packet: Codable {
     var accounts: [TreeConfigurableAccount]?
     var transactions: [TreeConfigurableTransaction]?
     var blocks: [LightBlock]?
+    
+//    enum CodingKeys: String, CodingKey {
+//        case accounts
+//        case transactions
+//        case blocks
+//    }
+//    
+//    func encode(to encoder: Encoder) throws {
+//        let container = encoder.container(keyedBy: CodingKeys.self)
+//        
+//    }
 }
