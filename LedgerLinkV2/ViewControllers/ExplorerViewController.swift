@@ -126,14 +126,14 @@ class ExplorerViewController: UIViewController {
                 }
                 break
             case 3:
-                Node.shared.fetch { [weak self](blocks: [LightBlock]?, error: NodeError?) in
+                Node.shared.fetch { [weak self](blocks: [FullBlock]?, error: NodeError?) in
                     if let error = error {
                         print(error)
                     }
                         
                     if let blocks = blocks {
                         DispatchQueue.main.async {
-                            let detailVC = DetailTableViewController<LightBlock>()
+                            let detailVC = DetailTableViewController<FullBlock>()
                             detailVC.data = blocks
                             self?.navigationController?.pushViewController(detailVC, animated: true)
                         }
@@ -154,7 +154,6 @@ extension ExplorerViewController: ScannerDelegate {
         scannerVC.delegate = self
         self.present(scannerVC, animated: true, completion: nil)
     }
-    
     
     // MARK: - scannerDidOutput
     func scannerDidOutput(code: String) {

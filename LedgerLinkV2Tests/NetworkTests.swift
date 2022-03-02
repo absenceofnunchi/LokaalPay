@@ -76,7 +76,7 @@ final class NetworkTests: XCTestCase {
                 
                 do {
                     // Create a public signature
-                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data)
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data, chainID: BigUInt(11111))
                     guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: KeysService().keystoreManager(), transaction: tx, from: originalSender, password: "1") else {
                         fatalError("Unable to sign transaction")
                     }
@@ -133,7 +133,7 @@ final class NetworkTests: XCTestCase {
                 
                 do {
                     // Create a public signature
-                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data)
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data, chainID: BigUInt(11111))
                     guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: KeysService().keystoreManager(), transaction: tx, from: originalSender, password: "1") else {
                         fatalError("Unable to sign transaction")
                     }
@@ -170,17 +170,60 @@ final class NetworkTests: XCTestCase {
     }
     
     func test_test() {
-        KeysService().createNewWallet(password: "1") { (keyWalletModel, error) in
+        Node.shared.localStorage.saveRelationalBlock(block: blocks[0]) { error in
             if let error = error {
-                fatalError(error.localizedDescription)
+                print(error)
+                return
             }
             
-            guard let keyWalletModel = keyWalletModel else {
-                fatalError()
-            }
-         
-            print("error", error)
-            print("key", keyWalletModel)
+            Node.shared.fetch(blocks[0].hash.toHexString(), completion: { (block: [FullBlock]?, error: NodeError?) in
+                if let error = error {
+                    print("error1", error)
+                    return
+                }
+                
+                if let block = block {
+                    print("block", block)
+                }
+                
+//                let tx = blocks[0].transactions![0]
+//                Node.shared.localStorage.getTransaction(tx.id) { (fetchedTx: EthereumTransaction?, error: NodeError?) in
+//                    if let error = error {
+//                        print("error2", error)
+//                        return
+//                    }
+//
+//                    print("fetchedTx pre", fetchedTx)
+//                    if let fetchedTx = fetchedTx {
+//                        print("fetchedTx", fetchedTx)
+//                    }
+//                }
+                
+                Node.shared.localStorage.getAllTransactionsAsync { (fetchedTx: [TreeConfigurableTransaction]?, error: NodeError?) in
+                    if let error = error {
+                        print("error2", error)
+                        return
+                    }
+                    
+                    print("fetchedTx pre", fetchedTx as Any)
+                    if let fetchedTx = fetchedTx {
+                        print("fetchedTx", fetchedTx)
+                    }
+                }
+                
+                let fetchedAccts: [TreeConfigurableAccount]? = try? Node.shared.localStorage.getAllAccounts()
+                print("accts", fetchedAccts as Any)
+                Node.shared.fetch { (accts: [TreeConfigurableAccount]?, error: NodeError?) in
+                    if let error = error {
+                        print("error3", error)
+                        return
+                    }
+                    
+                    if let accts = accts {
+                        print("accts", accts)
+                    }
+                }
+            })
         }
     }
 }

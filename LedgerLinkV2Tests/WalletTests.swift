@@ -119,7 +119,7 @@ final class WalletTests: XCTestCase {
                 do {
                     let senderAddressOriginal = "0x193d729335a03f2b94a4fae4e34423e66987089e"
                     // Create a public signature
-                    let tx = EthereumTransaction.createLocalTransaction(nonce: BigUInt(100), to: addresses[1], value: BigUInt(10), data: Data())
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: BigUInt(100), to: addresses[1], value: BigUInt(10), data: Data(), chainID: BigUInt(11111))
                     guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: self!.keysService.keystoreManager(), transaction: tx, from: EthereumAddress(senderAddressOriginal)!, password: "1") else {
                         fatalError("Unable to sign transaction")
                     }
@@ -138,5 +138,4 @@ final class WalletTests: XCTestCase {
             })
         }
     }
-
 }

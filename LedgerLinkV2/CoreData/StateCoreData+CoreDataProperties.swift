@@ -2,7 +2,7 @@
 //  StateCoreData+CoreDataProperties.swift
 //  LedgerLinkV2
 //
-//  Created by J C on 2022-02-21.
+//  Created by J C on 2022-03-02.
 //
 //
 
@@ -18,6 +18,7 @@ extension StateCoreData {
 
     @NSManaged public var data: Data?
     @NSManaged public var id: String?
+    @NSManaged public var ofBlock1: BlockCoreData?
 
 }
 

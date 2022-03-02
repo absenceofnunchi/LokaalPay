@@ -13,13 +13,17 @@ enum ContractMethod: Codable {
     case transferValue(Data)
     case blockchainDownloadRequest(Int32)
     case blockchainDownloadResponse(Packet)
-    case sendBlock(LightBlock)
+    case blockchainDownloadAllRequest
+    case blockchainDownloadAllResponse(Packet)
+    case sendBlock(Data)
     
     enum CodingKeys: String, CodingKey {
         case createAccount
         case transferValue
         case blockchainDownloadRequest
         case blockchainDownloadResponse
+        case blockchainDownloadAllRequest
+        case blockchainDownloadAllResponse
         case sendBlock
         
         var data: Data? {
@@ -41,10 +45,14 @@ enum ContractMethod: Codable {
                 let encoded = try JSONEncoder().encode(packet)
                 guard let compressed = encoded.compressed else { return }
                 try container.encode(compressed, forKey: .blockchainDownloadResponse)
-            case .sendBlock(let lightBlock):
-                let encoded = try JSONEncoder().encode(lightBlock)
+            case .blockchainDownloadAllRequest:
+                try container.encode("blockchainDownloadAllRequest", forKey: .blockchainDownloadAllRequest)
+            case .blockchainDownloadAllResponse(let packet):
+                let encoded = try JSONEncoder().encode(packet)
                 guard let compressed = encoded.compressed else { return }
-                try container.encode(compressed, forKey: .sendBlock)
+                try container.encode(compressed, forKey: .blockchainDownloadAllResponse)
+            case .sendBlock(let data):
+                try container.encode(data, forKey: .sendBlock)
         }
     }
     
@@ -91,11 +99,21 @@ enum ContractMethod: Codable {
                 guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode blockchain response in ContractMethod") }
                 let decoded = try JSONDecoder().decode(Packet.self, from: decompressed)
                 self = .blockchainDownloadResponse(decoded)
+            case .blockchainDownloadAllRequest:
+                guard let decoded = try? container.decode(String.self, forKey: .blockchainDownloadAllRequest), decoded == "blockchainDownloadAllRequest" else {
+                    throw NodeError.generalError("Unable to decode blockchainDownloadAllRequest in ContractMethod")
+                }
+                self = .blockchainDownloadAllRequest
+            case .blockchainDownloadAllResponse:
+                let data = try container.decode(Data.self, forKey: .blockchainDownloadAllResponse)
+                guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode blockchainDownloadAllResponse in ContractMethod") }
+                let decoded = try JSONDecoder().decode(Packet.self, from: decompressed)
+                self = .blockchainDownloadAllResponse(decoded)
             case .sendBlock:
                 let data = try container.decode(Data.self, forKey: .sendBlock)
-                guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode sendBlock in ContractMethod") }
-                let decoded = try JSONDecoder().decode(LightBlock.self, from: decompressed)
-                self = .sendBlock(decoded)
+//                guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode sendBlock in ContractMethod") }
+//                let decoded = try JSONDecoder().decode(LightBlock.self, from: decompressed)
+                self = .sendBlock(data)
             default:
                 throw DecodingError.dataCorrupted(
                     DecodingError.Context(

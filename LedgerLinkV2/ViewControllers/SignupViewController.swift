@@ -228,31 +228,10 @@ final class SignupViewController: UIViewController {
 //
 //        createWalletMode = false
 //    }
-    
-    private func createWallet1() {
-
         
-//        Node.shared.deleteAll(of: .blockCoreData)
-        self.createWalletMode = true
-        NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(didReceiveBlockchain), name: .didReceiveBlockchain, object: nil)
-        NetworkManager.shared.requestBlockchainFromAllPeers { error in
-            if let error = error {
-                print(error)
-                return
-            }
-            
-            print("stage 0")
-            let action = Action {
-                print("stage 1")
-            }
-            NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(action.action), name: .didReceiveBlockchain, object: nil)
-  
-            self.createWalletMode = false
-        }
-    }
-    
     private func createWallet() {
         let password = "1"
+        let chainID = 11111
         
         showSpinner()
         print("start")
@@ -272,6 +251,8 @@ final class SignupViewController: UIViewController {
                 self.semaphore.signal()
                 group.leave()
             }
+            
+            UserDefaults.standard.set(chainID, forKey: "chainID")
         }
         
         group.enter()

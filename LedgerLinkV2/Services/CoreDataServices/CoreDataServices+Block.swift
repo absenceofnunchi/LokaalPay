@@ -297,6 +297,48 @@ extension LocalStorage {
         try saveBlock(block: lightBlock, completion: completion)
     }
     
+    /// Save a block with all the transactions and accounts in a one-to-many relational way
+    func saveRelationalBlock(block: FullBlock, completion: @escaping (NodeError?) -> Void) {
+        /// Halt if a block already exists
+        let existingBlock: LightBlock? = try? getBlock(block.hash.toHexString())
+        if existingBlock != nil {
+            completion(NodeError.generalError("Block already exists"))
+            return
+        }
+        
+        do {
+            let blockObject = BlockCoreData(context: context)
+            let lightBlock = try LightBlock(data: block)
+            blockObject.id = lightBlock.id
+            let number = Int32(lightBlock.number)
+            blockObject.number = number
+            blockObject.data = lightBlock.data
+            
+            if let transactions = block.transactions {
+                for tx in transactions {
+                    let transactionObject = TransactionCoreData(context: context)
+                    transactionObject.id = tx.id
+                    transactionObject.data = tx.data
+                    blockObject.addToTransactions(transactionObject)
+                }
+            }
+            
+            if let accounts = block.accounts {
+                for account in accounts {
+                    let stateObject = StateCoreData(context: context)
+                    stateObject.id = account.id
+                    stateObject.data = account.data
+                    blockObject.addToStates(stateObject)
+                }
+            }
+            
+            try context.save()
+            completion(nil)
+        } catch {
+            completion(NodeError.generalError("Block save error"))
+        }
+    }
+    
     /// Save an array of full blocks
     @available(iOS 15.0.0, *)
     func saveBlocks(blocks: [FullBlock], completion: @escaping (NodeError?) throws -> Void) async throws {

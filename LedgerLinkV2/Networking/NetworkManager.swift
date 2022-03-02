@@ -39,7 +39,8 @@ final class NetworkManager: NSObject {
     var blockchainReceiveHandler: ((String) -> Void)?
     let notificationCenter = NotificationCenter.default
     private var storage = Set<AnyCancellable>()
-    private var relayHistory = [Data: Set<MCPeerID>]()
+    private var transactionRelayHistory = [Data: Set<MCPeerID>]()
+    private var blockRelayHistory = [Data: Set<MCPeerID>]()
 
     override init() {
         super.init()
@@ -56,11 +57,11 @@ final class NetworkManager: NSObject {
         nearbyBrowser.delegate = self
     }
     
-    enum Methods: String {
-        case transfer
-        case downloadBlockchain
-        case blockchainReceived
-    }
+//    enum Methods: String {
+//        case transfer
+//        case downloadBlockchain
+//        case blockchainReceived
+//    }
     
     // MARK: - `MPCSession` public methods.
     func start() {
@@ -116,11 +117,14 @@ final class NetworkManager: NSObject {
         
         /// Dispatching blocks on a regular interval
         Node.shared.createBlock { [weak self] (block) in
-
             do {
-                let contractMethod = ContractMethod.sendBlock(block)
-                let encoded = try JSONEncoder().encode(contractMethod)
-                self?.sendDataToAllPeers(data: encoded)
+                let encoded = try JSONEncoder().encode(block)
+                guard let compressed = encoded.compressed else { return }
+                let contractMethod = ContractMethod.sendBlock(compressed)
+                let encodedMethod = try JSONEncoder().encode(contractMethod)
+                self?.sendDataToAllPeers(data: encodedMethod)
+                self?.transactionRelayHistory.removeAll()
+                self?.blockRelayHistory.removeAll()
             } catch {
                 print("block send error", error)
             }
@@ -229,36 +233,34 @@ extension NetworkManager: MCSessionDelegate {
 //        }
     }
     
-    
-    func relayBlock(_ lastBlock: LightBlock) {
-        /// Select the block with the largest number
-        
-//        var blockSet = Multiset<LightBlock>()
-//        unvalidatedBlocks.forEach { blockSet.add($0) }
-//        
-//        
-//        unvalidatedBlocks.sort { $0.number < $1.number }
-//        guard let largestBlock = unvalidatedBlocks.last else { return }
-//        
-//        if largestBlock.number == lastBlock.number + 1 {
-//            
-//        } else if largestBlock.number > lastBlock.number + 1 {
-//            
-//        }
+    func relayBlock(_ blockData: Data) {
+        /// Check the sent history to prevent duplicate sends
+        if var sentPeersSet = blockRelayHistory[blockData] {
+            sentPeersSet.insert(peerID)
+            let unsentPeers = Set(session.connectedPeers).subtracting(sentPeersSet)
+            sendData(data: blockData, peers: Array(unsentPeers), mode: .reliable)
+            unsentPeers.forEach { sentPeersSet.insert($0) }
+            blockRelayHistory.updateValue(sentPeersSet, forKey: blockData)
+        } else {
+            /// No peers have been contacted regarding this specific data yet
+            let unsentPeers = session.connectedPeers.filter { $0 != peerID }
+            blockRelayHistory.updateValue(Set(unsentPeers), forKey: blockData)
+            sendData(data: blockData, peers: session.connectedPeers, mode: .reliable)
+        }
     }
     
     func relayTransaction(data: Data, peerID: MCPeerID) {
         /// Check the sent history to prevent duplicate sends
-        if var sentPeersSet = relayHistory[data] {
+        if var sentPeersSet = transactionRelayHistory[data] {
             sentPeersSet.insert(peerID)
             let unsentPeers = Set(session.connectedPeers).subtracting(sentPeersSet)
             sendData(data: data, peers: Array(unsentPeers), mode: .reliable)
             unsentPeers.forEach { sentPeersSet.insert($0) }
-            relayHistory.updateValue(sentPeersSet, forKey: data)
+            transactionRelayHistory.updateValue(sentPeersSet, forKey: data)
         } else {
             /// No peers have been contacted regarding this specific data yet
             let unsentPeers = session.connectedPeers.filter { $0 != peerID }
-            relayHistory.updateValue(Set(unsentPeers), forKey: data)
+            transactionRelayHistory.updateValue(Set(unsentPeers), forKey: data)
             sendData(data: data, peers: session.connectedPeers, mode: .reliable)
         }
     }
@@ -272,6 +274,7 @@ extension NetworkManager: MCSessionDelegate {
     }
     
     /// Download blockchain by requesting it from another peer
+    /// Request blocks with a number that's later than the latest local block.
     func requestBlockchain(peerIDs: [MCPeerID], completion: @escaping (NodeError?) -> Void) {
         do {
             let block: LightBlock? = try Node.shared.localStorage.getLastestBlockSync()
@@ -286,21 +289,19 @@ extension NetworkManager: MCSessionDelegate {
             print(error)
             completion(.generalError("request block error"))
         }
-        
-//        Node.shared.localStorage.getLatestBlock { [weak self] (block: LightBlock?, error: NodeError?) in
-//            if let error = error {
-//                completion(error)
-//            }
-//
-//            if let block = block {
-//                print("latestBlock", block as Any)
-//                guard let blockNumber = try? JSONEncoder().encode(block.number) else { return }
-//                self?.sendData(data: blockNumber, peers: peerIDs, mode: .reliable)
-//            } else {
-//                guard let blockNumber = try? JSONEncoder().encode(0) else { return }
-//                self?.sendData(data: blockNumber, peers: peerIDs, mode: .reliable)
-//            }
-//        }
+    }
+    
+    /// Request a complete blockchain.
+    /// This is used when a new block to be added is incompatible with the local blockchain and needs a complete overhaul.
+    func requestAllBlockchain(completion: @escaping(NodeError?) -> Void) {
+        do {
+            let contractMethod = ContractMethod.blockchainDownloadAllRequest
+            let data = try JSONEncoder().encode(contractMethod)
+            self.sendData(data: data, peers: session.connectedPeers, mode: .reliable)
+            completion(nil)
+        } catch {
+            completion(.generalError("request block error"))
+        }
     }
     
     func sendBlockchain(_ blockNumber: Int32, format: String, peerID: MCPeerID) {
@@ -553,15 +554,4 @@ struct Packet: Codable {
     var accounts: [TreeConfigurableAccount]?
     var transactions: [TreeConfigurableTransaction]?
     var blocks: [LightBlock]?
-    
-//    enum CodingKeys: String, CodingKey {
-//        case accounts
-//        case transactions
-//        case blocks
-//    }
-//    
-//    func encode(to encoder: Encoder) throws {
-//        let container = encoder.container(keyedBy: CodingKeys.self)
-//        
-//    }
 }

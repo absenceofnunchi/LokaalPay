@@ -58,6 +58,11 @@ public struct Multiset<T: Hashable> {
         }
         return result
     }
+    
+    public func maxItem() -> T? {
+        let maxItem = storage.max { a, b in a.value < b.value }
+        return maxItem?.key
+    }
 }
 
 // MARK: - Equatable

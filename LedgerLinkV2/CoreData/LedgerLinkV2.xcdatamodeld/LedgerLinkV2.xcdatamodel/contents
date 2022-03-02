@@ -4,28 +4,34 @@
         <attribute name="data" attributeType="Binary"/>
         <attribute name="id" attributeType="String"/>
         <attribute name="number" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="receipts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ReceiptCoreData" inverseName="ofBlock2" inverseEntity="ReceiptCoreData"/>
+        <relationship name="states" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="StateCoreData" inverseName="ofBlock1" inverseEntity="StateCoreData"/>
+        <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TransactionCoreData" inverseName="ofBlock" inverseEntity="TransactionCoreData"/>
     </entity>
     <entity name="ReceiptCoreData" representedClassName="ReceiptCoreData" syncable="YES">
         <attribute name="data" optional="YES" attributeType="Binary"/>
         <attribute name="id" attributeType="String"/>
+        <relationship name="ofBlock2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BlockCoreData" inverseName="receipts" inverseEntity="BlockCoreData"/>
     </entity>
     <entity name="StateCoreData" representedClassName="StateCoreData" syncable="YES">
         <attribute name="data" optional="YES" attributeType="Binary"/>
         <attribute name="id" attributeType="String"/>
+        <relationship name="ofBlock1" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BlockCoreData" inverseName="states" inverseEntity="BlockCoreData"/>
     </entity>
     <entity name="TransactionCoreData" representedClassName="TransactionCoreData" syncable="YES">
         <attribute name="data" optional="YES" attributeType="Binary"/>
         <attribute name="id" attributeType="String"/>
+        <relationship name="ofBlock" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BlockCoreData" inverseName="transactions" inverseEntity="BlockCoreData"/>
     </entity>
     <entity name="WalletCoreData" representedClassName="WalletCoreData" syncable="YES">
         <attribute name="address" attributeType="String"/>
         <attribute name="data" optional="YES" attributeType="Binary"/>
     </entity>
     <elements>
-        <element name="BlockCoreData" positionX="-54" positionY="9" width="128" height="74"/>
-        <element name="ReceiptCoreData" positionX="-36" positionY="36" width="128" height="59"/>
-        <element name="StateCoreData" positionX="-54" positionY="18" width="128" height="59"/>
-        <element name="TransactionCoreData" positionX="-45" positionY="27" width="128" height="59"/>
-        <element name="WalletCoreData" positionX="-63" positionY="-18" width="128" height="59"/>
+        <element name="BlockCoreData" positionX="-139.330810546875" positionY="116.301513671875" width="128" height="133"/>
+        <element name="ReceiptCoreData" positionX="98.20751953125" positionY="350.4450073242188" width="128" height="88"/>
+        <element name="StateCoreData" positionX="-133.16943359375" positionY="356.8573608398438" width="128" height="88"/>
+        <element name="TransactionCoreData" positionX="-360.6396484375" positionY="361.9095153808594" width="128" height="88"/>
+        <element name="WalletCoreData" positionX="257.1494140625" positionY="121.1687622070312" width="128" height="59"/>
     </elements>
 </model>

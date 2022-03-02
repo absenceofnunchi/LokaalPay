@@ -84,9 +84,12 @@ final class TransactionService {
                     return
                 }
                 
+                /// Chain ID is set by the Host of the blockchain. This is to dstinguish the original blockchain from any other blockchains that might postentially coexist, akin to EIP155.
+                let chainID = UserDefaults.standard.integer(forKey: "chainID")
+                
                 do {
                     // Create a public signature
-                    let tx = EthereumTransaction.createLocalTransaction(nonce: account.nonce, to: to ?? myAddress, value: value, data: encodedExtraData)
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: account.nonce, to: to ?? myAddress, value: value, data: encodedExtraData, chainID: BigUInt(chainID))
                     guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: keystoreManager, transaction: tx, from: myAddress, password: password) else {
                         completion(nil, NodeError.generalError("Unable to sign transaction"))
                         return
@@ -100,9 +103,23 @@ final class TransactionService {
                     var method: ContractMethod!
                     switch contractMethod {
                         case .createAccount:
+                            /// Add the operations to be sorted according to the timestamp and to be executed in order
+                            let createAccount = CreateAccount(extraData: extraData)
+                            let timestamp = extraData.timestamp
+                            Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: createAccount))
+                            /// Add the transactions to be added to the upcoming block
+                            Node.shared.addValidatedTransaction(signedTx)
+                            
+                            /// Create a ContractMethod instance to be sent to peers
                             method = ContractMethod.createAccount(encodedSig)
                             break
                         case .transferValue:
+                            /// Add the operations to be sorted according to the timestamp and to be executed in order
+                            let transferValueOperation = TransferValueOperation(transaction: signedTx)
+                            let timestamp = extraData.timestamp
+                            Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: transferValueOperation))
+                            
+                            /// Create a ContractMethod instance to be sent to peers
                             method = ContractMethod.transferValue(encodedSig)
                             break
                         default:

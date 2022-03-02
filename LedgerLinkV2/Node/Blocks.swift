@@ -186,7 +186,7 @@ extension FullBlock {
     }
 }
 
-extension FullBlock: Equatable {
+extension FullBlock: Equatable, Hashable {
     public static func == (lhs: FullBlock, rhs: FullBlock) -> Bool {
         var conditions = [
             lhs.number == rhs.number,
@@ -222,6 +222,17 @@ extension FullBlock: Equatable {
         
         let isEqual = conditions.allSatisfy({ $0 == true })
         return isEqual
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(number)
+        hasher.combine(parentHash)
+        hasher.combine(transactionsRoot)
+        hasher.combine(stateRoot)
+        hasher.combine(receiptsRoot)
+        hasher.combine(size)
+        hasher.combine(timestamp)
+        hasher.combine(hash)
     }
 }
 
