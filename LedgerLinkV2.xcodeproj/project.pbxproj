@@ -15,6 +15,7 @@
 		490367CA27BC48E100DFDE2B /* AlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C927BC48E000DFDE2B /* AlertView.swift */; };
 		490367CC27BC5FAA00DFDE2B /* QRCodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */; };
 		490367CE27BCC07E00DFDE2B /* ContractMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367CD27BCC07D00DFDE2B /* ContractMethods.swift */; };
+		4907BEE627D127120079C20D /* Node+CreateBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4907BEE527D127120079C20D /* Node+CreateBlock.swift */; };
 		492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983827A998BA003BFAB4 /* AppDelegate.swift */; };
 		492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983A27A998BA003BFAB4 /* SceneDelegate.swift */; };
 		492D983D27A998BA003BFAB4 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983C27A998BA003BFAB4 /* MainViewController.swift */; };
@@ -40,7 +41,7 @@
 		496A9CB927C7FC110089AE84 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CB827C7FC110089AE84 /* AsyncOperation.swift */; };
 		496A9CBC27C815300089AE84 /* Operation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBB27C815300089AE84 /* Operation+Extensions.swift */; };
 		496A9CBE27C855D00089AE84 /* Notification+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBD27C855D00089AE84 /* Notification+Extensions.swift */; };
-		496A9CC027C8617E0089AE84 /* NetworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBF27C8617E0089AE84 /* NetworkTests.swift */; };
+		496A9CC027C8617E0089AE84 /* NodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBF27C8617E0089AE84 /* NodeTests.swift */; };
 		496CC5A227CCA60E0016B1C5 /* Multiset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496CC5A127CCA60E0016B1C5 /* Multiset.swift */; };
 		497633D427C22F360044B426 /* TestTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497633D327C22F360044B426 /* TestTree.swift */; };
 		4976EB4C27CFD15100C10DBD /* ReceiptCoreData+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4976EB4427CFD15100C10DBD /* ReceiptCoreData+CoreDataClass.swift */; };
@@ -124,6 +125,7 @@
 		490367C927BC48E000DFDE2B /* AlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertView.swift; sourceTree = "<group>"; };
 		490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeViewController.swift; sourceTree = "<group>"; };
 		490367CD27BCC07D00DFDE2B /* ContractMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractMethods.swift; sourceTree = "<group>"; };
+		4907BEE527D127120079C20D /* Node+CreateBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Node+CreateBlock.swift"; sourceTree = "<group>"; };
 		492D983527A998BA003BFAB4 /* LedgerLinkV2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LedgerLinkV2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		492D983827A998BA003BFAB4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		492D983A27A998BA003BFAB4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -153,7 +155,7 @@
 		496A9CB827C7FC110089AE84 /* AsyncOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
 		496A9CBB27C815300089AE84 /* Operation+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Operation+Extensions.swift"; sourceTree = "<group>"; };
 		496A9CBD27C855D00089AE84 /* Notification+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Extensions.swift"; sourceTree = "<group>"; };
-		496A9CBF27C8617E0089AE84 /* NetworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkTests.swift; sourceTree = "<group>"; };
+		496A9CBF27C8617E0089AE84 /* NodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeTests.swift; sourceTree = "<group>"; };
 		496CC5A127CCA60E0016B1C5 /* Multiset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Multiset.swift; sourceTree = "<group>"; };
 		497633D327C22F360044B426 /* TestTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestTree.swift; sourceTree = "<group>"; };
 		4976EB4427CFD15100C10DBD /* ReceiptCoreData+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReceiptCoreData+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -284,7 +286,7 @@
 				49FC14FE27B5E35200D215B6 /* RedBlackTreeTests.swift */,
 				49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */,
 				4992CB4527C33A3000836419 /* CoreDataTestings.swift */,
-				496A9CBF27C8617E0089AE84 /* NetworkTests.swift */,
+				496A9CBF27C8617E0089AE84 /* NodeTests.swift */,
 				49A7C32727B73DBD00AC7EB0 /* Vectors.swift */,
 			);
 			path = LedgerLinkV2Tests;
@@ -439,6 +441,7 @@
 			isa = PBXGroup;
 			children = (
 				4992CB3727C3038600836419 /* Node.swift */,
+				4907BEE527D127120079C20D /* Node+CreateBlock.swift */,
 				49FC150027B5EDC200D215B6 /* NodeDB.swift */,
 				49A7C32B27B75EDB00AC7EB0 /* MainTree.swift */,
 				49FC14F627B32A1100D215B6 /* MerkleTree.swift */,
@@ -729,6 +732,7 @@
 				4976EB4F27CFD15100C10DBD /* StateCoreData+CoreDataProperties.swift in Sources */,
 				49631C3527C4157400E5F0EA /* CoreDataServices+State.swift in Sources */,
 				4950592827B08B40006B9294 /* SigninViewController.swift in Sources */,
+				4907BEE627D127120079C20D /* Node+CreateBlock.swift in Sources */,
 				497633D427C22F360044B426 /* TestTree.swift in Sources */,
 				492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */,
 				496CC5A227CCA60E0016B1C5 /* Multiset.swift in Sources */,
@@ -770,7 +774,7 @@
 			files = (
 				49A7C32E27B75EFA00AC7EB0 /* MainTreeTests.swift in Sources */,
 				49FC14F927B32B6300D215B6 /* MerkleTreeTests.swift in Sources */,
-				496A9CC027C8617E0089AE84 /* NetworkTests.swift in Sources */,
+				496A9CC027C8617E0089AE84 /* NodeTests.swift in Sources */,
 				490367C627BB456B00DFDE2B /* CodableTests.swift in Sources */,
 				49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */,
 				4992CB4627C33A3000836419 /* CoreDataTestings.swift in Sources */,

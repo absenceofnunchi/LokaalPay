@@ -25,7 +25,6 @@ final class SignupViewController: UIViewController {
     var isPeerConnected: Bool = false {
         didSet {
             if isPeerConnected && createWalletMode {
-                print("isPeerConnected", isPeerConnected)
                 createWallet()
             }
         }
@@ -122,118 +121,18 @@ final class SignupViewController: UIViewController {
     }
     
     private func initiateConnectionAndCreateWallet() {
+        showSpinner()
+
         /// Start the server to download blockchain and to sent a trasaction regarding the account creation.
         NetworkManager.shared.start()
         createWalletMode = true
         Node.shared.deleteAll(of: .blockCoreData)
     }
-    
-//    private func createWallet() {
-////        guard let password = passwordTextField.text, !password.isEmpty else { return }
-//        let password = "1"
-//
-//        Deferred {
-//            Future<Bool, NodeError> { promise in
-//                NetworkManager.shared.requestBlockchainFromAllPeers { error in
-//                    if let error = error {
-//                        promise(.failure(error))
-//                    }
-//                    print("0")
-//                    let action = Action {
-//                        print("1")
-//                        promise(.success(true))
-//                    }
-//                    NetworkManager.shared.notificationCenter.addObserver(self, selector: #selector(action.action), name: .didReceiveBlockchain, object: nil)
-//                }
-//            }
-//            .eraseToAnyPublisher()
-//        }
-//        .buffer(size: 1, prefetch: .keepFull, whenFull: .dropOldest)
-//        .flatMap(maxPublishers: .max(1), { _ -> AnyPublisher<KeyWalletModel, NodeError> in
-//            Future<KeyWalletModel, NodeError> { [weak self] promise in
-//                self?.keysService.createNewWallet(password: password) { (keyWalletModel, error) in
-//                    if let error = error {
-//                        promise(.failure(error))
-//                        return
-//                    }
-//
-//                    if let keyWalletModel = keyWalletModel {
-//                        print("2")
-//                        promise(.success(keyWalletModel))
-//                    }
-//                }
-//            }
-//            .eraseToAnyPublisher()
-//        })
-//        .flatMap { (keyWalletModel) -> AnyPublisher<KeyWalletModel, NodeError> in
-//            Future<KeyWalletModel, NodeError> { [weak self] promise in
-//                self?.localStorage.saveWallet(wallet: keyWalletModel, completion: { (error) throws in
-//                    if let error = error {
-//                        promise(.failure(error))
-//                        return
-//                    }
-//
-//                    print("3")
-//                    promise(.success(keyWalletModel))
-//                })
-//            }
-//            .eraseToAnyPublisher()
-//        }
-//        .flatMap { [weak self] (keyWalletModel) -> AnyPublisher<Bool, NodeError> in
-//            Future<Bool, NodeError> { [weak self] promise in
-//                guard let address = EthereumAddress(keyWalletModel.address) else {
-//                    promise(.failure(NodeError.generalError("Unable to generate wallet address")))
-//                    return
-//                }
-//
-//                let account = Account(address: address, nonce: BigUInt(0), balance: BigUInt(1000))
-//                guard let treeConfigAcct = try? TreeConfigurableAccount(data: account) else {
-//                    promise(.failure(NodeError.generalError("Unable to save the new account")))
-//                    return
-//                }
-//
-//                /// Propogate the creation of the new account to peers
-//                self?.notifyAccountCreation(account: account, promise: promise)
-//
-//                /// Update the UI with the new address
-//                DispatchQueue.main.async {
-//                    self?.addressLabel.text = keyWalletModel.address
-//                }
-//
-//                /// Save the newly created account into Core Data
-//                Node.shared.saveSync([treeConfigAcct]) { error in
-//                    if let error = error {
-//                        print(error)
-//                        promise(.failure(.generalError("Wallet save error")))
-//                        return
-//                    }
-//                    print("4")
-//                    promise(.success(true))
-//                }
-//
-//            }
-//            .eraseToAnyPublisher()
-//        }
-//        .sink { [weak self] (completion) in
-//            switch completion {
-//                case .finished:
-//                    print("finished")
-//                    break
-//                case .failure(let error):
-//                    self?.alert.show(error, for: self)
-//            }
-//        } receiveValue: { (_) in
-//        }
-//        .store(in: &storage)
-//
-//        createWalletMode = false
-//    }
         
     private func createWallet() {
         let password = "1"
         let chainID = 11111
         
-        showSpinner()
         print("start")
         let group = DispatchGroup()
         
@@ -297,7 +196,6 @@ final class SignupViewController: UIViewController {
                         
                         print("stage 3")
                         NetworkManager.shared.sendDataToAllPeers(data: data)
-                        Node.shared.addValidatedTransaction(data)
                         
                         /// Update the UI with the new address
                         DispatchQueue.main.async {
@@ -311,13 +209,6 @@ final class SignupViewController: UIViewController {
                 })
             }
         }
-        
-//        group.enter()
-//        self.dispatchQueue.async { [weak self] in
-//            self?.semaphore.wait()
-//            print("5")
-//
-//        }
         
         group.notify(queue: .main) { [weak self] in
             

@@ -1,5 +1,5 @@
 //
-//  NetworkTests.swift
+//  NodeTests.swift
 //  LedgerLinkV2Tests
 //
 //  Created by J C on 2022-02-24.
@@ -9,9 +9,11 @@ import XCTest
 import web3swift
 import BigInt
 import Combine
+import MultipeerConnectivity
+
 @testable import LedgerLinkV2
 
-final class NetworkTests: XCTestCase {
+final class NodeTests: XCTestCase {
     var storage = Set<AnyCancellable>()
     
     func test_createNewBlock() {
@@ -102,6 +104,8 @@ final class NetworkTests: XCTestCase {
                             fatalError()
                         }
                         
+                        print("fetchedTx.nonce", fetchedTx.nonce)
+                        print("transaction.nonce", transaction.nonce)
                         XCTAssertEqual(fetchedTx.nonce, transaction.nonce)
                         XCTAssertEqual(fetchedTx.to, transaction.to)
                         XCTAssertEqual(fetchedTx.value, transaction.value)
@@ -164,7 +168,6 @@ final class NetworkTests: XCTestCase {
                         XCTAssertEqual(fetchedTx.value, transaction.value)
                         XCTAssertEqual(fetchedTx.data, transaction.data)
                     }
-                    
                 } catch {
                     fatalError(error.localizedDescription)
                 }
@@ -172,10 +175,28 @@ final class NetworkTests: XCTestCase {
         }
     }
     
-    func test_relationalSave() {
-        for block in blocks {
-            relationalSave(block)
+    func test_test20() {
+        
+        let accountCreationTx = Vectors.accountCreationTx
+        guard let data = accountCreationTx?.encode() else { return }
+        let method = ContractMethod.createAccount(data)
+        guard let encoded = try? JSONEncoder().encode(method) else { return }
+        guard let decoded = try? JSONDecoder().decode(ContractMethod.self, from: encoded) else { return }
+        guard case .createAccount(let data) = decoded else { return }
+        
+        Node.shared.exposeValidateTransaction(data) { result, error in
+            if let error = error {
+                print(error)
+                fatalError(error.localizedDescription)
+            }
+            
+            print("result", result)
         }
+
+        let operation = Node.shared.validatedOperations
+        let account = Node.shared.validatedAccounts
+        print("operation", operation)
+        print("account", account)
     }
     
     func test_multSet() {
@@ -216,49 +237,60 @@ final class NetworkTests: XCTestCase {
         XCTAssertEqual(maxItem, blocks[1])
     }
     
+    func test_relationalSave() {
+        for block in blocks {
+            relationalSave(block)
+        }
+    }
+    
     func relationalSave(_ block: FullBlock) {
+        Node.shared.deleteAll()
         Node.shared.localStorage.saveRelationalBlock(block: block) { error in
             if let error = error {
-                print(error)
-                return
+                fatalError(error.localizedDescription)
             }
             
-            Node.shared.fetch(blocks[0].hash.toHexString(), completion: { (block: [FullBlock]?, error: NodeError?) in
+            Node.shared.fetch(block.hash.toHexString(), completion: { (fetchedBlocks: [FullBlock]?, error: NodeError?) in
                 if let error = error {
-                    print("error1", error)
-                    return
+                    fatalError(error.localizedDescription)
                 }
                 
-                if let block = block {
-                    print("block", block)
+                /// Confirm that the block has indeed been saved
+                if let fetchedBlocks = fetchedBlocks, let fetchedBlock = fetchedBlocks.first {
+                    XCTAssertEqual(block, fetchedBlock)
                 }
                 
-                Node.shared.localStorage.getAllTransactionsAsync { (fetchedTx: [TreeConfigurableTransaction]?, error: NodeError?) in
+                Node.shared.localStorage.getAllTransactionsAsync { (fetchedTxs: [TreeConfigurableTransaction]?, error: NodeError?) in
                     if let error = error {
-                        print("error2", error)
-                        return
+                        fatalError(error.localizedDescription)
                     }
                     
-                    print("fetchedTx pre", fetchedTx as Any)
-                    if let fetchedTx = fetchedTx {
-                        print("fetchedTx", fetchedTx)
+                    XCTAssertNotNil(fetchedTxs)
+                    if let fetchedTxs = fetchedTxs {
+                        XCTAssertEqual(fetchedTxs, block.transactions)
                     }
                 }
                 
                 let fetchedAccts: [TreeConfigurableAccount]? = try? Node.shared.localStorage.getAllAccounts()
-                print("accts", fetchedAccts as Any)
+                XCTAssertEqual(block.accounts, fetchedAccts)
+                
                 Node.shared.fetch { (accts: [TreeConfigurableAccount]?, error: NodeError?) in
                     if let error = error {
-                        print("error3", error)
-                        return
+                        fatalError(error.localizedDescription)
                     }
                     
                     if let accts = accts {
-                        print("accts", accts)
+                        XCTAssertEqual(block.accounts, accts)
                     }
                 }
             })
         }
+    }
+    
+    func test_test1000() {
+        let a = [1, 2, 3]
+        let p = a.prefix(10)
+        print(p)
     }
     
     var retainer: FullBlock!

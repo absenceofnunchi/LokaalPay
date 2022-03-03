@@ -145,4 +145,38 @@ struct Vectors {
         }
         return lBlocks
     }
+    
+    /// contract creation signed transaction
+    static var accountCreationTx: EthereumTransaction? {
+        let chainID = 111111
+        UserDefaults.standard.set(chainID, forKey: "chainID")
+        
+        guard let address = EthereumAddress("0xB81f0619b1A1fdD4Dd5282AFBfc13aA8Cac918Cf") else {
+            return nil
+        }
+        
+        let account = Account(address: address, nonce: BigUInt(0))
+        let extraData = TransactionExtraData(account: account, timestamp: Date(), latestBlockNumber: BigUInt(10))
+        guard let encodedExtraData = try? JSONEncoder().encode(extraData) else {
+            return nil
+        }
+        var tx = EthereumTransaction(nonce: BigUInt(2), gasPrice: BigUInt(0), gasLimit: BigUInt(0), to: address, value: BigUInt(0), data: encodedExtraData, v: BigUInt(22257), r: BigUInt("6007923474381374080880944521528258202877536805082233532075661902678712469057"), s: BigUInt("40249239055129623847703970368931024850481646373911873763272102908962840697775"))
+        tx.UNSAFE_setChainID(BigUInt(chainID))
+        print("tx", tx)
+        return tx
+    }
 }
+
+//Nonce: 1
+//Gas price: 0
+//Gas limit: 0
+//To: 0xB81f0619b1A1fdD4Dd5282AFBfc13aA8Cac918Cf
+//Value: 0
+//Data: 0x7b226163636f756e74223a7b226e6f6e6365223a5b222b222c315d2c2273746f72616765526f6f74223a223078222c22636f646548617368223a223078222c2262616c616e6365223a5b222b222c313030305d2c2261646472657373223a22307862383166303631396231613166646434646435323832616662666331336161386361633931386366227d2c226c6174657374426c6f636b4e756d626572223a5b222b222c315d2c2274696d657374616d70223a3636383031333631302e30333135383239357d
+//v: 22257
+//r: 6007923474381374080880944521528258202877536805082233532075661902678712469057
+//s: 40249239055129623847703970368931024850481646373911873763272102908962840697775
+//Intrinsic chainID: Optional(11111)
+//Infered chainID: Optional(11111)
+//sender: Optional("0xB81f0619b1A1fdD4Dd5282AFBfc13aA8Cac918Cf")
+//hash: Optional("0xe5eb4e5e6f19c6e90c1a27b21b39952ed975cd20b789b9ad853882efce71eeb2")

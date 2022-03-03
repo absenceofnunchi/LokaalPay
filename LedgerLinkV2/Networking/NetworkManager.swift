@@ -79,7 +79,7 @@ final class NetworkManager: NSObject {
             self.timer.invalidate()
         }
         /// From the 0 or 30 second mark, the auto relay is run at a specified interval
-        self.timer = Timer(fireAt: roundedDate, interval: 10, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
+        self.timer = Timer(fireAt: roundedDate, interval: 20, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
         RunLoop.main.add(self.timer, forMode: .common)
     }
     
@@ -114,7 +114,6 @@ final class NetworkManager: NSObject {
         }
 
         /// The relay history has to be refreshed
-        
         /// Dispatching blocks on a regular interval
         Node.shared.createBlock { [weak self] (block) in
             do {
@@ -156,7 +155,6 @@ final class NetworkManager: NSObject {
     }
     
     func sendDataToAllPeers(data: Data) {
-        print("session.connectedPeers", session.connectedPeers)
         guard !session.connectedPeers.isEmpty else { return }
         sendData(data: data, peers: session.connectedPeers, mode: .reliable)
     }
@@ -164,7 +162,6 @@ final class NetworkManager: NSObject {
     func sendData(data: Data, peers: [MCPeerID], mode: MCSessionSendDataMode) {
         do {
             let filteredPeers = peers.filter { $0 != session.myPeerID }
-            print("filteredPeers", filteredPeers as Any)
             try session.send(data, toPeers: filteredPeers, with: mode)
         } catch let error {
             NSLog("Error sending data: \(error)")
@@ -191,7 +188,7 @@ extension NetworkManager: MCSessionDelegate {
     }
 
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        print("didReceive", data)
+//        print("didReceive", data)
         
         Node.shared.processTransaction(data, peerID: peerID)
        
@@ -265,12 +262,18 @@ extension NetworkManager: MCSessionDelegate {
         }
     }
 
-    func requestBlockchainFromAllPeers(completion: @escaping(NodeError?) -> Void) {
+    func requestBlockchainFromAllPeers(upto peerNumber: Int? = nil, completion: @escaping(NodeError?) -> Void) {
         guard !session.connectedPeers.isEmpty else {
             completion(.generalError("No peers"))
             return
         }
-        requestBlockchain(peerIDs: session.connectedPeers, completion: completion)
+        
+        if let peerNumber = peerNumber {
+            let partialPeers = session.connectedPeers.prefix(peerNumber)
+            requestBlockchain(peerIDs: Array(partialPeers), completion: completion)
+        } else {
+            requestBlockchain(peerIDs: session.connectedPeers, completion: completion)
+        }
     }
     
     /// Download blockchain by requesting it from another peer
@@ -313,6 +316,7 @@ extension NetworkManager: MCSessionDelegate {
             }
             
             if let blocks = blocks {
+                /// Only blocks are sents since the accounts and the transactions are included in the block which will be saved in a relational way.
                 let packet = Packet(accounts: nil, transactions: nil, blocks: blocks)
                 do {
                     let contractMethod = ContractMethod.blockchainDownloadResponse(packet)

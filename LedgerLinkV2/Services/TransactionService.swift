@@ -84,7 +84,7 @@ final class TransactionService {
                     return
                 }
                 
-                /// Chain ID is set by the Host of the blockchain. This is to dstinguish the original blockchain from any other blockchains that might postentially coexist, akin to EIP155.
+                /// Chain ID is set by the Host of the blockchain. This is to distinguish the original blockchain from any other blockchains that might postentially coexist, akin to EIP155.
                 let chainID = UserDefaults.standard.integer(forKey: "chainID")
                 
                 do {
@@ -95,11 +95,14 @@ final class TransactionService {
                         return
                     }
                     
+                    /// RLP-encode the transaction
+                    /// Don't need to be "for signature" since it's being encoded only for transporting.
+                    /// The RLP-encoding for the signature already includes v, r, and s.
                     guard let encodedSig = signedTx.encode(forSignature: false) else {
                         completion(nil, NodeError.generalError("Unable to RLP-encode the signed transaction"))
                         return
                     }
-                    
+                          
                     var method: ContractMethod!
                     switch contractMethod {
                         case .createAccount:
@@ -107,7 +110,7 @@ final class TransactionService {
                             let createAccount = CreateAccount(extraData: extraData)
                             let timestamp = extraData.timestamp
                             Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: createAccount))
-                            /// Add the transactions to be added to the upcoming block
+                            /// Add the transactions to be added to the pool of transactions to be included in the upcoming block
                             Node.shared.addValidatedTransaction(signedTx)
                             
                             /// Create a ContractMethod instance to be sent to peers

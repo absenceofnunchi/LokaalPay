@@ -297,6 +297,14 @@ extension LocalStorage {
         try saveBlock(block: lightBlock, completion: completion)
     }
     
+    func saveRelationalBlock(block: LightBlock, completion: @escaping (NodeError?) -> Void) {
+        guard let fullBlock = block.decode() else {
+            completion(.generalError("Unable conver the light block."))
+            return
+        }
+        saveRelationalBlock(block: fullBlock, completion: completion)
+    }
+    
     /// Save a block with all the transactions and accounts in a one-to-many relational way
     func saveRelationalBlock(block: FullBlock, completion: @escaping (NodeError?) -> Void) {
         /// Halt if a block already exists
