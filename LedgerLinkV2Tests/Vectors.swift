@@ -131,7 +131,7 @@ struct Vectors {
     static var blocks: [FullBlock] {
         var blocks = [FullBlock]()
         for i in 0 ..< binaryHashes.count {
-            guard let block = try? FullBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], transactions: treeConfigurableTransactions, accounts: treeConfigurableAccounts) else { fatalError("blocks vector error") }
+            guard let block = try? FullBlock(number: BigUInt(i), parentHash: binaryHashes[i], transactionsRoot: binaryHashes[i], stateRoot: binaryHashes[i], receiptsRoot: binaryHashes[i], miner: addresses[0].address, transactions: treeConfigurableTransactions, accounts: treeConfigurableAccounts) else { fatalError("blocks vector error") }
             blocks.append(block)
         }
         return blocks

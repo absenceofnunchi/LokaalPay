@@ -306,36 +306,43 @@ extension LocalStorage {
             return
         }
         
-        do {
-            let blockObject = BlockCoreData(context: context)
-            let lightBlock = try LightBlock(data: block)
-            blockObject.id = lightBlock.id
-            let number = Int32(lightBlock.number)
-            blockObject.number = number
-            blockObject.data = lightBlock.data
-            
-            if let transactions = block.transactions {
-                for tx in transactions {
-                    let transactionObject = TransactionCoreData(context: context)
-                    transactionObject.id = tx.id
-                    transactionObject.data = tx.data
-                    blockObject.addToTransactions(transactionObject)
+        let taskContext = newTaskContext()
+        // Add name and author to identify source of persistent history changes.
+        taskContext.name = "saveTransactionContext"
+        taskContext.transactionAuthor = "transactionSaver"
+        
+        taskContext.performAndWait {
+            do {
+                let blockObject = BlockCoreData(context: taskContext)
+                let lightBlock = try LightBlock(data: block)
+                blockObject.id = lightBlock.id
+                let number = Int32(lightBlock.number)
+                blockObject.number = number
+                blockObject.data = lightBlock.data
+                
+                if let transactions = block.transactions {
+                    for tx in transactions {
+                        let transactionObject = TransactionCoreData(context: taskContext)
+                        transactionObject.id = tx.id
+                        transactionObject.data = tx.data
+                        blockObject.addToTransactions(transactionObject)
+                    }
                 }
-            }
-            
-            if let accounts = block.accounts {
-                for account in accounts {
-                    let stateObject = StateCoreData(context: context)
-                    stateObject.id = account.id
-                    stateObject.data = account.data
-                    blockObject.addToStates(stateObject)
+                
+                if let accounts = block.accounts {
+                    for account in accounts {
+                        let stateObject = StateCoreData(context: taskContext)
+                        stateObject.id = account.id
+                        stateObject.data = account.data
+                        blockObject.addToStates(stateObject)
+                    }
                 }
+                
+                try taskContext.save()
+                completion(nil)
+            } catch {
+                completion(NodeError.generalError("Block save error"))
             }
-            
-            try context.save()
-            completion(nil)
-        } catch {
-            completion(NodeError.generalError("Block save error"))
         }
     }
     

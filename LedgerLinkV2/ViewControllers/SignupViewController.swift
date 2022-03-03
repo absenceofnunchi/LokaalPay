@@ -240,6 +240,7 @@ final class SignupViewController: UIViewController {
         group.enter()
         self.dispatchQueue.async {
             self.semaphore.wait()
+            
             NetworkManager.shared.requestBlockchainFromAllPeers { error in
                 if let error = error {
                     print(error)

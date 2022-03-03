@@ -19,12 +19,21 @@ public struct Multiset<T: Hashable> {
         }
     }
     
-    public mutating func add (_ elem: T) {
+    public mutating func add(_ elem: T) {
+        /// For a given block with the same block number, if it's been mined by the same miner, prevent duplicates.
+        if let block = elem as? FullBlock {
+            for (key, _) in storage {
+                guard let blockKey = key as? FullBlock else { return }
+                if (block.miner == blockKey.miner) && (block.number == blockKey.number) {
+                    return
+                }
+            }
+        }
         storage[elem, default: 0] += 1
         count += 1
     }
     
-    public mutating func remove (_ elem: T) {
+    public mutating func remove(_ elem: T) {
         if let currentCount = storage[elem] {
             if currentCount > 1 {
                 storage[elem] = currentCount - 1
@@ -33,6 +42,10 @@ public struct Multiset<T: Hashable> {
             }
             count -= 1
         }
+    }
+    
+    public mutating func removeAll() {
+        storage.removeAll()
     }
     
     public func isSubSet (of superset: Multiset<T>) -> Bool {
@@ -85,5 +98,9 @@ extension Multiset: Equatable {
 extension Multiset: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: T...) {
         self.init(elements)
+    }
+    
+    public subscript(element: T) -> UInt? {
+        return storage[element]
     }
 }

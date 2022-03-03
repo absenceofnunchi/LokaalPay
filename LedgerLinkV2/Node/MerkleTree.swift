@@ -11,7 +11,7 @@ import web3swift
 
 /**     A Merkle/Binary Hash Tree node.
  The Merkle tree can either be of type .Empty or be of type .Node.
- A .Node will hold some data of type NSData and optionally have
+ A .Node will hold some data of type Data and optionally have
  some children which are also of type MerkleTree.
  */
 
@@ -21,18 +21,18 @@ indirect enum MerkleTree<T: Equatable & Encodable & Hashable> {
     
     init() { self = .Empty }
     
-    init(hash: Data) {
-        self = MerkleTree.Node(hash: hash, datum: nil, left: .Empty, right: .Empty)
-    }
+//    init(hash: Data) {
+//        self = MerkleTree.Node(hash: hash, datum: nil, left: .Empty, right: .Empty)
+//    }
     
     init(datum: T) throws {
         var hashData: Data
-        if datum is Data {
-            guard let temp = datum as? Data else {
-                throw NodeError.encodingError
-            }
+        if let d = datum as? Data {
+//            guard let temp = datum as? Data else {
+//                throw NodeError.encodingError
+//            }
             
-            hashData = temp
+            hashData = d.sha256()
         } else {
             let encoder = JSONEncoder()
             do {
@@ -283,4 +283,116 @@ extension SimpleMerkleTree: Hashable {
                 break
         }
     }
+}
+
+indirect enum MerkleTree1 {
+    
+    case Empty
+    case Node(hash: String, data: Data?, left: MerkleTree1, right: MerkleTree1)
+    
+    init() { self = .Empty }
+    
+    
+    init(hash: String) {
+        self = MerkleTree1.Node(hash: hash, data: nil, left: .Empty, right: .Empty)
+    }
+    
+    init(blob: Data) {
+        
+        /// make a string from the data and make a hash from it.
+        let hash = String(data: blob, encoding: String.Encoding.utf8)?.sha256()
+        
+        self = MerkleTree1.Node(hash: hash!, data: blob, left: .Empty, right: .Empty)
+    }
+    
+}
+
+extension MerkleTree1 {
+    
+    static func createParentNode(leftChild: MerkleTree1, rightChild: MerkleTree1) -> MerkleTree1 {
+        
+        /// get the hashes
+        var leftHash  = ""
+        var rightHash = ""
+        
+        switch leftChild {
+            case let .Node(hash, _, _, _):
+                leftHash = hash
+            case .Empty:
+                break
+        }
+        
+        switch rightChild {
+            case let .Node(hash, _, _, _):
+                rightHash = hash
+            case .Empty:
+                break
+        }
+        
+        /// Calculate the new node's hash which is the hash of the concatenation
+        /// of the two children's hashes.
+        let newHash = (leftHash + rightHash).sha256()
+        return MerkleTree1.Node(hash: newHash, data: nil, left: leftChild, right: rightChild)
+    }
+    
+    
+    static func buildTree(fromBlobs blobs: [Data]) -> MerkleTree1 {
+        
+        /// Calculate the depth of the tree.
+        //        let treeDepth = ceil(log2(Double(blobs.count)))
+        
+        /// Create the node array we will turn into the tree.
+        var nodeArray = [MerkleTree1]()
+        
+        /// Start the array off with leaf nodes.
+        for blob in blobs {
+            nodeArray.append(MerkleTree1(blob: blob))
+        }
+        
+        /// Instead of doing this recursively, which would run out of stack for very large trees,
+        /// We do this iteratively using a temporary array.
+        while nodeArray.count != 1 {
+            var tmpArray = [MerkleTree1]()
+            while nodeArray.count > 0 {
+                
+                let leftNode  = nodeArray.removeFirst()
+                /** Ensure we have a balanced binary tree by duplicating the left
+                 node in the case there is no right node. */
+                let rightNode = nodeArray.count > 0 ? nodeArray.removeFirst() : leftNode
+                
+                tmpArray.append(createParentNode(leftChild: leftNode, rightChild: rightNode))
+            }
+            
+            nodeArray = tmpArray
+        }
+        
+        return nodeArray.first!
+    }
+}
+
+/// Debug stuff
+extension MerkleTree1 {
+    
+//    static func printTree(theTree: MerkleTree1, depth: Int = 0) {
+//        
+//        var indent: String = ""
+//        for _ in 0..<depth {
+//            indent.append(contentsOf: "    ")
+//        }
+//        
+//        switch theTree {
+//            case let .Node(hash,_,leftChild,rightChild):
+//                print(indent,"The node has a hash of",hash)
+//                
+//                print(indent,hash,"'s left child is:")
+//                MerkleTree.printTree(theTree: leftChild, depth: depth+1)
+//                print(indent,hash,"'s right child is:")
+//                MerkleTree.printTree(theTree: rightChild, depth: depth+1)
+//                
+//            case .Empty:
+//                print(indent,".Empty")
+//                break
+//        }
+//    }
+    
 }

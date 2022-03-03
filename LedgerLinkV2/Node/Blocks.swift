@@ -29,6 +29,7 @@ public struct FullBlock: Codable {
     public var gasLimit: BigUInt?
     public var gasUsed: BigUInt?
     public var timestamp: Date
+    public var miner: String
     public var transactions: [TreeConfigurableTransaction]?
     public var accounts: [TreeConfigurableAccount]?
     public var uncles: [Data]?
@@ -46,11 +47,12 @@ public struct FullBlock: Codable {
         case gasLimit
         case gasUsed
         case timestamp
+        case miner
         case transactions
         case accounts
     }
     
-    public init(number: BigUInt, parentHash: Data, nonce: Data? = nil, transactionsRoot: Data, stateRoot: Data, receiptsRoot: Data, extraData: Data? = nil, gasLimit: BigUInt? = nil, gasUsed: BigUInt? = nil, transactions: [TreeConfigurableTransaction]?, accounts: [TreeConfigurableAccount]?) throws {
+    public init(number: BigUInt, parentHash: Data, nonce: Data? = nil, transactionsRoot: Data, stateRoot: Data, receiptsRoot: Data, extraData: Data? = nil, gasLimit: BigUInt? = nil, gasUsed: BigUInt? = nil, miner: String, transactions: [TreeConfigurableTransaction]?, accounts: [TreeConfigurableAccount]?) throws {
         self.number = number
         self.parentHash = parentHash
         self.nonce = nonce
@@ -61,6 +63,7 @@ public struct FullBlock: Codable {
         self.gasLimit = gasLimit
         self.gasUsed = gasUsed
         self.timestamp = Date()
+        self.miner = miner
         self.transactions = transactions
         self.accounts = accounts
         
@@ -98,6 +101,7 @@ public struct FullBlock: Codable {
         let dateInt = Int(timestamp.timeIntervalSince1970)
         let dateHex = String(dateInt, radix: 16, uppercase: true)
         try encoder.encode(dateHex, forKey: .timestamp)
+        try encoder.encode(miner, forKey: .miner)
         try encoder.encode(transactions, forKey: .transactions)
         try encoder.encode(accounts, forKey: .accounts)
     }
@@ -143,6 +147,8 @@ public struct FullBlock: Codable {
         let timestamp = Date(timeIntervalSince1970: TimeInterval(timestampInt))
         self.timestamp = timestamp
         
+        self.miner = try container.decode(String.self, forKey: .miner)
+        
         let transactions = try container.decodeIfPresent([TreeConfigurableTransaction].self, forKey: .transactions)
         self.transactions = transactions
         
@@ -154,8 +160,8 @@ public struct FullBlock: Codable {
 extension FullBlock {
     
     public func generateBlockHash() throws -> Data {
-        guard let timestampData = try? JSONEncoder().encode(timestamp) else { throw NodeError.encodingError }
-        var leaves = [number.serialize(), parentHash, transactionsRoot, stateRoot, receiptsRoot, timestampData, size.serialize()]
+//        guard let timestampData = try? JSONEncoder().encode(timestamp) else { throw NodeError.encodingError }
+        var leaves = [number.serialize(), parentHash, transactionsRoot, stateRoot, receiptsRoot, size.serialize()]
         
         if let nonce = nonce {
             leaves.append(nonce)
@@ -187,6 +193,8 @@ extension FullBlock {
 }
 
 extension FullBlock: Equatable, Hashable {
+    /// Excludes miner since two blocks can be considered the same regardless of who mined it.
+    /// The information about a miner is still included because the unvalidated block pool prevents duplicates from the same miner.
     public static func == (lhs: FullBlock, rhs: FullBlock) -> Bool {
         var conditions = [
             lhs.number == rhs.number,
@@ -196,7 +204,7 @@ extension FullBlock: Equatable, Hashable {
             lhs.receiptsRoot == rhs.receiptsRoot,
             lhs.transactionsRoot == rhs.transactionsRoot,
             lhs.size == rhs.size,
-            abs(lhs.timestamp.timeIntervalSince(rhs.timestamp)) < 1,
+//            abs(lhs.timestamp.timeIntervalSince(rhs.timestamp)) < 1,
             lhs.hash == rhs.hash
         ]
         
@@ -231,7 +239,7 @@ extension FullBlock: Equatable, Hashable {
         hasher.combine(stateRoot)
         hasher.combine(receiptsRoot)
         hasher.combine(size)
-        hasher.combine(timestamp)
+//        hasher.combine(timestamp)
         hasher.combine(hash)
     }
 }

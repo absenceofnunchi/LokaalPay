@@ -221,7 +221,7 @@ final class BlockchainTests: XCTestCase {
         guard let address = EthereumAddress(hash) else { return }
         let tx = EthereumTransaction(gasPrice: BigUInt(10), gasLimit: BigUInt(10), to: address, value: BigUInt(10), data: Data())
         guard let treeConfigTx = try? TreeConfigurableTransaction(data: tx) else { return }
-        guard let block = try? FullBlock(number: BigUInt(100), parentHash: hashData, transactionsRoot: hashData, stateRoot: hashData, receiptsRoot: hashData, transactions: [treeConfigTx], accounts: treeConfigurableAccounts) else { return }
+        guard let block = try? FullBlock(number: BigUInt(100), parentHash: hashData, transactionsRoot: hashData, stateRoot: hashData, receiptsRoot: hashData, miner: addresses[0].address, transactions: [treeConfigTx], accounts: treeConfigurableAccounts) else { return }
 
         guard let lightBlock = try? LightBlock(data: block) else { return }
         Deferred {
@@ -464,8 +464,6 @@ final class BlockchainTests: XCTestCase {
         var lBlocks = lightBlocks
         lBlocks.sort { $0.number < $1.number }
         lBlocks.forEach { print($0.number) }
-        print(lBlocks.last)
-     
-        
+        print(lBlocks.last as Any)
     }
 }

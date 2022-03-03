@@ -304,7 +304,29 @@ extension NetworkManager: MCSessionDelegate {
         }
     }
     
+    /// Send blockchain as a response to a peer's request. Only the blocks need to be sent because the relational transactions and accounts are created upon arrival.
     func sendBlockchain(_ blockNumber: Int32, format: String, peerID: MCPeerID) {
+        Node.shared.localStorage.getBlocks(from: blockNumber, format: format) { (blocks: [LightBlock]?, error: NodeError?) in
+            if let error = error {
+                print("sendBlockchain error", error)
+                return
+            }
+            
+            if let blocks = blocks {
+                let packet = Packet(accounts: nil, transactions: nil, blocks: blocks)
+                do {
+                    let contractMethod = ContractMethod.blockchainDownloadResponse(packet)
+                    let encodedMethod = try JSONEncoder().encode(contractMethod)
+                    NetworkManager.shared.sendData(data: encodedMethod, peers: [peerID], mode: .reliable)
+                } catch {
+                   print("Unable to encode data", error)
+                }
+            }
+        }
+    }
+    
+    /// Send blockchain without the relationship component
+    func sendBlockchainNoRelationship(_ blockNumber: Int32, format: String, peerID: MCPeerID) {
         let accounts = Future<[TreeConfigurableAccount]?, NodeError> { promise in
             Node.shared.localStorage.getAllAccountsSync { (accts: [TreeConfigurableAccount]?, error: NodeError?) in
                 if let error = error {
