@@ -42,9 +42,7 @@ final class TransactionService {
                 completion(nil, NodeError.generalError("Your address from Keystore Manager could not be prepared."))
                 return
             }
-            
-            print("myAddress", myAddress)
-            
+                        
             // Fetch the newly created address to increment the nonce and update the balance (if needed)
             Node.shared.fetch(myAddress.address) { (accounts: [Account]?, error: NodeError?) in
                 if let error = error {
@@ -107,9 +105,9 @@ final class TransactionService {
                     switch contractMethod {
                         case .createAccount:
                             /// Add the operations to be sorted according to the timestamp and to be executed in order
-                            let createAccount = CreateAccount(extraData: extraData)
-                            let timestamp = extraData.timestamp
-                            Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: createAccount))
+//                            let createAccount = CreateAccount(extraData: extraData)
+//                            let timestamp = extraData.timestamp
+//                            Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: createAccount))
                             /// Add the transactions to be added to the pool of transactions to be included in the upcoming block
                             
                             /// Create a ContractMethod instance to be sent to peers
@@ -117,9 +115,9 @@ final class TransactionService {
                             break
                         case .transferValue:
                             /// Add the operations to be sorted according to the timestamp and to be executed in order
-                            let transferValueOperation = TransferValueOperation(transaction: signedTx)
-                            let timestamp = extraData.timestamp
-                            Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: transferValueOperation))
+//                            let transferValueOperation = TransferValueOperation(transaction: signedTx)
+//                            let timestamp = extraData.timestamp
+//                            Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: transferValueOperation))
 
                             /// Create a ContractMethod instance to be sent to peers
                             method = ContractMethod.transferValue(encodedSig)
@@ -128,7 +126,7 @@ final class TransactionService {
                             break
                     }
                     
-                    Node.shared.addValidatedTransaction(signedTx)
+//                    Node.shared.addValidatedTransaction(signedTx)
                     let finalData = try JSONEncoder().encode(method)
                     
                     completion(finalData, nil)

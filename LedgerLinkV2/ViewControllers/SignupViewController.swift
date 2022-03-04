@@ -11,7 +11,13 @@ import web3swift
 import Combine
 import MultipeerConnectivity
 
-final class SignupViewController: UIViewController {
+/*
+ When wallet creation is triggered, given that there are connected peers,
+ 1. Host: Mint genesis and create wallet
+ 2. Non-host: Request for a blockchain and, upon arrival, create wallet.
+ */
+
+final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
     private var passswordTitleLabel: UILabel!
     private var passwordTextField: UITextField!
     private var createButton: UIButton!
@@ -32,7 +38,15 @@ final class SignupViewController: UIViewController {
     private var isPeerConnected: Bool = false {
         didSet {
             if isPeerConnected && createWalletMode {
-                createWallet()
+                if isHost {
+                    guard let password = UserDefaults.standard.string(forKey: "password"),
+                          let chainID = UserDefaults.standard.string(forKey: "chainID") else { return }
+                    Node.shared.createWallet(password: password, chainID: chainID, isHost: true) { [weak self] (_) in
+                        self?.hideSpinner()
+                    }
+                } else {
+                    requestBlockchain()
+                }
             }
         }
     }
@@ -47,13 +61,10 @@ final class SignupViewController: UIViewController {
         setConstraints()
         
         NetworkManager.shared.peerConnectedHandler = peerConnectedHandler
+        Node.shared.downloadDelegate = self
     }
     
-    func peerConnectedHandler(_ peerID: MCPeerID) {
-        isPeerConnected = true
-    }
-    
-    func configureUI() {
+    private func configureUI() {
         view.backgroundColor = .white
         self.tapToDismissKeyboard()
         
@@ -139,7 +150,7 @@ final class SignupViewController: UIViewController {
         view.addSubview(deleteBlockchainButton)
     }
     
-    func setConstraints() {
+    private func setConstraints() {
         NSLayoutConstraint.activate([
             passswordTitleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
             passswordTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
@@ -198,7 +209,7 @@ final class SignupViewController: UIViewController {
         ])
     }
     
-    @objc func buttonPressed(_ sender: UIButton) {
+    @objc private func buttonPressed(_ sender: UIButton) {
         switch sender.tag {
             case 0:
                 initiateConnectionAndCreateWallet()
@@ -220,9 +231,27 @@ final class SignupViewController: UIViewController {
         /// Start the server to download blockchain and to sent a trasaction regarding the account creation.
         NetworkManager.shared.start()
         createWalletMode = true
-        Node.shared.deleteAll(of: .blockCoreData)
+//        Node.shared.deleteAll(of: .blockCoreData)
+        
+        guard let password = passwordTextField.text,
+              let chainID = chainIDTextField.text else {
+                  alert.show("Password Required", for: self)
+                  return
+              }
+        
+        UserDefaults.standard.set(password, forKey: "password")
+        UserDefaults.standard.set(chainID, forKey: "chainID")
     }
         
+    private func requestBlockchain() {
+        NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
+            if let error = error {
+                print(error)
+                return
+            }
+        }
+    }
+    
     private func createWallet() {
         guard let password = passwordTextField.text,
               let chainID = chainIDTextField.text else {
@@ -231,27 +260,10 @@ final class SignupViewController: UIViewController {
         }
         
         UserDefaults.standard.set(password, forKey: "password")
+        UserDefaults.standard.set(chainID, forKey: "chainID")
         
         print("start")
         let group = DispatchGroup()
-        
-        group.enter()
-        self.dispatchQueue.async {
-            self.semaphore.wait()
-            NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
-                if let error = error {
-                    print(error)
-                    group.leave()
-                    return
-                }
-                
-                print("stage 1")
-                self.semaphore.signal()
-                group.leave()
-            }
-            
-            UserDefaults.standard.set(chainID, forKey: "chainID")
-        }
         
         group.enter()
         self.dispatchQueue.async { [weak self] in
@@ -319,41 +331,22 @@ final class SignupViewController: UIViewController {
         print("incomplete")
     }
     
-    private func notifyAccountCreation(account: Account, promise:  @escaping (Result<Bool, NodeError>) -> Void) {
-        transactionService.prepareTransaction(.createAccount, to: nil, password: "1") { data, error in
-            if let error = error {
-                print("notify error", error)
-                promise(.failure(.generalError("Notify account creation error")))
-                return
-            }
-            
-            if let data = data {
-                NetworkManager.shared.sendDataToAllPeers(data: data)
-                Node.shared.addValidatedTransaction(data)
-            }
-        }
-    }
-    
     private func deleteAllBlockchain() {
         Node.shared.deleteAll()
     }
     
-    @objc func didReceiveBlockchain() {
-        print("didReceive notification")
+    func peerConnectedHandler(_ peerID: MCPeerID) {
+        isPeerConnected = true
+    }
+    
+    func didReceiveBlockchain() {
+        if createWalletMode {
+            createWallet()
+            createWalletMode = false
+        }
     }
 }
 
-final class Action: NSObject {
-    
-    private let _action: () -> ()
-    
-    init(action: @escaping () -> ()) {
-        _action = action
-        super.init()
-    }
-    
-    @objc func action() {
-        _action()
-    }
-    
+protocol BlockChainDownloadDelegate: AnyObject {
+    func didReceiveBlockchain()
 }

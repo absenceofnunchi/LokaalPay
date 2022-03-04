@@ -249,24 +249,15 @@ extension LocalStorage {
             completion(NodeError.generalError("Wrong type"))
         }
     }
-    
-//    enum CoreDataType {
-//        case account
-//        case transaction
-//        case receipt
-//        case treeConfigAcct
-//        case treeConfigTx
-//        case treeConfigReceipt
-//        case fullBlock
-//        case lightBlock
-//    }
-    
+ 
+    /// All elements are searchable
     func fetch<T: CoreDatable>(_ predicateString: String? = nil, format: String = "id == %@", completion: @escaping ([T]?, NodeError?) -> Void) {
         switch T.self {
             case is Account.Type:
                 let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+                if predicateString != nil {
+                    fatalError()
+//                    fetchRequest.predicate = NSPredicate(format: "address == %@", EthereumAddress(predicateString) as! CVarArg)
                 }
                 
                 // Initialize Asynchronous Fetch Request
@@ -285,7 +276,7 @@ extension LocalStorage {
                 }
                 
                 do {
-                    // Execute Asynchronous Fetch Request
+                    /// Execute Asynchronous Fetch Request
                     let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
                 } catch {
                     let fetchError = error as NSError
@@ -296,9 +287,9 @@ extension LocalStorage {
             case is EthereumTransaction.Type:
                 let fetchRequest = NSFetchRequest<TransactionCoreData>(entityName: EntityName.transactionCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: "hash == %@", Data(hex: predicateString) as CVarArg)
                 }
-                // Initialize Asynchronous Fetch Request
+                /// Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<TransactionCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
                     let transactions: [EthereumTransaction] = results.compactMap { (element: TransactionCoreData) in
@@ -324,7 +315,7 @@ extension LocalStorage {
             case is TransactionReceipt.Type:
                 let fetchRequest = NSFetchRequest<ReceiptCoreData>(entityName: EntityName.receiptCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
                 }
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<ReceiptCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
@@ -352,7 +343,7 @@ extension LocalStorage {
             case is FullBlock.Type:
                 let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: "hash == %@", predicateString)
                 }
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
@@ -387,7 +378,7 @@ extension LocalStorage {
             case is TreeConfigurableAccount.Type:
                 let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
                 }
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<StateCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
@@ -413,7 +404,7 @@ extension LocalStorage {
             case is TreeConfigurableTransaction.Type:
                 let fetchRequest = NSFetchRequest<TransactionCoreData>(entityName: EntityName.transactionCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
                 }
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<TransactionCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
@@ -440,7 +431,7 @@ extension LocalStorage {
             case is TreeConfigurableReceipt.Type:
                 let fetchRequest = NSFetchRequest<ReceiptCoreData>(entityName: EntityName.receiptCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
                 }
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<ReceiptCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
@@ -467,7 +458,7 @@ extension LocalStorage {
             case is LightBlock.Type:
                 let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
                 }
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in

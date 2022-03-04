@@ -57,12 +57,6 @@ final class NetworkManager: NSObject {
         nearbyBrowser.delegate = self
     }
     
-//    enum Methods: String {
-//        case transfer
-//        case downloadBlockchain
-//        case blockchainReceived
-//    }
-    
     // MARK: - `MPCSession` public methods.
     func start() {
         guard isServerRunning == false else { return }
@@ -115,7 +109,7 @@ final class NetworkManager: NSObject {
 
         /// The relay history has to be refreshed
         /// Dispatching blocks on a regular interval
-        Node.shared.createBlock { [weak self] (block) in
+        Node.shared.processBlock { [weak self] (block) in
             do {
                 let encoded = try JSONEncoder().encode(block)
                 let contractMethod = ContractMethod.sendBlock(encoded)
