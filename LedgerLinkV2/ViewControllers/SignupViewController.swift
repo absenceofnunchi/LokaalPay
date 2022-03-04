@@ -12,17 +12,24 @@ import Combine
 import MultipeerConnectivity
 
 final class SignupViewController: UIViewController {
-    var passwordTextField: UITextField!
-    var createButton: UIButton!
-    var deleteBlockchainButton: UIButton!
-    var addressLabel: UILabel!
-    let keysService = KeysService()
-    let localStorage = LocalStorage()
-    let alert = AlertView()
-    var storage = Set<AnyCancellable>()
-    let transactionService = TransactionService()
-    var createWalletMode: Bool = false
-    var isPeerConnected: Bool = false {
+    private var passswordTitleLabel: UILabel!
+    private var passwordTextField: UITextField!
+    private var createButton: UIButton!
+    private var deleteBlockchainButton: UIButton!
+    private var addressTitleLabel: UILabel!
+    private var addressLabel: UILabel!
+    private var roleTitleLabel: UILabel!
+    private var yesButton: UIButton!
+    private var noButton: UIButton!
+    private var chainIDTitleLabel: UILabel!
+    private var chainIDTextField: UITextField!
+    private let keysService = KeysService()
+    private let localStorage = LocalStorage()
+    private let alert = AlertView()
+    private var storage = Set<AnyCancellable>()
+    private let transactionService = TransactionService()
+    private var createWalletMode: Bool = false
+    private var isPeerConnected: Bool = false {
         didSet {
             if isPeerConnected && createWalletMode {
                 createWallet()
@@ -31,6 +38,7 @@ final class SignupViewController: UIViewController {
     }
     private let dispatchQueue = DispatchQueue(label: "taskQueue", qos: .background)
     private let semaphore = DispatchSemaphore(value: 1)
+    private var isHost: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,14 +57,24 @@ final class SignupViewController: UIViewController {
         view.backgroundColor = .white
         self.tapToDismissKeyboard()
         
+        passswordTitleLabel = UILabel()
+        passswordTitleLabel.text = "Password"
+        passswordTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(passswordTitleLabel)
+        
         passwordTextField = UITextField()
-        passwordTextField.isSecureTextEntry = true
+        passwordTextField.text = "1"
+        passwordTextField.isSecureTextEntry = false
         passwordTextField.layer.borderWidth = 1
         passwordTextField.layer.borderColor = UIColor.gray.cgColor
         passwordTextField.layer.cornerRadius = 10
-        passwordTextField.placeholder = "Create a new password"
         passwordTextField.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(passwordTextField)
+        
+        addressTitleLabel = UILabel()
+        addressTitleLabel.text = "Account Address"
+        addressTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(addressTitleLabel)
         
         addressLabel = UILabel()
         addressLabel.layer.borderWidth = 1
@@ -64,6 +82,43 @@ final class SignupViewController: UIViewController {
         addressLabel.layer.cornerRadius = 10
         addressLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(addressLabel)
+        
+        chainIDTitleLabel = UILabel()
+        chainIDTitleLabel.text = "Chain ID"
+        chainIDTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(chainIDTitleLabel)
+        
+        chainIDTextField = UITextField()
+        chainIDTextField.text = "11111"
+        chainIDTextField.layer.borderWidth = 1
+        chainIDTextField.layer.borderColor = UIColor.gray.cgColor
+        chainIDTextField.layer.cornerRadius = 10
+        chainIDTextField.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(chainIDTextField)
+        
+        roleTitleLabel = UILabel()
+        roleTitleLabel.text = "Are you a host?"
+        roleTitleLabel.textAlignment = .center
+        roleTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(roleTitleLabel)
+        
+        yesButton = UIButton()
+        yesButton.setTitle("Yes", for: .normal)
+        yesButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
+        yesButton.tag = 2
+        yesButton.backgroundColor = .black
+        yesButton.layer.cornerRadius = 10
+        yesButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(yesButton)
+        
+        noButton = UIButton()
+        noButton.setTitle("No", for: .normal)
+        noButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
+        noButton.tag = 3
+        noButton.backgroundColor = .black
+        noButton.layer.cornerRadius = 10
+        noButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(noButton)
         
         createButton = UIButton()
         createButton.setTitle("Create Wallet", for: .normal)
@@ -86,17 +141,52 @@ final class SignupViewController: UIViewController {
     
     func setConstraints() {
         NSLayoutConstraint.activate([
-            passwordTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
+            passswordTitleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
+            passswordTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            passswordTitleLabel.heightAnchor.constraint(equalToConstant: 50),
+            passswordTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            passwordTextField.topAnchor.constraint(equalTo: passswordTitleLabel.bottomAnchor, constant: 20),
             passwordTextField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             passwordTextField.heightAnchor.constraint(equalToConstant: 50),
             passwordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+
+            addressTitleLabel.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 20),
+            addressTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            addressTitleLabel.heightAnchor.constraint(equalToConstant: 50),
+            addressTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            addressLabel.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 20),
+            addressLabel.topAnchor.constraint(equalTo: addressTitleLabel.bottomAnchor, constant: 20),
             addressLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             addressLabel.heightAnchor.constraint(equalToConstant: 50),
             addressLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            createButton.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 20),
+            chainIDTitleLabel.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 20),
+            chainIDTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            chainIDTitleLabel.heightAnchor.constraint(equalToConstant: 50),
+            chainIDTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            chainIDTextField.topAnchor.constraint(equalTo: chainIDTitleLabel.bottomAnchor, constant: 20),
+            chainIDTextField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            chainIDTextField.heightAnchor.constraint(equalToConstant: 50),
+            chainIDTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            roleTitleLabel.topAnchor.constraint(equalTo: chainIDTextField.bottomAnchor, constant: 20),
+            roleTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            roleTitleLabel.heightAnchor.constraint(equalToConstant: 50),
+            roleTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            yesButton.topAnchor.constraint(equalTo: roleTitleLabel.bottomAnchor, constant: 20),
+            yesButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.2),
+            yesButton.heightAnchor.constraint(equalToConstant: 50),
+            yesButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -150),
+            
+            noButton.topAnchor.constraint(equalTo: roleTitleLabel.bottomAnchor, constant: 20),
+            noButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.2),
+            noButton.heightAnchor.constraint(equalToConstant: 50),
+            noButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 150),
+            
+            createButton.topAnchor.constraint(equalTo: noButton.bottomAnchor, constant: 20),
             createButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             createButton.heightAnchor.constraint(equalToConstant: 50),
             createButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -115,6 +205,10 @@ final class SignupViewController: UIViewController {
                 break
             case 1:
                 deleteAllBlockchain()
+            case 2:
+                isHost = true
+            case 3:
+                isHost = false
             default:
                 break
         }
@@ -130,8 +224,13 @@ final class SignupViewController: UIViewController {
     }
         
     private func createWallet() {
-        let password = "1"
-        let chainID = 11111
+        guard let password = passwordTextField.text,
+              let chainID = chainIDTextField.text else {
+            alert.show("Password Required", for: self)
+            return
+        }
+        
+        UserDefaults.standard.set(password, forKey: "password")
         
         print("start")
         let group = DispatchGroup()
@@ -139,14 +238,13 @@ final class SignupViewController: UIViewController {
         group.enter()
         self.dispatchQueue.async {
             self.semaphore.wait()
-            
-            NetworkManager.shared.requestBlockchainFromAllPeers { error in
+            NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
                 if let error = error {
                     print(error)
                     group.leave()
                     return
                 }
-         
+                
                 print("stage 1")
                 self.semaphore.signal()
                 group.leave()

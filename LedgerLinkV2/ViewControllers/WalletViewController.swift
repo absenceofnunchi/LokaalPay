@@ -198,14 +198,16 @@ final class WalletViewController: UIViewController {
             throw NodeError.generalError("Amount cannot be zero.")
         }
         
-        transactionService.prepareTransaction(.transferValue, to: toAddress, value: value, password: "1") { data, error in
+        transactionService.prepareTransaction(.transferValue, to: toAddress, value: value, password: "1") { [weak self] (data, error) in
             if let error = error {
                 print(error)
+                return
             }
             
             if let data = data {
                 NetworkManager.shared.sendDataToAllPeers(data: data)
                 Node.shared.addValidatedTransaction(data)
+                self?.sendAmountLabel.text = nil
             }
         }
         

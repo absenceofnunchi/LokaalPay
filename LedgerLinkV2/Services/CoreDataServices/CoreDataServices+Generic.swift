@@ -181,16 +181,16 @@ extension LocalStorage {
     /// Save an array of LightConfigurables synchronously
     func saveSync<T: LightConfigurable>( _ elements: [T], completion: @escaping (NodeError?) -> Void) {
         guard elements.count > 0 else { return }
-        
+
         if let accounts = elements as? [TreeConfigurableAccount] {
             accounts.forEach{ delete($0) }
         }
-        
+
         let taskContext = newTaskContext()
         // Add name and author to identify source of persistent history changes.
         taskContext.name = "saveTransactionContext"
         taskContext.transactionAuthor = "transactionSaver"
-        
+
         do {
             /// - Tag: performAndWait
             try taskContext.performAndWait {
@@ -207,7 +207,7 @@ extension LocalStorage {
                 }
                 throw NodeError.generalError("Batch insert error")
             }
-            
+
             print("Successfully inserted data.")
             completion(nil)
         } catch {
@@ -261,12 +261,12 @@ extension LocalStorage {
 //        case lightBlock
 //    }
     
-    func fetch<T: CoreDatable>(_ predicateString: String? = nil, completion: @escaping ([T]?, NodeError?) -> Void) {
+    func fetch<T: CoreDatable>(_ predicateString: String? = nil, format: String = "id == %@", completion: @escaping ([T]?, NodeError?) -> Void) {
         switch T.self {
             case is Account.Type:
                 let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
                 if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", predicateString)
+                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
                 }
                 
                 // Initialize Asynchronous Fetch Request
@@ -472,14 +472,14 @@ extension LocalStorage {
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
-                    let fullBlocks: [LightBlock] = results.compactMap { (element: BlockCoreData) in
+                    let lightBlocks: [LightBlock] = results.compactMap { (element: BlockCoreData) in
                         guard let id = element.id,
                               let data = element.data else { return nil }
                         let number = element.number
                         return LightBlock(id: id, number: number, data: data)
                     }
                     
-                    completion(fullBlocks as? [T], nil)
+                    completion(lightBlocks as? [T], nil)
                 }
                 
                 do {

@@ -111,7 +111,6 @@ final class TransactionService {
                             let timestamp = extraData.timestamp
                             Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: createAccount))
                             /// Add the transactions to be added to the pool of transactions to be included in the upcoming block
-                            Node.shared.addValidatedTransaction(signedTx)
                             
                             /// Create a ContractMethod instance to be sent to peers
                             method = ContractMethod.createAccount(encodedSig)
@@ -121,7 +120,7 @@ final class TransactionService {
                             let transferValueOperation = TransferValueOperation(transaction: signedTx)
                             let timestamp = extraData.timestamp
                             Node.shared.addValidatedOperation(TimestampedOperation(timestamp: timestamp, operation: transferValueOperation))
-                            
+
                             /// Create a ContractMethod instance to be sent to peers
                             method = ContractMethod.transferValue(encodedSig)
                             break
@@ -129,6 +128,7 @@ final class TransactionService {
                             break
                     }
                     
+                    Node.shared.addValidatedTransaction(signedTx)
                     let finalData = try JSONEncoder().encode(method)
                     
                     completion(finalData, nil)

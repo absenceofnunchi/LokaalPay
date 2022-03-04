@@ -87,7 +87,6 @@ extension LocalStorage {
             return
         }
         
-//        let convertedNumber = Int32(number)
         let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
         fetchRequest.predicate = NSPredicate(format: format, number)
 
@@ -95,6 +94,39 @@ extension LocalStorage {
         let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
             guard let results = asynchronousFetchResult.finalResult else { return }
             let blocks: [LightBlock] = results.compactMap { (element: BlockCoreData) in
+                return LightBlock.fromCoreData(crModel: element)
+            }
+            
+            completion(blocks, nil)
+        }
+        
+        do {
+            // Execute Asynchronous Fetch Request
+            let asynchronousFetchResult = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+            
+            if let asynchronousFetchProgress = asynchronousFetchResult?.progress {
+                asynchronousFetchProgress.addObserver(self, forKeyPath: "completedUnitCount", options: NSKeyValueObservingOptions.new, context: nil)
+            }
+        } catch {
+            let fetchError = error as NSError
+            print("\(fetchError), \(fetchError.userInfo)")
+            completion(nil, NodeError.generalError("Unable to fetch data"))
+        }
+    }
+    
+    func getBlocks(from number: Int32, format: String, completion: @escaping ([FullBlock]?, NodeError?) -> Void) {
+        guard number >= 0 else {
+            completion(nil, .generalError("The block number has to be greater than 0"))
+            return
+        }
+        
+        let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
+        fetchRequest.predicate = NSPredicate(format: format, number)
+        
+        // Initialize Asynchronous Fetch Request
+        let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+            guard let results = asynchronousFetchResult.finalResult else { return }
+            let blocks: [FullBlock] = results.compactMap { (element: BlockCoreData) in
                 return LightBlock.fromCoreData(crModel: element)
             }
             

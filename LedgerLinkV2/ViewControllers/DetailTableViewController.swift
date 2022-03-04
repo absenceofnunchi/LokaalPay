@@ -14,8 +14,8 @@ class DetailTableViewController<T>: UITableViewController {
         
         if data is [FullBlock] {
             tableView.register(BlockDetailCell.self, forCellReuseIdentifier: BlockDetailCell.reuseIdentifier)
-            tableView.estimatedRowHeight = 200
-            tableView.rowHeight = 200
+//            tableView.estimatedRowHeight = 250
+            tableView.rowHeight = 250
         } else {
             tableView.register(UITableViewCell.self, forCellReuseIdentifier: "reuse-identifier")
         }
@@ -42,9 +42,9 @@ class DetailTableViewController<T>: UITableViewController {
             cell.set(block: block)
             return cell
             
-        } else if let transaction = data[indexPath.row] as? TreeConfigurableTransaction {
+        } else if let account = data[indexPath.row] as? TreeConfigurableAccount {
             let cell = tableView.dequeueReusableCell(withIdentifier: "reuse-identifier", for: indexPath)
-            cell.textLabel?.text = transaction.id
+            cell.textLabel?.text = account.id
             return cell
           
         } else if let transaction = data[indexPath.row] as? TreeConfigurableTransaction {
@@ -56,19 +56,16 @@ class DetailTableViewController<T>: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "reuse-identifier", for: indexPath)
             cell.textLabel?.text = "Default"
             return cell
-            
         }
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let block = data[indexPath.row] as? FullBlock {
-            let detailVC = DetailTableViewController<TreeConfigurableTransaction>()
-            detailVC.data = block.transactions
-            self.navigationController?.pushViewController(detailVC, animated: true)
-        } else if let block = data[indexPath.row] as? FullBlock {
-            let detailVC = DetailTableViewController<TreeConfigurableAccount>()
-            detailVC.data = block.accounts
-            self.navigationController?.pushViewController(detailVC, animated: true)
+            if let tx = block.transactions, tx.count > 0 {
+                let detailVC = DetailTableViewController<TreeConfigurableTransaction>()
+                detailVC.data = tx
+                self.navigationController?.pushViewController(detailVC, animated: true)
+            }
         }
     }
 }
@@ -95,13 +92,13 @@ class BlockDetailCell: UITableViewCell {
     }
     
     func set(block: FullBlock) {
-        numberTextLabel.text = String(block.number)
-        hashTextLabel.text = block.hash.toHexString()
-        parentHashLabel.text = block.parentHash.toHexString()
-        transactionHashLabel.text = block.transactionsRoot.toHexString()
-        stateRootLabel.text = block.stateRoot.toHexString()
-        sizeLabel.text = String(block.size)
-        timestampLabel.text = block.timestamp.description
+        numberTextLabel.text = "Block Number: \(String(block.number))"
+        hashTextLabel.text = "Block Hash: \(block.hash.toHexString())"
+        parentHashLabel.text = "Parent Hash: \(block.parentHash.toHexString())"
+        transactionHashLabel.text = "Transaction Hash: \(block.transactionsRoot.toHexString())"
+        stateRootLabel.text = "State Root: \(block.stateRoot.toHexString())"
+        sizeLabel.text = "Size: \(String(block.size))"
+        timestampLabel.text = "Created At: \(block.timestamp.description)"
     }
     
     func configure() {
@@ -129,40 +126,52 @@ class BlockDetailCell: UITableViewCell {
     
     func setConstraints() {
         NSLayoutConstraint.activate([
-            numberTextLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            numberTextLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            numberTextLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+            numberTextLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             numberTextLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            numberTextLabel.heightAnchor.constraint(equalToConstant: 50),
+            numberTextLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            hashTextLabel.topAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 10),
-            hashTextLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            hashTextLabel.topAnchor.constraint(equalTo: numberTextLabel.bottomAnchor, constant: 5),
+            hashTextLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             hashTextLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            hashTextLabel.heightAnchor.constraint(equalToConstant: 50),
+            hashTextLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            parentHashLabel.topAnchor.constraint(equalTo: hashTextLabel.bottomAnchor, constant: 10),
-            parentHashLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            parentHashLabel.topAnchor.constraint(equalTo: hashTextLabel.bottomAnchor, constant: 5),
+            parentHashLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             parentHashLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            parentHashLabel.heightAnchor.constraint(equalToConstant: 50),
+            parentHashLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            transactionHashLabel.topAnchor.constraint(equalTo: parentHashLabel.bottomAnchor, constant: 10),
-            transactionHashLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            transactionHashLabel.topAnchor.constraint(equalTo: parentHashLabel.bottomAnchor, constant: 5),
+            transactionHashLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             transactionHashLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            transactionHashLabel.heightAnchor.constraint(equalToConstant: 50),
+            transactionHashLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            stateRootLabel.topAnchor.constraint(equalTo: transactionHashLabel.bottomAnchor, constant: 10),
-            stateRootLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            stateRootLabel.topAnchor.constraint(equalTo: transactionHashLabel.bottomAnchor, constant: 5),
+            stateRootLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             stateRootLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            stateRootLabel.heightAnchor.constraint(equalToConstant: 50),
+            stateRootLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            sizeLabel.topAnchor.constraint(equalTo: stateRootLabel.bottomAnchor, constant: 10),
-            sizeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            sizeLabel.topAnchor.constraint(equalTo: stateRootLabel.bottomAnchor, constant: 5),
+            sizeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             sizeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            sizeLabel.heightAnchor.constraint(equalToConstant: 50),
+            sizeLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            timestampLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 10),
-            timestampLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            timestampLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 5),
+            timestampLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             timestampLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            timestampLabel.heightAnchor.constraint(equalToConstant: 50),
+//            timestampLabel.heightAnchor.constraint(equalToConstant: 30),
+            timestampLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        numberTextLabel.text = nil
+        hashTextLabel.text = nil
+        parentHashLabel.text = nil
+        transactionHashLabel.text = nil
+        stateRootLabel.text = nil
+        sizeLabel.text = nil
+        timestampLabel.text = nil
     }
 }

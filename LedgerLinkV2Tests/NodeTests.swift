@@ -199,6 +199,31 @@ final class NodeTests: XCTestCase {
         print("account", account)
     }
     
+    func test_test30() {
+        
+        Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
+            if let error = error {
+                print(error)
+                fatalError(error.localizedDescription)
+            }
+            
+            if let block = block {
+                print(block)
+                
+                do {
+                    /// local blockchain may or may not exists
+                    let blockNumber = Int32(block.number)
+                    let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
+                    let data = try JSONEncoder().encode(contractMethod)
+                    print("data", data)
+//                    self.sendData(data: data, peers: peerIDs, mode: .reliable)
+                } catch {
+                    print(error)
+                }
+            }
+        }
+    }
+    
     func test_multSet() {
         var multiSet = Multiset<FullBlock>()
         multiSet.add(blocks[0])

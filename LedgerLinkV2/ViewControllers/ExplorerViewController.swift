@@ -14,6 +14,7 @@ class ExplorerViewController: UIViewController {
     private var accountSearchButton: UIButton!
     private var txSearchButton: UIButton!
     private let alert = AlertView()
+    private var tag: Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -102,6 +103,8 @@ class ExplorerViewController: UIViewController {
     }
     
     @objc func buttonPressed(_ sender: UIButton) {
+        tag = sender.tag
+        
         switch sender.tag {
             case 0:
                 scan()
@@ -160,20 +163,26 @@ extension ExplorerViewController: ScannerDelegate {
         let text = code
         textField.text = text
         
-        Node.shared.fetch(text) { [weak self](results: [TreeConfigurableAccount]?, error: NodeError?) in
-            if let error = error {
-                print(error)
-            }
-            
-            if let results = results {
-                DispatchQueue.main.async {
-                    let detailVC = DetailTableViewController<TreeConfigurableAccount>()
-                    detailVC.data = results
-                    self?.navigationController?.pushViewController(detailVC, animated: true)
+        switch tag {
+            case 0:
+                Node.shared.fetch(text) { [weak self](results: [TreeConfigurableAccount]?, error: NodeError?) in
+                    if let error = error {
+                        print(error)
+                    }
+                    
+                    if let results = results {
+                        DispatchQueue.main.async {
+                            let detailVC = DetailTableViewController<TreeConfigurableAccount>()
+                            detailVC.data = results
+                            self?.navigationController?.pushViewController(detailVC, animated: true)
+                        }
+                    } else {
+                        self?.alert.show("No data", for: self)
+                    }
                 }
-            } else {
-                self?.alert.show("No data", for: self)
-            }
+            default:
+                break
         }
+
     }
 }

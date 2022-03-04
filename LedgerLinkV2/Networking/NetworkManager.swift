@@ -118,8 +118,7 @@ final class NetworkManager: NSObject {
         Node.shared.createBlock { [weak self] (block) in
             do {
                 let encoded = try JSONEncoder().encode(block)
-                guard let compressed = encoded.compressed else { return }
-                let contractMethod = ContractMethod.sendBlock(compressed)
+                let contractMethod = ContractMethod.sendBlock(encoded)
                 let encodedMethod = try JSONEncoder().encode(contractMethod)
                 self?.sendDataToAllPeers(data: encodedMethod)
                 self?.transactionRelayHistory.removeAll()
@@ -279,9 +278,24 @@ extension NetworkManager: MCSessionDelegate {
     /// Download blockchain by requesting it from another peer
     /// Request blocks with a number that's later than the latest local block.
     func requestBlockchain(peerIDs: [MCPeerID], completion: @escaping (NodeError?) -> Void) {
+//        Node.shared.localStorage.getLatestBlock { [weak self] (block: LightBlock?, error: NodeError?) in
+//            if let error = error {
+//                completion(error)
+//            }
+//            
+//            do {
+//                let blockNumber = block?.number ?? Int32(0)
+//                let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
+//                let data = try JSONEncoder().encode(contractMethod)
+//                print("request blockchain success", data)
+//                self?.sendData(data: data, peers: peerIDs, mode: .reliable)
+//            } catch {
+//                completion(.generalError("Request block error"))
+//            }
+//        }
+        
         do {
             let block: LightBlock? = try Node.shared.localStorage.getLastestBlockSync()
-            print("latestBlock", block as Any)
             /// local blockchain may or may not exists
             let blockNumber = block?.number ?? Int32(0)
             let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
@@ -324,6 +338,27 @@ extension NetworkManager: MCSessionDelegate {
                     NetworkManager.shared.sendData(data: encodedMethod, peers: [peerID], mode: .reliable)
                 } catch {
                    print("Unable to encode data", error)
+                }
+            }
+        }
+    }
+    
+    func sendAllBlockchain(_ blockNumber: Int32, format: String, peerID: MCPeerID) {
+        Node.shared.fetch { (blocks: [LightBlock]?, error: NodeError?) in
+            if let error = error {
+                print("sendBlockchain error", error)
+                return
+            }
+            
+            if let blocks = blocks {
+                /// Only blocks are sents since the accounts and the transactions are included in the block which will be saved in a relational way.
+                let packet = Packet(accounts: nil, transactions: nil, blocks: blocks)
+                do {
+                    let contractMethod = ContractMethod.blockchainDownloadAllResponse(packet)
+                    let encodedMethod = try JSONEncoder().encode(contractMethod)
+                    NetworkManager.shared.sendData(data: encodedMethod, peers: [peerID], mode: .reliable)
+                } catch {
+                    print("Unable to encode data", error)
                 }
             }
         }
