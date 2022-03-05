@@ -251,15 +251,253 @@ extension LocalStorage {
     }
  
     /// All elements are searchable
-    func fetch<T: CoreDatable>(_ predicateString: String? = nil, format: String = "id == %@", completion: @escaping ([T]?, NodeError?) -> Void) {
+//    func fetch<T: LightConfigurable>(_ predicateString: String? = nil, format: String = "id == %@", completion: @escaping ([T]?, NodeError?) -> Void) {
+//        switch T.self {
+//            case is Account.Type:
+//                let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
+//                if predicateString != nil {
+//                    fatalError()
+////                    fetchRequest.predicate = NSPredicate(format: "address == %@", EthereumAddress(predicateString) as! CVarArg)
+//                }
+//
+//                // Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<StateCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let accounts: [Account] = results.compactMap { (element: StateCoreData) in
+//                        guard let data = element.data else { return nil }
+//                        do {
+//                            return try Account(data)
+//                        } catch {
+//                            return nil
+//                        }
+//                    }
+//
+//                    completion(accounts as? [T], nil)
+//                }
+//
+//                do {
+//                    /// Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            case is EthereumTransaction.Type:
+//                let fetchRequest = NSFetchRequest<TransactionCoreData>(entityName: EntityName.transactionCoreData.rawValue)
+//                if let predicateString = predicateString {
+//                    fetchRequest.predicate = NSPredicate(format: "hash == %@", Data(hex: predicateString) as CVarArg)
+//                }
+//                /// Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<TransactionCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let transactions: [EthereumTransaction] = results.compactMap { (element: TransactionCoreData) in
+//                        guard let data = element.data,
+//                              let decompressed = data.decompressed,
+//                              let decoded = EthereumTransaction.fromRaw(decompressed) else { return nil }
+//
+//                        return decoded
+//                    }
+//
+//                    completion(transactions as? [T], nil)
+//                }
+//
+//                do {
+//                    // Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            case is TransactionReceipt.Type:
+//                let fetchRequest = NSFetchRequest<ReceiptCoreData>(entityName: EntityName.receiptCoreData.rawValue)
+//                if let predicateString = predicateString {
+//                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+//                }
+//                // Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<ReceiptCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let receipts: [TransactionReceipt] = results.compactMap { (element: ReceiptCoreData) in
+//                        guard let data = element.data,
+//                              let decompressed = data.decompressed,
+//                              let decoded = try? TransactionReceipt.fromRaw(decompressed) else { return nil }
+//
+//                        return decoded
+//                    }
+//
+//                    completion(receipts as? [T], nil)
+//                }
+//
+//                do {
+//                    // Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            case is FullBlock.Type:
+//                let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
+//                if let predicateString = predicateString {
+//                    fetchRequest.predicate = NSPredicate(format: "hash == %@", predicateString)
+//                }
+//                // Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let fullBlocks: [FullBlock] = results.compactMap { (element: BlockCoreData) in
+//                        guard let data = element.data else { return nil }
+//
+//                        do {
+//                            guard let decompressed = data.decompressed else {
+//                                throw NodeError.compressionError
+//                            }
+//
+//                            let decoded = try JSONDecoder().decode(FullBlock.self, from: decompressed)
+//                            return decoded
+//                        } catch {
+//                            return nil
+//                        }
+//                    }
+//
+//                    completion(fullBlocks as? [T], nil)
+//                }
+//
+//                do {
+//                    // Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            case is TreeConfigurableAccount.Type:
+//                let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
+//                if let predicateString = predicateString {
+//                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+//                }
+//                // Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<StateCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let accounts: [TreeConfigurableAccount] = results.compactMap { (element: StateCoreData) in
+//                        guard let id = element.id,
+//                              let data = element.data else { return nil }
+//                        return TreeConfigurableAccount(id: id, data: data)
+//                    }
+//
+//                    completion(accounts as? [T], nil)
+//                }
+//
+//                do {
+//                    // Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            case is TreeConfigurableTransaction.Type:
+//                let fetchRequest = NSFetchRequest<TransactionCoreData>(entityName: EntityName.transactionCoreData.rawValue)
+//                if let predicateString = predicateString {
+//                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+//                }
+//                // Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<TransactionCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let treeConfigTxs: [TreeConfigurableTransaction] = results.compactMap { (element: TransactionCoreData) in
+//                        guard let id = element.id,
+//                              let data = element.data else { return nil }
+//
+//                        return TreeConfigurableTransaction(id: id, data: data)
+//                    }
+//
+//                    completion(treeConfigTxs as? [T], nil)
+//                }
+//
+//                do {
+//                    // Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            case is TreeConfigurableReceipt.Type:
+//                let fetchRequest = NSFetchRequest<ReceiptCoreData>(entityName: EntityName.receiptCoreData.rawValue)
+//                if let predicateString = predicateString {
+//                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+//                }
+//                // Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<ReceiptCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let treeConfigReceipts: [TreeConfigurableReceipt] = results.compactMap { (element: ReceiptCoreData) in
+//                        guard let id = element.id,
+//                              let data = element.data else { return nil }
+//
+//                        return TreeConfigurableReceipt(id: id, data: data)
+//                    }
+//
+//                    completion(treeConfigReceipts as? [T], nil)
+//                }
+//
+//                do {
+//                    // Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            case is LightBlock.Type:
+//                let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
+//                if let predicateString = predicateString {
+//                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+//                }
+//                // Initialize Asynchronous Fetch Request
+//                let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+//                    guard let results = asynchronousFetchResult.finalResult else { return }
+//                    let lightBlocks: [LightBlock] = results.compactMap { (element: BlockCoreData) in
+//                        guard let id = element.id,
+//                              let data = element.data else { return nil }
+//                        let number = element.number
+//                        return LightBlock(id: id, number: number, data: data)
+//                    }
+//
+//                    completion(lightBlocks as? [T], nil)
+//                }
+//
+//                do {
+//                    // Execute Asynchronous Fetch Request
+//                    let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+//                } catch {
+//                    let fetchError = error as NSError
+//                    print("\(fetchError), \(fetchError.userInfo)")
+//                    completion(nil, NodeError.generalError("Unable to fetch data"))
+//                }
+//                break
+//            default:
+//                break
+//        }
+//    }
+    
+    /// All elements are searchable
+    func fetch<T: CoreDatable>(_ predicate: FetchPredicate? = nil, format: String = "id == %@", completion: @escaping ([T]?, NodeError?) -> Void) {
         switch T.self {
             case is Account.Type:
                 let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
-                if predicateString != nil {
-                    fatalError()
-//                    fetchRequest.predicate = NSPredicate(format: "address == %@", EthereumAddress(predicateString) as! CVarArg)
+                if case .addressString(let addressString) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, addressString)
+                } else if case .address(let address) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, address.address)
                 }
-                
+
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<StateCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
@@ -271,10 +509,10 @@ extension LocalStorage {
                             return nil
                         }
                     }
-                    
+
                     completion(accounts as? [T], nil)
                 }
-                
+
                 do {
                     /// Execute Asynchronous Fetch Request
                     let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
@@ -286,9 +524,26 @@ extension LocalStorage {
                 break
             case is EthereumTransaction.Type:
                 let fetchRequest = NSFetchRequest<TransactionCoreData>(entityName: EntityName.transactionCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "hash == %@", Data(hex: predicateString) as CVarArg)
+                if case .transactionRLP(let data) = predicate {
+                    guard let compressed = data.compressed else {
+                        completion(nil, NodeError.generalError("Predicate preparation error"))
+                        return
+                    }
+                    
+                    let id = compressed.sha256().toHexString()
+                    fetchRequest.predicate = NSPredicate(format: format, id)
+                } else if case .transaction(let tx) = predicate {
+                    guard let rlpEncoded = tx.encode(),
+                          let compressed = rlpEncoded.compressed else {
+                              completion(nil, NodeError.generalError("Predicate preparation error"))
+                              return
+                          }
+                    let id = compressed.sha256().toHexString()
+                    fetchRequest.predicate = NSPredicate(format: format, id)
+                } else if case .treeConfigTxId(let id) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, id)
                 }
+                
                 /// Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<TransactionCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
@@ -296,13 +551,13 @@ extension LocalStorage {
                         guard let data = element.data,
                               let decompressed = data.decompressed,
                               let decoded = EthereumTransaction.fromRaw(decompressed) else { return nil }
-                        
+
                         return decoded
                     }
-                    
+
                     completion(transactions as? [T], nil)
                 }
-                
+
                 do {
                     // Execute Asynchronous Fetch Request
                     let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
@@ -314,9 +569,27 @@ extension LocalStorage {
                 break
             case is TransactionReceipt.Type:
                 let fetchRequest = NSFetchRequest<ReceiptCoreData>(entityName: EntityName.receiptCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+                if case .receiptRLP(let data) = predicate {
+                    guard let compressed = data.compressed else {
+                        completion(nil, NodeError.generalError("Unable to prepare the predicate"))
+                        return
+                    }
+                    
+                    let id = compressed.sha256().toHexString()
+                    fetchRequest.predicate = NSPredicate(format: format, id)
+                } else if case .receipt(let receipt) = predicate {
+                    guard let rlpEncoded = receipt.encode(),
+                          let compressed = rlpEncoded.compressed else {
+                              completion(nil, NodeError.generalError("Unable to prepare the predicate"))
+                        return
+                    }
+                    
+                    let id = compressed.sha256().toHexString()
+                    fetchRequest.predicate = NSPredicate(format: format, id)
+                } else if case .treeConfigReceiptId(let id) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, id)
                 }
+                
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<ReceiptCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
@@ -324,13 +597,13 @@ extension LocalStorage {
                         guard let data = element.data,
                               let decompressed = data.decompressed,
                               let decoded = try? TransactionReceipt.fromRaw(decompressed) else { return nil }
-                        
+
                         return decoded
                     }
-                    
+
                     completion(receipts as? [T], nil)
                 }
-                
+
                 do {
                     // Execute Asynchronous Fetch Request
                     let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
@@ -342,30 +615,34 @@ extension LocalStorage {
                 break
             case is FullBlock.Type:
                 let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: "hash == %@", predicateString)
+                if case .fullBlockHash(let data) = predicate {
+                    let hashString = data.sha256().toHexString()
+                    fetchRequest.predicate = NSPredicate(format: "hash == %@", hashString)
+                } else if case .lightBlockId(let id) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, id)
                 }
+                
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
                     let fullBlocks: [FullBlock] = results.compactMap { (element: BlockCoreData) in
                         guard let data = element.data else { return nil }
-                        
+
                         do {
                             guard let decompressed = data.decompressed else {
                                 throw NodeError.compressionError
                             }
-                            
+
                             let decoded = try JSONDecoder().decode(FullBlock.self, from: decompressed)
                             return decoded
                         } catch {
                             return nil
                         }
                     }
-                    
+
                     completion(fullBlocks as? [T], nil)
                 }
-                
+
                 do {
                     // Execute Asynchronous Fetch Request
                     let _ = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
@@ -377,9 +654,14 @@ extension LocalStorage {
                 break
             case is TreeConfigurableAccount.Type:
                 let fetchRequest = NSFetchRequest<StateCoreData>(entityName: EntityName.stateCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+                if case .treeConfigAccountId(let addressString) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, addressString)
+                } else if case .addressString(let addressString) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, addressString)
+                } else if case .address(let address) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, address.address)
                 }
+                
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<StateCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
@@ -403,9 +685,18 @@ extension LocalStorage {
                 break
             case is TreeConfigurableTransaction.Type:
                 let fetchRequest = NSFetchRequest<TransactionCoreData>(entityName: EntityName.transactionCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+                if case .treeConfigTxId(let idString) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, idString)
+                } else if case .transactionRLP(let data) = predicate {
+                    guard let compressed = data.compressed else {
+                        completion(nil, NodeError.generalError("Unable to prepare the predicate"))
+                        return
+                    }
+                    
+                    let id = compressed.sha256().toHexString()
+                    fetchRequest.predicate = NSPredicate(format: format, id)
                 }
+                
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<TransactionCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
@@ -430,9 +721,10 @@ extension LocalStorage {
                 break
             case is TreeConfigurableReceipt.Type:
                 let fetchRequest = NSFetchRequest<ReceiptCoreData>(entityName: EntityName.receiptCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+                if case .treeConfigReceiptId(let idString) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, idString)
                 }
+                
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<ReceiptCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
@@ -457,9 +749,13 @@ extension LocalStorage {
                 break
             case is LightBlock.Type:
                 let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
-                if let predicateString = predicateString {
-                    fetchRequest.predicate = NSPredicate(format: format, predicateString)
+                if case .lightBlockId(let idString) = predicate {
+                    fetchRequest.predicate = NSPredicate(format: format, idString)
+                } else if case .fullBlockHash(let hashData) = predicate {
+                    let idString = hashData.sha256().toHexString()
+                    fetchRequest.predicate = NSPredicate(format: format, idString)
                 }
+                
                 // Initialize Asynchronous Fetch Request
                 let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
                     guard let results = asynchronousFetchResult.finalResult else { return }
@@ -581,10 +877,27 @@ extension LocalStorage {
     /// Delete everything
     func deleteAll() {
         EntityName.allCases.forEach { deleteAll(of: $0) }
+        
     }
 }
 
-protocol CoreDatable { }
+protocol CoreDatable {}
+
+enum FetchPredicate {
+    case address(EthereumAddress)
+    case addressString(String)
+    case transaction(EthereumTransaction)
+    case transactionRLP(Data)
+    case receipt(TransactionReceipt)
+    case receiptRLP(Data)
+    case fullBlockHash(Data)
+    case treeConfigAccountId(String)
+    case treeConfigTxId(String)
+    case treeConfigReceiptId(String)
+    case lightBlockId(String)
+}
+
+
 extension Account: CoreDatable { }
 extension EthereumTransaction: CoreDatable { }
 extension TransactionReceipt: CoreDatable { }

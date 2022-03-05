@@ -16,6 +16,7 @@
 		490367CC27BC5FAA00DFDE2B /* QRCodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */; };
 		490367CE27BCC07E00DFDE2B /* ContractMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367CD27BCC07D00DFDE2B /* ContractMethods.swift */; };
 		4907BEE627D127120079C20D /* Node+CreateBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4907BEE527D127120079C20D /* Node+CreateBlock.swift */; };
+		491C2BBF27D2D79600821C57 /* Quicksort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491C2BBE27D2D79600821C57 /* Quicksort.swift */; };
 		492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983827A998BA003BFAB4 /* AppDelegate.swift */; };
 		492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983A27A998BA003BFAB4 /* SceneDelegate.swift */; };
 		492D983D27A998BA003BFAB4 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983C27A998BA003BFAB4 /* MainViewController.swift */; };
@@ -126,6 +127,7 @@
 		490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeViewController.swift; sourceTree = "<group>"; };
 		490367CD27BCC07D00DFDE2B /* ContractMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractMethods.swift; sourceTree = "<group>"; };
 		4907BEE527D127120079C20D /* Node+CreateBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Node+CreateBlock.swift"; sourceTree = "<group>"; };
+		491C2BBE27D2D79600821C57 /* Quicksort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quicksort.swift; sourceTree = "<group>"; };
 		492D983527A998BA003BFAB4 /* LedgerLinkV2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LedgerLinkV2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		492D983827A998BA003BFAB4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		492D983A27A998BA003BFAB4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -456,6 +458,7 @@
 				497633D327C22F360044B426 /* TestTree.swift */,
 				490367BC27BB25FF00DFDE2B /* Mine.swift */,
 				496CC5A127CCA60E0016B1C5 /* Multiset.swift */,
+				491C2BBE27D2D79600821C57 /* Quicksort.swift */,
 			);
 			path = Node;
 			sourceTree = "<group>";
@@ -699,6 +702,7 @@
 				499AF12427B04E6D00CAF0EA /* KeysService.swift in Sources */,
 				492D983D27A998BA003BFAB4 /* MainViewController.swift in Sources */,
 				490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */,
+				491C2BBF27D2D79600821C57 /* Quicksort.swift in Sources */,
 				490367CC27BC5FAA00DFDE2B /* QRCodeViewController.swift in Sources */,
 				499AF11D27AF6DC100CAF0EA /* WalletViewController.swift in Sources */,
 				4976EB5127CFD15100C10DBD /* TransactionCoreData+CoreDataProperties.swift in Sources */,

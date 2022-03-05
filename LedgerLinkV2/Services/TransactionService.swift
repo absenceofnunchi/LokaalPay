@@ -44,7 +44,7 @@ final class TransactionService {
             }
                         
             // Fetch the newly created address to increment the nonce and update the balance (if needed)
-            Node.shared.fetch(myAddress.address) { (accounts: [Account]?, error: NodeError?) in
+            Node.shared.fetch(.addressString(myAddress.address)) { (accounts: [Account]?, error: NodeError?) in
                 if let error = error {
                     completion(nil, error)
                     return
@@ -65,15 +65,10 @@ final class TransactionService {
                         return
                     }
                     
-                    /// Subtract the transferring value from the balance
-                    account.balance -= value
+                    /// The transferring value is not to be subtracted from the balance as below since if the validator can't take this balance at face value
+                    /// account.balance -= value
+                    /// Instead, the sender's balance will be accessed from the validator's blockchain and the value be subtracted from there.
                 }
-                
-//                guard let method = ContractMethods(rawValue: contractMethod.rawValue),
-//                      let methodData = method.data else {
-//                          completion(nil, .generalError("Unable to parse the contract method"))
-//                          return
-//                      }
                 
                 /// Include the extra data such as the contract method , timestamp, latest block number, and/or a newly created account
                 let extraData = TransactionExtraData(account: account, timestamp: Date(), latestBlockNumber: BigUInt(block?.number ?? 1))

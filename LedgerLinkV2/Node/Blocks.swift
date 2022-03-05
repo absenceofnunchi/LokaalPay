@@ -360,7 +360,7 @@ struct LightBlock: LightConfigurable, PropertyLoopable {
     }
 
     static func < (lhs: LightBlock, rhs: LightBlock) -> Bool {
-        return (lhs.id < rhs.id) && (lhs.data.toHexString() < rhs.data.toHexString())
+        return (lhs.number < rhs.number)
     }
 }
 

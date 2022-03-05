@@ -30,35 +30,59 @@ extension Node {
     /// TODO: save the public signature in the genesis block instead of the address and compare it against the local machine's public signature
     func verifyValidator(completion: @escaping (Bool) -> Void) {
         /// Get the genesis block
-        localStorage.getBlocks(from: Int32(0), format: "number == %i") { [weak self] (blocks: [FullBlock]?, error: NodeError?) in
+        localStorage.getBlock(Int32(0)) { [weak self] (genesisBlock, error) in
             if let error = error {
                 print(error as Any)
                 completion(false)
                 return
             }
             
-            guard let blocks = blocks, let genesisBlock = blocks.first else {
+            guard let genesisBlock = genesisBlock else {
                 completion(false)
                 return
             }
             
-            self?.getMyAccount { account, error in
-                if let error = error {
-                    print(error as Any)
-                    completion(false)
-                    return
-                }
+            guard let account: Account = self?.getMyAccount() else {
+                completion(false)
+                return
+            }
+            
+            if account.address.address == genesisBlock.miner {
+                /// If my address matches the miner of the genesis block, it means I'm the host/validator.
+                /// Proceed to mint a new block
                 
-                if let myAddressString = account?.address.address, myAddressString == genesisBlock.miner {
-                    /// If my address matches the miner of the genesis block, it means I'm the host/validator.
-                    /// Proceed to mint a new block
-                    
-                    completion(true)
-                } else {
-                    completion(false)
-                }
+                completion(true)
+            } else {
+                completion(false)
             }
         }
+        
+//        localStorage.getBlocks(from: Int32(0), format: "number == %i") { [weak self] (blocks: [FullBlock]?, error: NodeError?) in
+//            if let error = error {
+//                print(error as Any)
+//                completion(false)
+//                return
+//            }
+//
+//            guard let blocks = blocks, let genesisBlock = blocks.first else {
+//                completion(false)
+//                return
+//            }
+//
+//            guard let account: Account = self?.getMyAccount() else {
+//                completion(false)
+//                return
+//            }
+//
+//            if account.address.address == genesisBlock.miner {
+//                /// If my address matches the miner of the genesis block, it means I'm the host/validator.
+//                /// Proceed to mint a new block
+//
+//                completion(true)
+//            } else {
+//                completion(false)
+//            }
+//        }
     }
     
     // MARK: - createBlock
@@ -97,62 +121,56 @@ extension Node {
                 let txDataArr = self.validatedTransactions.map { $0.data }
                 
                 /// Fetch your own account to register yourself as the miner of the block.
-                self.getMyAccount { account, error in
-                    if let error = error {
-                        promise(.failure(error))
-                    }
-                    
-                    guard let account = account else {
+                guard let account: Account = self.getMyAccount() else {
+                    return
+                }
+                
+                do {
+                    /// Use default data if no validated transactions or account exist to create the merkle root hash
+                    let defaultString = "0x0000000000000000000000000000000000000000"
+                    guard let defaultData = defaultString.data(using: .utf8) else {
+                        promise(.failure(NodeError.generalError("Unable to create a new block")))
                         return
                     }
                     
-                    do {
-                        /// Use default data if no validated transactions or account exist to create the merkle root hash
-                        let defaultString = "0x0000000000000000000000000000000000000000"
-                        guard let defaultData = defaultString.data(using: .utf8) else {
-                            promise(.failure(NodeError.generalError("Unable to create a new block")))
-                            return
-                        }
-                        
-                        /// Create a state root hash
-                        let accArr = accountArr.count > 0 ? accountArr : [defaultData]
-                        guard case .Node(hash: let stateRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: accArr) else {
-                            fatalError()
-                        }
-                        
-                        /// Create a transaction root hash
-                        let txArr = txDataArr.count > 0 ? txDataArr : [defaultData]
-                        guard case .Node(hash: let transactionsRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: txArr) else {
-                            fatalError()
-                        }
-                        
-                        /// Fetch the last block to increment the block number and to register the block hash as the parent hash of the new block.
-                        guard let fetchedBlock: LightBlock = try self.localStorage.getLastestBlockSync(),
-                              let lastBlock = fetchedBlock.decode() else {
-                            promise(.failure(.generalError("Unable to fetch the latsest block")))
-                            return
-                        }
-                        
-                        let blockNumber = lastBlock.number
-                        let parentHash = lastBlock.hash
-                        
-                        /// Create a new block
-                        let newBlock = try FullBlock(number: blockNumber + 1, parentHash: parentHash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: self.validatedTransactions, accounts: self.validatedAccounts)
-                        
-                        let lightBlock = try LightBlock(data: newBlock)
-                        
-                        /// Add the newly minted block tot he blockahin
-                        self.saveSync([lightBlock]) { error in
-                            if let error = error {
-                                promise(.failure(error))
-                                return
-                            }
-                            
-                            promise(.success(lightBlock))
-                        }
-                    } catch {
-                        promise(.failure(.generalError("Unable to create a new block")))
+                    /// Create a state root hash
+                    let accArr = accountArr.count > 0 ? accountArr : [defaultData]
+                    guard case .Node(hash: let stateRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: accArr) else {
+                        fatalError()
                     }
+                    
+                    /// Create a transaction root hash
+                    let txArr = txDataArr.count > 0 ? txDataArr : [defaultData]
+                    guard case .Node(hash: let transactionsRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: txArr) else {
+                        fatalError()
+                    }
+                    
+                    /// Fetch the last block to increment the block number and to register the block hash as the parent hash of the new block.
+                    guard let fetchedBlock: LightBlock = try self.localStorage.getLatestBlock(),
+                          let lastBlock = fetchedBlock.decode() else {
+                              promise(.failure(.generalError("Unable to fetch the latsest block")))
+                              return
+                          }
+                    
+                    let blockNumber = lastBlock.number
+                    let parentHash = lastBlock.hash
+                    
+                    /// Create a new block
+                    let newBlock = try FullBlock(number: blockNumber + 1, parentHash: parentHash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: self.validatedTransactions, accounts: self.validatedAccounts)
+                    
+                    let lightBlock = try LightBlock(data: newBlock)
+                    
+                    /// Add the newly minted block tot he blockahin
+                    self.saveSync([lightBlock]) { error in
+                        if let error = error {
+                            promise(.failure(error))
+                            return
+                        }
+                        
+                        promise(.success(lightBlock))
+                    }
+                } catch {
+                    promise(.failure(.generalError("Unable to create a new block")))
                 }
             }
             .eraseToAnyPublisher()
@@ -165,6 +183,7 @@ extension Node {
                     print("block creation error", error)
             }
         } receiveValue: { [weak self] (block) in
+            /// Remove all the validated txs and accounts to prepare the for the creation of the next block
             self?.validatedTransactions.removeAll()
             self?.validatedAccounts.removeAll()
             completion(block)
@@ -183,49 +202,60 @@ extension Node {
                 return
             }
             
-            if let lastBlock = lastBlock {
-                /// Fetch the genesis block to compare against since the miner of the the genesis block is the only legitimate validator.
-                self?.localStorage.getBlocks(from: Int32(0), format: "number == %i") { [weak self] (blocks: [FullBlock]?, error: NodeError?) in
+            guard let lastBlock = lastBlock else {
+                /// If no blockchain exists locally, it means none was properly downloaded at the beginning.
+                NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
                     if let error = error {
-                        print(error as Any)
+                        print("request all error", error)
                         return
                     }
+                }
+                return
+            }
+            
+            /// Fetch the genesis block to compare against since the miner of the the genesis block is the only legitimate validator.
+            self?.localStorage.getBlocks(from: Int32(0), format: "number == %i") { [weak self] (blocks: [FullBlock]?, error: NodeError?) in
+                if let error = error {
+                    print(error as Any)
+                    return
+                }
+                
+                guard let blocks = blocks, let genesisBlock = blocks.first else {
+                    return
+                }
+                
+                guard let allBlocks = self?.unvalidatedBlocks.allItems else {
+                    return
+                }
+                
+                /// Conditions to be met to be a valid block.
+                /// 1. Has to be created by the legitimate validator.
+                /// 2. The parent hash of the block has to match the previous block's block hash.
+                /// 3. The block's number has to be one higher than the last block.
+                /// 4. The recreated block hash has to match the purported hash in the block.
+                for block in allBlocks where (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == lastBlock.id) && (block.number == (lastBlock.number + 1)) {
                     
-                    guard let blocks = blocks, let genesisBlock = blocks.first else {
-                        return
-                    }
-                    
-                    guard let allBlocks = self?.unvalidatedBlocks.allItems else {
-                        return
-                    }
-                    
-                    /// Conditions to be met to be a valid block.
-                    /// 1. Has to be created by the legitimate validator.
-                    /// 2. The parent hash of the block has to match the previous block's block hash.
-                    /// 3. The block's number has to be one higher than the last block.
-                    /// 4. The recreated block hash has to match the purported hash in the block.
-                    for block in allBlocks where (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == lastBlock.id) && (block.number == (lastBlock.number + 1)) {
-                                                
-                        do {
-                            let blockHash = try block.generateBlockHash()
-                            if blockHash != block.hash {
-                                continue
-                            }
-                        } catch {
+                    do {
+                        let blockHash = try block.generateBlockHash()
+                        if blockHash != block.hash {
                             continue
                         }
-                                                  
-                        self?.saveSync([block]) { error in
-                            print("non validator block save error", error as Any)
-                            return
-                        }
+                    } catch {
+                        continue
                     }
                     
-                    /// If this point is reached, that means no proper block has been found
-                    NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
-                        if let error = error {
-                            print("request all error", error)
-                        }
+                    /// Save the verified block. It's now effectively part of the blockchain.
+                    self?.saveSync([block]) { error in
+                        print("non validator block save error", error as Any)
+                        return
+                    }
+                }
+                
+                /// If this point is reached, that means no proper block has been found
+                NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
+                    if let error = error {
+                        print("request all error", error)
+                        return
                     }
                 }
             }
@@ -369,9 +399,7 @@ extension Node {
                         /// The newly created block becomes the unvalidated block to be sent out and be verified next against a pool of other candidates on the next clock cycle.
                         self.addUnvalidatedBlock(newBlock)
                         
-                        let lightBlock = try LightBlock(data: newBlock)
-                        
-                        
+                        let lightBlock = try LightBlock(data: newBlock)                        
                         
                         promise(.success(lightBlock))
                         

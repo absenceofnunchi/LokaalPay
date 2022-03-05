@@ -61,7 +61,7 @@ final class WalletTests: XCTestCase {
             }
             
             let blocks = Future<[LightBlock], NodeError> { promise in
-                Node.shared.localStorage.getBlocks(from: 0, format: "number > %i") { (blocks: [LightBlock]?, error: NodeError?) in
+                Node.shared.localStorage.getBlocks(from: 0, format: "number >= %i") { (blocks: [LightBlock]?, error: NodeError?) in
                     if let error = error {
                         promise(.failure(error))
                         return

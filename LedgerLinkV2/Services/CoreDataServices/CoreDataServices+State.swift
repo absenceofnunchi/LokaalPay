@@ -44,7 +44,6 @@ extension LocalStorage {
         
         do {
             let results = try context.fetch(request)
-            print("results", results as Any)
             guard let result = results.first else {
                 throw NodeError.generalError("Parsing error")
             }
@@ -267,32 +266,30 @@ extension LocalStorage {
         }
         
         print("Successfully inserted data.")
+    }
+    
+    func saveStatesAsync(_ accounts: [TreeConfigurableAccount]) async throws {
+        guard accounts.count > 0 else { return }
+        let taskContext = newTaskContext()
+        // Add name and author to identify source of persistent history changes.
+        taskContext.name = "stateContext"
+        taskContext.transactionAuthor = "stateSaver"
         
-        //        let taskContext = newTaskContext()
-        //        // Add name and author to identify source of persistent history changes.
-        //        taskContext.name = "stateContext"
-        //        taskContext.transactionAuthor = "stateSaver"
-        //        taskContext.perform { // runs asynchronously
-        //
-        //            while(true) { // loop through each batch of inserts
-        //                autoreleasepool {
-        //                    for item in accounts {
-        //                        guard let newObject = NSEntityDescription.insertNewObject(forEntityName: "StateCoreData", into: taskContext) as? StateCoreData else { return }
-        //                        newObject.id = item.id
-        //                        newObject.data = item.data
-        //                    }
-        //                }
-        //
-        //                // only save once per batch insert
-        //                do {
-        //                    try taskContext.save()
-        //                } catch {
-        //                    print(error)
-        //                }
-        //
-        //                taskContext.reset()
-        //            }
-        //        }
+        /// - Tag: perform
+        try await taskContext.perform { [weak self] in
+            // Execute the batch insert.
+            /// - Tag: batchInsertRequest
+            guard let batchInsertRequest = self?.newBatchInsertRequest(with: accounts) else { return }
+            if let fetchResult = try? taskContext.execute(batchInsertRequest),
+               let batchInsertResult = fetchResult as? NSBatchInsertResult,
+               let success = batchInsertResult.result as? Bool, success {
+                return
+            }
+            print("Failed to execute batch insert request.")
+            throw NodeError.generalError("Batch insert error")
+        }
+        
+        print("Successfully inserted data.")
     }
     
     func getAccountAsync(_ addressString: String, completion: @escaping (Account?, NodeError?) -> Void) {
@@ -453,23 +450,24 @@ extension LocalStorage {
                 do {
                     return try Account(data)
                 } catch {
+                    print("account conversion error", error)
                     return nil
                 }
             }
             
             completion(accounts, nil)
             
-            //            if let asynchronousFetchProgress = asynchronousFetchResult.progress {
-            //                // Remove Observer
-            //                asynchronousFetchProgress.removeObserver(self, forKeyPath: "completedUnitCount")
-            //            }
+            if let asynchronousFetchProgress = asynchronousFetchResult.progress {
+                // Remove Observer
+                asynchronousFetchProgress.removeObserver(self, forKeyPath: "completedUnitCount")
+            }
         }
         
-        // Create Progress
-        //        let progress = Progress(totalUnitCount: 1)
-        //
-        //        // Become Current
-        //        progress.becomeCurrent(withPendingUnitCount: 1)
+        /// Create Progress
+        let progress = Progress(totalUnitCount: 1)
+
+        /// Become Current
+        progress.becomeCurrent(withPendingUnitCount: 1)
         
         do {
             // Execute Asynchronous Fetch Request
@@ -484,7 +482,7 @@ extension LocalStorage {
             completion(nil, NodeError.generalError("Unable to fetch data"))
         }
         
-        //        progress.resignCurrent()
+        progress.resignCurrent()
     }
     
     func deleteAccountAsync(_ address: EthereumAddress, completion: @escaping (NodeError?) -> Void) async {

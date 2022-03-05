@@ -8,21 +8,18 @@
 import XCTest
 import web3swift
 import BigInt
-import Combine
-import MultipeerConnectivity
 
 @testable import LedgerLinkV2
 
 final class NodeTests: XCTestCase {
-    var storage = Set<AnyCancellable>()
-    
+
     func test_createNewBlock() {
         Node.shared.deleteAll()
         for i in 0...5 {
             Node.shared.createBlock { (lightBlock: LightBlock) in
                 XCTAssertEqual(lightBlock.number, Int32(i + 1))
                 
-                Node.shared.fetch(lightBlock.id) { (fetchedBlocks: [LightBlock]?, error: NodeError?) in
+                Node.shared.fetch(.lightBlockId(lightBlock.id)) { (fetchedBlocks: [LightBlock]?, error: NodeError?) in
                     if let error = error {
                         XCTAssertNil(error)
                     }
@@ -275,7 +272,7 @@ final class NodeTests: XCTestCase {
                 fatalError(error.localizedDescription)
             }
             
-            Node.shared.fetch(block.hash.toHexString(), completion: { (fetchedBlocks: [FullBlock]?, error: NodeError?) in
+            Node.shared.fetch(.lightBlockId(block.hash.toHexString()), completion: { (fetchedBlocks: [FullBlock]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -329,8 +326,15 @@ final class NodeTests: XCTestCase {
             
             /// Verify the new block
             Node.shared.verifyBlock()
-            
         }
+        
+        guard let lightNode0 = try? LightBlock(data: genesisBlock),
+              let lightNode1 = try? LightBlock(data: newBlock) else {
+            return
+        }
+        
+        let isValid = Node.shared.isBlockchainValid([lightNode0, lightNode1])
+        print("isValid", isValid)
     }
     
     func test_fetch() {
@@ -340,7 +344,7 @@ final class NodeTests: XCTestCase {
                 fatalError()
             }
             
-            Node.shared.fetch(transactions[0].hash?.toHexString()) { (results: [EthereumTransaction]?, error: NodeError?) in
+            Node.shared.fetch(.treeConfigTxId(transactions[0].hash!.toHexString())) { (results: [EthereumTransaction]?, error: NodeError?) in
                 if let error = error {
                     print(error)
                     fatalError()
@@ -351,5 +355,66 @@ final class NodeTests: XCTestCase {
                 }
             }
         }
+    }
+    
+    func test_test() {
+        var sortedBlocks = lightBlocks
+        quicksortDutchFlag(&sortedBlocks, low: 0, high: blocks.count - 1)
+        print(sortedBlocks)
+    }
+    
+    func test_get() {
+        verifyValidator { isTrue in
+            print(isTrue)
+        }
+    }
+    
+    func verifyValidator(completion: @escaping (Bool) -> Void) {
+        guard let genesisBlock = try? FullBlock(number: BigUInt(0), parentHash: binaryHashes[0], transactionsRoot: binaryHashes[0], stateRoot: binaryHashes[0], receiptsRoot: binaryHashes[0], miner: addresses[0].address, transactions: treeConfigurableTransactions, accounts: treeConfigurableAccounts) else { fatalError("blocks vector error") }
+        
+        /// Get the genesis block
+        try! Node.shared.localStorage.saveBlock(block: genesisBlock) { error in
+            if let error = error {
+                print(error)
+            }
+            
+            Node.shared.localStorage.getBlock(Int32(0)) { block, error in
+                if let error = error {
+                    print(error as Any)
+                    completion(false)
+                    return
+                }
+                
+                if let block = block {
+                    print(block)
+                }
+            }
+            
+//            Node.shared.localStorage.getBlock(from: Int32(0), format: "number == %i") { (blocks: FullBlock?, error: NodeError?) in
+//                if let error = error {
+//                    print(error as Any)
+//                    completion(false)
+//                    return
+//                }
+//
+//                print("blocks", blocks as Any)
+//
+//                guard let blocks = blocks, let genesisBlock = blocks.first else {
+//                    completion(false)
+//                    return
+//                }
+//
+//                print("genesisBlock", genesisBlock)
+//                completion(true)
+//            }
+        }
+    }
+    
+    func test_100() {
+        let address = EthereumAddress("0x18cD9fDa7d584401D04E30bf73FB0013EfE65bb0")!
+        var tx = EthereumTransaction(nonce: BigUInt(0), to: address, value: BigUInt(100), data: Data())
+        tx.UNSAFE_setChainID(BigUInt(111111))
+        
+        print(tx.intrinsicChainID)
     }
 }

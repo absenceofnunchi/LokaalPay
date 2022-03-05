@@ -25,18 +25,22 @@ final class CoreDataTests: XCTestCase {
     
     /// Batch insert, fetch, and delete
     func test_batch_operations() async {
+        /// batch delete to refresh
         do {
             try await Node.shared.localStorage.deleteAllAccountsAsync()
         } catch {
             fatalError(error.localizedDescription)
         }
         
+        /// batch insert
         do {
-            try Node.shared.localStorage.saveStatesAsync(treeConfigurableAccounts)
+            try await Node.shared.localStorage.saveStatesAsync(treeConfigurableAccounts)
         } catch {
             fatalError(error.localizedDescription)
         }
         
+        
+        /// batch fetch
         await Node.shared.localStorage.getAllAccountsAsync { [weak self] (results: [Account]?, error: NodeError?) in
             if let error = error {
                 self?.parseError(error)
@@ -368,12 +372,10 @@ final class CoreDataTests: XCTestCase {
         }
 
         /// Duplicate update
-        for treeConfigTx in treeConfigurableTransactions {
-            do {
-                try await Node.shared.localStorage.saveTransactionAsync(treeConfigTx)
-            } catch {
-                fatalError(error.localizedDescription)
-            }
+        do {
+            try await Node.shared.localStorage.saveTransactionAsync(treeConfigurableTransactions[0])
+        } catch {
+            fatalError(error.localizedDescription)
         }
 
         /// Confirm that no duplicate exists
@@ -545,13 +547,10 @@ final class CoreDataTests: XCTestCase {
                     }
                     
                     if let accts = accts {
-                        print("accounts.count", accounts.count)
-                        print("accts.count", accts.count)
                         XCTAssertEqual(accounts.count, accts.count)
                     }
                 }
             }
-            
         }
     }
     
@@ -668,7 +667,7 @@ final class CoreDataTests: XCTestCase {
         
         // MARK: - fetch individual
         for account in accounts {
-            Node.shared.fetch(account.address.address) { (results: [Account]?, error: NodeError?) in
+            Node.shared.fetch(.addressString(account.address.address)) { (results: [Account]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -682,7 +681,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for account in treeConfigurableAccounts {
-            Node.shared.fetch(account.id) { (results: [TreeConfigurableAccount]?, error: NodeError?) in
+            Node.shared.fetch(.treeConfigAccountId(account.id)) { (results: [TreeConfigurableAccount]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -697,7 +696,7 @@ final class CoreDataTests: XCTestCase {
         
         for transaction in transactions {
             guard let hash = transaction.getHash() else { return }
-            Node.shared.fetch(hash) { (results: [EthereumTransaction]?, error: NodeError?) in
+            Node.shared.fetch(.treeConfigTxId(hash)) { (results: [EthereumTransaction]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -715,7 +714,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for transaction in treeConfigurableTransactions {
-            Node.shared.fetch(transaction.id) { (results: [TreeConfigurableTransaction]?, error: NodeError?) in
+            Node.shared.fetch(.treeConfigTxId(transaction.id)) { (results: [TreeConfigurableTransaction]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -730,7 +729,7 @@ final class CoreDataTests: XCTestCase {
         
         for receipt in receipts {
             guard let hash = receipt.getHash() else { return }
-            Node.shared.fetch(hash) { (results: [TransactionReceipt]?, error: NodeError?) in
+            Node.shared.fetch(.treeConfigReceiptId(hash)) { (results: [TransactionReceipt]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -748,7 +747,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for receipt in treeConfigurableReceipts {
-            Node.shared.fetch(receipt.id) { (results: [TreeConfigurableReceipt]?, error: NodeError?) in
+            Node.shared.fetch(.treeConfigReceiptId(receipt.id)) { (results: [TreeConfigurableReceipt]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -762,7 +761,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for block in blocks {
-            Node.shared.fetch(block.hash.toHexString()) { (results: [FullBlock]?, error: NodeError?) in
+            Node.shared.fetch(.fullBlockHash(block.hash)) { (results: [FullBlock]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -776,7 +775,7 @@ final class CoreDataTests: XCTestCase {
         }
         
         for block in lightBlocks {
-            Node.shared.fetch(block.id) { (results: [LightBlock]?, error: NodeError?) in
+            Node.shared.fetch(.lightBlockId(block.id)) { (results: [LightBlock]?, error: NodeError?) in
                 if let error = error {
                     fatalError(error.localizedDescription)
                 }
@@ -786,28 +785,6 @@ final class CoreDataTests: XCTestCase {
                     XCTAssertEqual(results.count, 1)
                     XCTAssertEqual(result, block)
                 }
-            }
-        }
-    }
-    
-    func test_test() {
-        let tx = transactions[0]
-        guard let rlpEncoded = tx.encode(),
-        let compressed = rlpEncoded.compressed else { return }
-        
-        let hash = compressed.sha256().toHexString()
-        print("hash", hash)
-        
-        
-        
-        Node.shared.fetch(hash) { (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
-            if let error = error {
-                print(error)
-                return
-            }
-            
-            if let txs = txs {
-                print("txs", txs)
             }
         }
     }

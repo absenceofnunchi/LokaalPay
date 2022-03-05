@@ -103,8 +103,11 @@ final class NetworkManager: NSObject {
         guard isServerRunning else { return }
         
         if session.connectedPeers.count == 0 {
-//            suspend()
-            start()
+            guard isServerRunning == true else { return }
+            self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
+            self.nearbyServiceAdvertiser.delegate = self
+            self.nearbyServiceAdvertiser?.startAdvertisingPeer()
+            self.nearbyBrowser.startBrowsingForPeers()
         }
 
         /// The relay history has to be refreshed
@@ -182,45 +185,7 @@ extension NetworkManager: MCSessionDelegate {
 
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
 //        print("didReceive", data)
-        
         Node.shared.processTransaction(data, peerID: peerID)
-       
-        
-//        let queue = OperationQueue()
-//
-//        /// Non-transactions don't have to go through the queue such as the blockchain data sent from peers as a response to the request to update the local blockchain
-//        if let uncompressed = data.decompressed {
-//            if let packet = try? JSONDecoder().decode(Packet.self, from: uncompressed) {
-//                /// Blockchain data received from peers to update the local blockchain.  This means your device has requested the blockchain info from another peer either during the creation of wallet or during the contract method execution.
-//                parsePacket(packet)
-//            } else if let lightBlock = try? JSONDecoder().decode(LightBlock.self, from: data) {
-//                /// New block received from peers on a regular interval.
-//                parseBlock(lightBlock)
-//            }
-//        } else if let blockNumber = try? JSONDecoder().decode(Int32.self, from: data) {
-//            print("block request received from \(peerID) for \(session.myPeerID)", blockNumber as Any)
-//            /// Received a request to send over blockchain, accounts, and transactions.  Only the latest block number is needed to know how many blocks to send over.
-//            sendBlockchain(blockNumber, format: "number > %i", peerID: peerID)
-//        } else if let rlpDataArray = data.decompressedToArray {
-//            print("rlpDataArray", rlpDataArray as Any)
-//            /// Parse an array of RLP-encoded transactions sent from peers and add them to the queue
-//            for rlpData in rlpDataArray {
-//                let parseOperation = ParseTransactionOperation(rlpData: rlpData, peerID: peerID)
-//                let contractMethodOperation = ContractMethodOperation()
-//                contractMethodOperation.addDependency(parseOperation)
-//
-//                queue.addOperations([parseOperation, contractMethodOperation], waitUntilFinished: true)
-//                print("Operation finished with: \(contractMethodOperation.result!)")
-//            }
-//        } else {
-//            print("single RLP")
-//            /// Parse a single uncompressed, RLP-encoded transaction and add it to the queue. Account creation and value transfer are sent this way.
-//            let parseOperation = ParseTransactionOperation(rlpData: data, peerID: peerID)
-//            let contractMethodOperation = ContractMethodOperation()
-//            contractMethodOperation.addDependency(parseOperation)
-//            queue.addOperations([parseOperation, contractMethodOperation], waitUntilFinished: true)
-//            print("Operation finished with: \(contractMethodOperation.result!)")
-//        }
     }
     
     func relayBlock(_ blockData: Data) {
@@ -289,7 +254,7 @@ extension NetworkManager: MCSessionDelegate {
 //        }
         
         do {
-            let block: LightBlock? = try Node.shared.localStorage.getLastestBlockSync()
+            let block: LightBlock? = try Node.shared.localStorage.getLatestBlock()
             /// local blockchain may or may not exists
             let blockNumber = block?.number ?? Int32(0)
             let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
@@ -317,7 +282,7 @@ extension NetworkManager: MCSessionDelegate {
     
     /// Send blockchain as a response to a peer's request. Only the blocks need to be sent because the relational transactions and accounts are created upon arrival.
     func sendBlockchain(_ blockNumber: Int32, format: String, peerID: MCPeerID) {
-        Node.shared.localStorage.getBlocks(from: blockNumber, format: format) { (blocks: [LightBlock]?, error: NodeError?) in
+        Node.shared.localStorage.getBlocks(blockNumber, format: format) { (blocks: [LightBlock]?, error: NodeError?) in
             if let error = error {
                 print("sendBlockchain error", error)
                 return
@@ -331,7 +296,7 @@ extension NetworkManager: MCSessionDelegate {
                     let encodedMethod = try JSONEncoder().encode(contractMethod)
                     NetworkManager.shared.sendData(data: encodedMethod, peers: [peerID], mode: .reliable)
                 } catch {
-                   print("Unable to encode data", error)
+                    print("Unable to encode data", error)
                 }
             }
         }
@@ -461,32 +426,11 @@ extension NetworkManager: MCNearbyServiceAdvertiserDelegate {
     }
 }
 
-//extension NetworkManager: MCBrowserViewControllerDelegate {
-//    func browserViewControllerDidFinish(_ browserViewController: MCBrowserViewController) {
-//        dismiss(animated: true)
-//    }
-//
-//    func browserViewControllerWasCancelled(_ browserViewController: MCBrowserViewController) {
-//        dismiss(animated: true)
-//    }
-//}
-
 // MARK: - MCNearbyServiceBrowserDelegate
 extension NetworkManager: MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         print("foundPeer", peerID)
         browser.invitePeer(peerID, to: session, withContext: nil, timeout: 0)
-
-        //        session.nearbyConnectionData(forPeer: peerID) { [weak self] (data, error) in
-        //            if let error = error {
-        //                print("nearby error", error)
-        //            }
-        //
-        //            if let data = data {
-        //                print("connectPeer", data)
-        //                self?.session.connectPeer(peerID, withNearbyConnectionData: data)
-        //            }
-        //        }
     }
 
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {

@@ -204,13 +204,8 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
         self.decodedTx = decodedTx
         self.decodedExtraData = decodedExtraData
         
-        guard let compressed = rlpData.compressed else {
-            self.finish(with: .failure(NodeError.generalError("Compression of RLP-encoded data error")))
-            return
-        }
-        
         /// 2. Check if the transaction already exists. Abort if it already exists
-        Node.shared.fetch(compressed.sha256().toHexString()) { [weak self] (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
+        Node.shared.fetch(.transactionRLP(rlpData)) { [weak self] (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
             if let error = error {
                 self?.finish(with: .failure(error))
                 return
@@ -249,7 +244,7 @@ final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (Transa
                     /// Send a portion of the blockchain to the peer whose blockchain isn't up-to-date and proceed with the rest of the transaction.
                     guard let self = self,
                           let convertedNumber = Int32(decodedExtraData.latestBlockNumber.description) else { return }
-                    NetworkManager.shared.sendBlockchain(convertedNumber, format: "number > %i", peerID: self.peerID)
+                    NetworkManager.shared.sendBlockchain(convertedNumber, format: "number >= %i", peerID: self.peerID)
                     self.finish(with: .success((decodedExtraData, decodedTx)))
                 } else if block.number < decodedExtraData.latestBlockNumber {
                     print("3")

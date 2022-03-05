@@ -165,7 +165,7 @@ extension ExplorerViewController: ScannerDelegate {
         
         switch tag {
             case 0:
-                Node.shared.fetch(text) { [weak self](results: [TreeConfigurableAccount]?, error: NodeError?) in
+                Node.shared.fetch(.addressString(text)) { [weak self](results: [TreeConfigurableAccount]?, error: NodeError?) in
                     if let error = error {
                         print(error)
                     }

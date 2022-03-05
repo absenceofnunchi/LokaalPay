@@ -65,21 +65,37 @@ extension LocalStorage {
             throw NodeError.generalError("Unable to fetch blocks")
         }
     }
-    /// Fetch a full block using a full block
-    func getBlock(_ fullBlock: FullBlock) throws -> FullBlock? {
-        let lightBlock = try LightBlock(data: fullBlock)
-        let convertedNumber = Int32(lightBlock.number)
+    
+    func getBlock(_ number: Int32, completion: @escaping (FullBlock?, NodeError?) -> Void) {
         let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
-        requestBlock.predicate = NSPredicate(format: "number == %i", convertedNumber)
+        requestBlock.predicate = NSPredicate(format: "number == %i", number)
         
         do {
             let results = try context.fetch(requestBlock)
-            guard let result = results.first else { return nil }
-            return LightBlock.fromCoreData(crModel: result)
+            guard let result = results.first else {
+                completion(nil, nil)
+                return
+            }
+            let block: FullBlock? = LightBlock.fromCoreData(crModel: result)
+            completion(block, nil)
         } catch {
-            throw NodeError.generalError("Unable to fetch blocks")
+            completion(nil, NodeError.generalError("Unable to fetch blocks"))
         }
     }
+    
+    func getBlocks(_ number: Int32, format: String = "number == %i", completion: @escaping ([LightBlock]?, NodeError?) -> Void) {
+        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
+        requestBlock.predicate = NSPredicate(format: format, number)
+        
+        do {
+            let results = try context.fetch(requestBlock)
+            let blocks: [LightBlock] = results.compactMap { LightBlock.fromCoreData(crModel: $0) }
+            completion(blocks, nil)
+        } catch {
+            completion(nil, NodeError.generalError("Unable to fetch blocks"))
+        }
+    }
+    
     
     func getBlocks(from number: Int32, format: String, completion: @escaping ([LightBlock]?, NodeError?) -> Void) {
         guard number >= 0 else {
@@ -144,23 +160,6 @@ extension LocalStorage {
             let fetchError = error as NSError
             print("\(fetchError), \(fetchError.userInfo)")
             completion(nil, NodeError.generalError("Unable to fetch data"))
-        }
-    }
-    
-    /// Fetch the latest light block synchronously
-    func getLastestBlockSync() throws -> LightBlock? {
-        let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()
-        requestBlock.fetchLimit = 1
-        requestBlock.returnsObjectsAsFaults = false
-        let sortDescriptor = NSSortDescriptor(key: "number", ascending: false)
-        requestBlock.sortDescriptors = [sortDescriptor]
-        
-        do {
-            let results = try context.fetch(requestBlock)
-            guard let result = results.first else { return nil }
-            return LightBlock.fromCoreData(crModel: result)
-        } catch {
-            throw NodeError.generalError("Unable to fetch blocks")
         }
     }
     
@@ -369,6 +368,8 @@ extension LocalStorage {
                     }
                 }
                 
+                /// TODO: either fetch the existing accounts and delete them prior to saving the new ones
+                /// or when the accounts are normally fetched, fetch the accounts that is tied to the lastest block only.
                 if let accounts = block.accounts {
                     for account in accounts {
                         let stateObject = StateCoreData(context: taskContext)

@@ -77,8 +77,8 @@ final class Node {
         localStorage.saveSync(elements, completion: completion)
     }
     
-    func fetch<T: CoreDatable>(_ predicateString: String? = nil, format: String = "id == %@", completion: @escaping ([T]?, NodeError?) -> Void) {
-        localStorage.fetch(predicateString, format: format, completion: completion)
+    func fetch<T: CoreDatable>(_ predicate: FetchPredicate? = nil, format: String = "id == %@", completion: @escaping ([T]?, NodeError?) -> Void) {
+        localStorage.fetch(predicate, format: format, completion: completion)
     }
     
     func delete<T: CoreDatable>(_ element: T) {
@@ -99,12 +99,12 @@ final class Node {
      3. Update both accounts with the updated balances to Core Data.
      */
     func transfer(transaction: EthereumTransaction) {
-        guard let address = transaction.sender?.address else { return }
+        guard let addressString = transaction.sender?.address else { return }
         
         Deferred {
             /// Sender's account. Subtract the value from the sender's balance
             Future<Account, NodeError> { [weak self] promise in
-                self?.fetch(address) { (accounts: [Account]?, error: NodeError?) in
+                self?.fetch(.addressString(addressString)) { (accounts: [Account]?, error: NodeError?) in
                     if let error = error {
                         promise(.failure(error))
                     }
@@ -130,7 +130,7 @@ final class Node {
         .flatMap { [weak self] (sender) -> AnyPublisher<[Account], NodeError> in
             /// Recipient's account. Add the value to the balance
             Future<[Account], NodeError> { promise in
-                self?.fetch(transaction.to.address) { (accounts: [Account]?, error: NodeError?) in
+                self?.fetch(.addressString(transaction.to.address)) { (accounts: [Account]?, error: NodeError?) in
                     if let error = error {
                         promise(.failure(error))
                     }
@@ -145,6 +145,7 @@ final class Node {
                         let finalAccounts = [sender, recipient]
                         promise(.success(finalAccounts))
                     } else {
+                        /// TODO: the newly created account should somehow be eligible for the host's credits
                         let password = Int.random(in: 1000...9999)
                         guard let newWallet = try? EthereumKeystoreV3(password: "\(password)") else {
                             promise(.failure(.generalError("Unable to generate a new address")))
@@ -196,13 +197,12 @@ final class Node {
     func getMyAccount(completion: @escaping (Account?, NodeError?) -> Void) {
         do {
             let wallet = try localStorage.getWallet()
-            guard let address = wallet?.address else { return }
-            print("address in getMyAccount", address as Any)
-            fetch(address) { (accounts: [Account]?, error: NodeError?) in
+            guard let addressString = wallet?.address else { return }
+            fetch(.addressString(addressString)) { (accounts: [Account]?, error: NodeError?) in
                 if let _ = error {
-                    completion(nil, NodeError.generalError("Unable to fetch the wallet"))
+                    completion(nil , error)
                 }
-                
+
                 if let accounts = accounts, let account = accounts.first {
                     completion(account, nil)
                 }
@@ -212,7 +212,18 @@ final class Node {
         }
     }
     
-    func createWallet(password: String, chainID: String, isHost: Bool = false, completion: @escaping (Bool) -> Void) {
+    func getMyAccount() -> Account? {
+        do {
+            let wallet = try localStorage.getWallet()
+            guard let addressString = wallet?.address else { return nil }
+            return try localStorage.getAccount(addressString)
+        } catch {
+            print(error)
+            return nil
+        }
+    }
+    
+    func createWallet(password: String, chainID: String, isHost: Bool = false, completion: @escaping (Data) -> Void) {
         Deferred {
             Future<KeyWalletModel, NodeError> { promise in
                 KeysService().createNewWallet(password: password) { (keyWalletModel, error) in
@@ -264,12 +275,12 @@ final class Node {
                 }
                 .eraseToAnyPublisher()
             }
-            .flatMap { [weak self] data -> AnyPublisher<Bool, NodeError> in
-                Future<Bool, NodeError> { promise in
+            .flatMap { [weak self] data -> AnyPublisher<Data, NodeError> in
+                Future<Data, NodeError> { promise in
                     if isHost {
                         self?.mintGenesisBlock(transactionData: data, promise: promise)
                     } else {
-                        promise(.success(true))
+                        promise(.success(data))
                     }
                 }
                 .eraseToAnyPublisher()
@@ -284,8 +295,8 @@ final class Node {
                     print("createWallet finished")
                     break
             }
-        } receiveValue: { isFinished in
-            completion(isFinished)
+        } receiveValue: { data in
+            completion(data)
         }
         .store(in: &storage)
     }
@@ -293,65 +304,58 @@ final class Node {
     /// Create a genesis block and save to Core Data
     /// Create a second block and add it to the unvalidated pool of blocks.
     /// The genesis block and the second block will be compared by the node and proceed to creating another block.
-    func mintGenesisBlock(transactionData: Data, promise: @escaping (Result<Bool, NodeError>) -> Void) {
+    func mintGenesisBlock(transactionData: Data, promise: @escaping (Result<Data, NodeError>) -> Void) {
         print("mintGenesisBlock----------------")
         
-        getMyAccount { [weak self] (account, error) in
-            if let error = error {
-                promise(.failure(error))
+        guard let account = getMyAccount() else {
+            print("unable to get my account")
+            return
+        }
+        
+        do {
+            let treeConfigTx = try TreeConfigurableTransaction(rlpTransaction: transactionData)
+            let treeConfigAcct = try TreeConfigurableAccount(data: account)
+            
+            let defaultString = "0x0000000000000000000000000000000000000000"
+            guard let defaultStateData = defaultString.data(using: .utf8) else {
+                promise(.failure(.generalError("Unable to prepare the default data")))
+                return
+            }
+            guard case .Node(hash: let stateRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: [defaultStateData]) else {
+                promise(.failure(.generalError("Unable to get the state root")))
                 return
             }
             
-            guard let account = account else {
-                promise(.failure(.generalError("Unable to fetch your own account")))
+            guard case .Node(hash: let transactionsRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: [transactionData]) else {
+                promise(.failure(.generalError("Unable to get the transaction root")))
                 return
             }
-
-            do {
-                let treeConfigTx = try TreeConfigurableTransaction(rlpTransaction: transactionData)
-                let treeConfigAcct = try TreeConfigurableAccount(data: account)
-
-                let defaultString = "0x0000000000000000000000000000000000000000"
-                guard let defaultStateData = defaultString.data(using: .utf8) else {
-                    promise(.failure(.generalError("Unable to prepare the default data")))
-                    return
+            
+            let genesisBlock = try FullBlock(number: 0, parentHash: Data(), nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: [treeConfigTx], accounts: [treeConfigAcct])
+            
+            /// Second block is needed because a block creation only begins when two consecutive blocks are compared
+            //                let secondBlock = try FullBlock(number: 1, parentHash: genesisBlock.hash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: nil, accounts: nil)
+            
+            /// Genesis block is saved because it requires no validation
+            self.saveSync([genesisBlock]) { (error) in
+                if let error = error {
+                    promise(.failure(error))
                 }
-                guard case .Node(hash: let stateRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: [defaultStateData]) else {
-                    promise(.failure(.generalError("Unable to get the state root")))
-                    return
-                }
-
-                guard case .Node(hash: let transactionsRoot, datum: _, left: _, right: _) = try MerkleTree.buildTree(fromData: [transactionData]) else {
-                    promise(.failure(.generalError("Unable to get the transaction root")))
-                    return
-                }
-
-                let genesisBlock = try FullBlock(number: 0, parentHash: Data(), nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: [treeConfigTx], accounts: [treeConfigAcct])
-
-                /// Second block is needed because a block creation only begins when two consecutive blocks are compared
-//                let secondBlock = try FullBlock(number: 1, parentHash: genesisBlock.hash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: nil, accounts: nil)
-
-                /// Genesis block is saved because it requires no validation
-                self?.saveSync([genesisBlock]) { (error) in
-                    if let error = error {
-                        promise(.failure(error))
-                    }
+                
+                do {
+                    let lightBlock = try LightBlock(data: genesisBlock)
+                    let encoded = try JSONEncoder().encode(lightBlock)
+                    let contractMethod = ContractMethod.sendBlock(encoded)
+                    let encodedMethod = try JSONEncoder().encode(contractMethod)
+                    NetworkManager.shared.sendDataToAllPeers(data: encodedMethod)
                     
-                    do {
-                        let lightBlock = try LightBlock(data: genesisBlock)
-                        let encoded = try JSONEncoder().encode(lightBlock)
-                        let contractMethod = ContractMethod.sendBlock(encoded)
-                        let encodedMethod = try JSONEncoder().encode(contractMethod)
-                        NetworkManager.shared.sendDataToAllPeers(data: encodedMethod)
-
-                        promise(.success(true))
-                    } catch {
-                        promise(.failure(.generalError(error.localizedDescription)))
-                    }
+                    promise(.success(encodedMethod))
+                } catch {
+                    promise(.failure(.generalError(error.localizedDescription)))
                 }
-            } catch {
-                promise(.failure(.generalError(error.localizedDescription)))
             }
+        } catch {
+            promise(.failure(.generalError(error.localizedDescription)))
         }
     }
     
@@ -441,12 +445,15 @@ final class Node {
                 case .blockchainDownloadRequest(let blockNumber):
                     /// Blockchain requested by the sender. Therefore, send the requested blockchain.
                     /// Usually requested when an account is newly created
-                    NetworkManager.shared.sendBlockchain(blockNumber, format: "number > %i", peerID: peerID)
+                    NetworkManager.shared.sendBlockchain(blockNumber, format: "number >= %i", peerID: peerID)
                     break
                 case .blockchainDownloadResponse(let packet):
                     /// Parse the requested blockchain
                     /// Non-transactions don't have to go through the queue such as the blockchain data sent from peers as a response to the request to update the local blockchain
                     /// Blockchain data received from peers to update the local blockchain.  This means your device has requested the blockchain info from another peer either during the creation of wallet or during the contract method execution.
+                    
+                    print("blockchainDownloadResponse packet", packet)
+                    
                     guard let blocks = packet.blocks else { return }
                     if isBlockchainValid(blocks) {
                         parsePacket(packet)
@@ -464,9 +471,10 @@ final class Node {
                 case .blockchainDownloadAllRequest:
                     /// Request a complete blockchain.
                     /// This is used when a new block to be added is incompatible with the local blockchain and needs a complete overhaul.
-                    NetworkManager.shared.sendBlockchain(Int32(0), format: "number > %i", peerID: peerID)
+                    NetworkManager.shared.sendBlockchain(Int32(0), format: "number >= %i", peerID: peerID)
                     break
                 case .blockchainDownloadAllResponse(let packet):
+                    print(packet)
 //                    deleteAll()
 //                    guard let blocks = packet.blocks else { return }
 //                    if isBlockchainValid(blocks) {
@@ -500,7 +508,7 @@ final class Node {
                 case .blockchainDownloadRequest(let blockNumber):
                     /// Blockchain request by the sender. Therefore, send the requested blockchain.
                     /// Usually requested when an account is newly created
-                    NetworkManager.shared.sendBlockchain(blockNumber, format: "number > %i", peerID: peerID)
+                    NetworkManager.shared.sendBlockchain(blockNumber, format: "number >= %i", peerID: peerID)
                     break
                 case .blockchainDownloadResponse(let packet):
                     /// Parse the requested blockchain
@@ -523,7 +531,7 @@ final class Node {
                 case .blockchainDownloadAllRequest:
                     /// Request a complete blockchain.
                     /// This is used when a new block to be added is incompatible with the local blockchain and needs a complete overhaul.
-                    NetworkManager.shared.sendBlockchain(Int32(0), format: "number > %i", peerID: peerID)
+                    NetworkManager.shared.sendBlockchain(Int32(0), format: "number >= %i", peerID: peerID)
                     break
                 case .blockchainDownloadAllResponse(let packet):
                     deleteAll()
@@ -578,7 +586,7 @@ final class Node {
         }
 
         /// 3. Validate the transaction by checking for duplicates in the blockchain
-        Node.shared.fetch(transactionHash) { (txs: [EthereumTransaction]?, error: NodeError?) in
+        Node.shared.fetch(.treeConfigTxId(transactionHash)) { (txs: [EthereumTransaction]?, error: NodeError?) in
             if let error = error {
                 print("fetch error", error)
                 completion((nil, nil), error)
@@ -604,14 +612,9 @@ final class Node {
             return
         }
         
-        Node.shared.localStorage.getLatestBlock { [weak self] (block: FullBlock?, error: NodeError?) in
-            if let error = error {
-                print(error)
-                return
-            }
-            
+        do {
+            let block: FullBlock? = try localStorage.getLatestBlock()
             if let block = block {
-                /// Only save the blocks that are greater in its block number than then the already existing blocks.
                 let nonExistingBlocks = blocks.filter { $0.number > block.number }
                 /// There is a chance that the local blockchain size might have increased during the transfer. If so, ignore the received block
                 if nonExistingBlocks.count > 0 {
@@ -621,10 +624,9 @@ final class Node {
                                 print("parse packet set error1", error)
                                 return
                             }
-                            
-                            self?.downloadDelegate?.didReceiveBlockchain()
                         }
                     }
+                    self.downloadDelegate?.didReceiveBlockchain()
                 }
             } else {
                 /// no local blockchain exists yet because it's a brand new account
@@ -636,12 +638,53 @@ final class Node {
                             print("parse packet set error1", error)
                             return
                         }
-                        
-                        self?.downloadDelegate?.didReceiveBlockchain()
                     }
                 }
+                self.downloadDelegate?.didReceiveBlockchain()
             }
+        } catch {
+            print("parse packet error", error)
         }
+        
+        
+//        Node.shared.localStorage.getLatestBlock { [weak self] (block: FullBlock?, error: NodeError?) in
+//            if let error = error {
+//                print(error)
+//                return
+//            }
+//
+//            if let block = block {
+//                /// Only save the blocks that are greater in its block number than then the already existing blocks.
+//                let nonExistingBlocks = blocks.filter { $0.number > block.number }
+//                /// There is a chance that the local blockchain size might have increased during the transfer. If so, ignore the received block
+//                if nonExistingBlocks.count > 0 {
+//                    for nonExistingBlock in nonExistingBlocks {
+//                        Node.shared.localStorage.saveRelationalBlock(block: nonExistingBlock) { error in
+//                            if let error = error {
+//                                print("parse packet set error1", error)
+//                                return
+//                            }
+//
+//                            self?.downloadDelegate?.didReceiveBlockchain()
+//                        }
+//                    }
+//                }
+//            } else {
+//                /// no local blockchain exists yet because it's a brand new account
+//                /// delete potentially existing ones since no transactions could've/should've been occured
+//                Node.shared.deleteAll()
+//                for block in blocks {
+//                    Node.shared.localStorage.saveRelationalBlock(block: block) { error in
+//                        if let error = error {
+//                            print("parse packet set error1", error)
+//                            return
+//                        }
+//
+//                        self?.downloadDelegate?.didReceiveBlockchain()
+//                    }
+//                }
+//            }
+//        }
         
         /// Following are only for non-relational Core Data
         /// Relational Core Data automatically saves the related entities for us.
@@ -667,13 +710,19 @@ final class Node {
     }
     
     /// Calculate the block hash for each block and verify that the latest block has the correct hash
-    /// This method is usually executed when you receive the blockchain from peers.
-    private func isBlockchainValid(_ blocks: [LightBlock]) -> Bool {
-        guard blocks.count > 2 else { return true }
+    /// This method is usually executed when you download a whole blockchain from peers, not when the validator regularly sends a block
+    func isBlockchainValid(_ blocks: [LightBlock]) -> Bool {
+        guard blocks.count > 1 else { return true }
+                
+        /// Only unique blocks have to exist
+        var sortedBlocks = blocks.uniqued()
         
-        for i in 0 ..< blocks.count - 1 {
-            guard let fullBlock = blocks[i].decode(),
-                  let nextBlock = blocks[i + 1].decode() else { return false }
+        /// Sort them according to the block number to compare the hash against the parent hash
+        quicksortDutchFlag(&sortedBlocks, low: 0, high: blocks.count - 1)
+        
+        for i in 0 ..< sortedBlocks.count - 1 {
+            guard let fullBlock = sortedBlocks[i].decode(),
+                  let nextBlock = sortedBlocks[i + 1].decode() else { return false }
             let blockHash = try? fullBlock.generateBlockHash()
             if (fullBlock.hash == blockHash) && (nextBlock.parentHash == blockHash) {
                 continue
