@@ -17,5 +17,6 @@ struct TransactionExtraData: Codable {
 //    var contractMethod: Data?
     var account: Account? = nil
     var timestamp = Date()
-    var latestBlockNumber: BigUInt
+    let latestBlockNumber: BigUInt
+    let chainID: BigUInt
 }

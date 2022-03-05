@@ -186,6 +186,7 @@ final class WalletViewController: UIViewController {
     
     /// Send value to a peer
     private func send() throws {
+        showSpinner()
         view.endEditing(true)
         
         guard let address = receivedTextField.text,
@@ -206,8 +207,10 @@ final class WalletViewController: UIViewController {
             
             if let data = data {
                 NetworkManager.shared.sendDataToAllPeers(data: data)
+                /// For validators only to include the validated transactions in a block
                 Node.shared.addValidatedTransaction(data)
                 self?.sendAmountLabel.text = nil
+                self?.hideSpinner()
             }
         }
         

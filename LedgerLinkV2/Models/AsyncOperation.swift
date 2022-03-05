@@ -167,112 +167,112 @@ extension ChainedAsyncResultOperation: ChainedOperationOutputProviding {
 ///     A. If it is, proceed to the execution of the contract methods.
 ///     B. If not up-to-date, download the blockchain.
 ///     C. If the local is more up-to-date then the peer, send the rest of the blockchain to the peer.
-final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (TransactionExtraData, EthereumTransaction), NodeError> {
-    private var rlpData: Data // RLP encoded transaction
-    private var peerID: MCPeerID
-    private var decodedTx: EthereumTransaction!
-    private var decodedExtraData: TransactionExtraData!
-    
-    init(rlpData: Data, peerID: MCPeerID) {
-        self.rlpData = rlpData
-        self.peerID = peerID
-    }
-    
-    override func main() {
-        
-        /// 1. Verify signature
-        /// 2. Check if it already exists. If it does, do nothing. If it doesn't, propagate
-        /// 3. Check if the latest block matches the one you have
-        /// 4. Determine the purpose of the transaction by parsing the contract method
-        /// 5. For transferValue and createAccount, compare the block number to ensure the node is up-to-date.
-        ///     A. If not up-to-date, ping the sender peer to download the blockchain.
-        ///     B. If up-to-date, proceed
-        /// 6. Add the transactions to the validated pool to be added to a block.
-        
-        /// 1. Verify signature
-        guard let decodedTx = EthereumTransaction.fromRaw(rlpData),// RLP -> EthereumTransaction
-              let publicKey = decodedTx.recoverPublicKey(),
-              let senderAddress = Web3.Utils.publicToAddressString(publicKey),
-              let senderAddressToBeCompared = decodedTx.sender?.address,
-              senderAddress == senderAddressToBeCompared.lowercased(),
-              let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedTx.data) else {
-                  self.finish(with: .failure(NodeError.generalError("Unable to parse transaction")))
-                  return
-              }
-        
-        /// Retained to be used in Notification Center's listener
-        self.decodedTx = decodedTx
-        self.decodedExtraData = decodedExtraData
-        
-        /// 2. Check if the transaction already exists. Abort if it already exists
-        Node.shared.fetch(.transactionRLP(rlpData)) { [weak self] (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
-            if let error = error {
-                self?.finish(with: .failure(error))
-                return
-            }
-            
-            print("txs", txs as Any)
-            
-            /// No matching transaction exists in Core Data so proceed to process the transaction
-            guard let txs = txs, txs.count == 0  else {
-                self?.finish(with: .failure(NodeError.generalError("Already exists")))
-                return
-            }
-            
-            /// 3. Compare your node's latest block number to the lastest number provided by the transation
-            Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
-                if let error = error {
-                    self?.finish(with: .failure(error))
-                    return
-                }
-                
-                print("block", block as Any)
-                /// If both the latest block number from Core Data and the block number from the sender of the transaction are the same, proceed with the processing of the transaction
-                /// If you have a lower block number than the transaction's, request to download the rest of the blockchain.
-                /// If you have a higher block number, then send the rest of the blocks to the sender of the transaction
-                guard let block = block else {
-                    self?.finish(with: .failure(NodeError.generalError("Unable to determine the latest block")))
-                    return
-                }
-
-                if block.number == decodedExtraData.latestBlockNumber {
-                    print("1")
-                    /// The local blockchain is up-to-date and good to go . Transfer value or create account
-                    self?.finish(with: .success((decodedExtraData, decodedTx)))
-                } else if block.number > decodedExtraData.latestBlockNumber {
-                    print("2")
-                    /// Send a portion of the blockchain to the peer whose blockchain isn't up-to-date and proceed with the rest of the transaction.
-                    guard let self = self,
-                          let convertedNumber = Int32(decodedExtraData.latestBlockNumber.description) else { return }
-                    NetworkManager.shared.sendBlockchain(convertedNumber, format: "number >= %i", peerID: self.peerID)
-                    self.finish(with: .success((decodedExtraData, decodedTx)))
-                } else if block.number < decodedExtraData.latestBlockNumber {
-                    print("3")
-                    /// Current blockchain not up-to-date. Send a request to download a blockchain
-                    guard let peerID = self?.peerID else {
-                        self?.finish(with: .failure(NodeError.generalError("Unable to parse PeerID")))
-                        return
-                    }
-
-                    
-                    /// Prevent the isFinished KVO from being triggered until the blockchain is full updated.
-                    NetworkManager.shared.requestBlockchain(peerIDs: [peerID]) { error in
-                        if let error = error {
-                            self?.finish(with: .failure(error))
-                            return
-                        }
-                        
-                        self?.finish(with: .success((decodedExtraData, decodedTx)))
-                    }
-                }
-            }
-        }
-    }
-    
-    override func cancel() {
-        super.cancel()
-    }
-}
+//final class ParseTransactionOperation: ChainedAsyncResultOperation<Void, (TransactionExtraData, EthereumTransaction), NodeError> {
+//    private var rlpData: Data // RLP encoded transaction
+//    private var peerID: MCPeerID
+//    private var decodedTx: EthereumTransaction!
+//    private var decodedExtraData: TransactionExtraData!
+//
+//    init(rlpData: Data, peerID: MCPeerID) {
+//        self.rlpData = rlpData
+//        self.peerID = peerID
+//    }
+//
+//    override func main() {
+//
+//        /// 1. Verify signature
+//        /// 2. Check if it already exists. If it does, do nothing. If it doesn't, propagate
+//        /// 3. Check if the latest block matches the one you have
+//        /// 4. Determine the purpose of the transaction by parsing the contract method
+//        /// 5. For transferValue and createAccount, compare the block number to ensure the node is up-to-date.
+//        ///     A. If not up-to-date, ping the sender peer to download the blockchain.
+//        ///     B. If up-to-date, proceed
+//        /// 6. Add the transactions to the validated pool to be added to a block.
+//
+//        /// 1. Verify signature
+//        guard let decodedTx = EthereumTransaction.fromRaw(rlpData),// RLP -> EthereumTransaction
+//              let publicKey = decodedTx.recoverPublicKey(),
+//              let senderAddress = Web3.Utils.publicToAddressString(publicKey),
+//              let senderAddressToBeCompared = decodedTx.sender?.address,
+//              senderAddress == senderAddressToBeCompared.lowercased(),
+//              let decodedExtraData = try? JSONDecoder().decode(TransactionExtraData.self, from: decodedTx.data) else {
+//                  self.finish(with: .failure(NodeError.generalError("Unable to parse transaction")))
+//                  return
+//              }
+//
+//        /// Retained to be used in Notification Center's listener
+//        self.decodedTx = decodedTx
+//        self.decodedExtraData = decodedExtraData
+//
+//        /// 2. Check if the transaction already exists. Abort if it already exists
+//        Node.shared.fetch(.transactionRLP(rlpData)) { [weak self] (txs: [TreeConfigurableTransaction]?, error: NodeError?) in
+//            if let error = error {
+//                self?.finish(with: .failure(error))
+//                return
+//            }
+//
+//            print("txs", txs as Any)
+//
+//            /// No matching transaction exists in Core Data so proceed to process the transaction
+//            guard let txs = txs, txs.count == 0  else {
+//                self?.finish(with: .failure(NodeError.generalError("Already exists")))
+//                return
+//            }
+//
+//            /// 3. Compare your node's latest block number to the lastest number provided by the transation
+//            Node.shared.localStorage.getLatestBlock { (block: LightBlock?, error: NodeError?) in
+//                if let error = error {
+//                    self?.finish(with: .failure(error))
+//                    return
+//                }
+//
+//                print("block", block as Any)
+//                /// If both the latest block number from Core Data and the block number from the sender of the transaction are the same, proceed with the processing of the transaction
+//                /// If you have a lower block number than the transaction's, request to download the rest of the blockchain.
+//                /// If you have a higher block number, then send the rest of the blocks to the sender of the transaction
+//                guard let block = block else {
+//                    self?.finish(with: .failure(NodeError.generalError("Unable to determine the latest block")))
+//                    return
+//                }
+//
+//                if block.number == decodedExtraData.latestBlockNumber {
+//                    print("1")
+//                    /// The local blockchain is up-to-date and good to go . Transfer value or create account
+//                    self?.finish(with: .success((decodedExtraData, decodedTx)))
+//                } else if block.number > decodedExtraData.latestBlockNumber {
+//                    print("2")
+//                    /// Send a portion of the blockchain to the peer whose blockchain isn't up-to-date and proceed with the rest of the transaction.
+//                    guard let self = self,
+//                          let convertedNumber = Int32(decodedExtraData.latestBlockNumber.description) else { return }
+//                    NetworkManager.shared.sendBlockchain(convertedNumber, format: "number >= %i", peerID: self.peerID)
+//                    self.finish(with: .success((decodedExtraData, decodedTx)))
+//                } else if block.number < decodedExtraData.latestBlockNumber {
+//                    print("3")
+//                    /// Current blockchain not up-to-date. Send a request to download a blockchain
+//                    guard let peerID = self?.peerID else {
+//                        self?.finish(with: .failure(NodeError.generalError("Unable to parse PeerID")))
+//                        return
+//                    }
+//
+//
+//                    /// Prevent the isFinished KVO from being triggered until the blockchain is full updated.
+//                    NetworkManager.shared.requestBlockchain(peerIDs: [peerID]) { error in
+//                        if let error = error {
+//                            self?.finish(with: .failure(error))
+//                            return
+//                        }
+//
+//                        self?.finish(with: .success((decodedExtraData, decodedTx)))
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    override func cancel() {
+//        super.cancel()
+//    }
+//}
 
 /// An operation for transferring value. Gets added to the queue to be executed in order.
 final class TransferValueOperation: ChainedAsyncResultOperation<Void, Bool, NodeError> {

@@ -104,6 +104,7 @@ final class NetworkManager: NSObject {
         
         if session.connectedPeers.count == 0 {
             guard isServerRunning == true else { return }
+            suspend()
             self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
             self.nearbyServiceAdvertiser.delegate = self
             self.nearbyServiceAdvertiser?.startAdvertisingPeer()
@@ -120,6 +121,11 @@ final class NetworkManager: NSObject {
                 self?.sendDataToAllPeers(data: encodedMethod)
                 self?.transactionRelayHistory.removeAll()
                 self?.blockRelayHistory.removeAll()
+                /// Remove all the validated txs and accounts to prepare the for the creation of the next block
+                Node.shared.validatedTransactions.removeAll()
+                Node.shared.validatedAccounts.removeAll()
+                /// Remove all the transactions from the pool of validated operations since they have all been executed.
+                Node.shared.validatedOperations.removeAll()
             } catch {
                 print("block send error", error)
             }
@@ -184,7 +190,32 @@ extension NetworkManager: MCSessionDelegate {
     }
 
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-//        print("didReceive", data)
+        if let decoded = try? JSONDecoder().decode(String.self, from: data) {
+            print("string", decoded)
+        } else if let decoded = try? JSONDecoder().decode(Data.self, from: data) {
+            print("Data", decoded)
+
+        } else if let decoded = try? JSONDecoder().decode(Int.self, from: data) {
+            print("Int", decoded)
+
+        } else if let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            print("[String]", decoded)
+
+        } else if let decoded = try? JSONDecoder().decode([Data].self, from: data) {
+            print("[Data]", decoded)
+
+        } else if let decoded = try? JSONDecoder().decode([Int].self, from: data) {
+            print("[Int]", decoded)
+
+        } else if let decoded = try? JSONDecoder().decode(Double.self, from: data) {
+            print("string", decoded)
+
+        } else if let decoded = try? JSONDecoder().decode(ContractMethod.self, from: data) {
+            print("ContractMethod", decoded)
+
+        }
+        
+
         Node.shared.processTransaction(data, peerID: peerID)
     }
     

@@ -5,6 +5,14 @@
 //  Created by J C on 2022-03-03.
 //
 
+/*
+ The order of operation for a non-validator
+ 1. Receive a block, relay it to peers, and add it to a pool of unvalidated blocks.
+ 2. Before the periodic send, verify the block, and save it. The rationale for adding it to the pool first instead of processing it right away:
+   A. To gather all the blocks and determine the legitimate one before committing.
+   B. To synchronize the state across the devices.
+ */
+
 import Foundation
 import Combine
 import BigInt
@@ -100,8 +108,6 @@ extension Node {
                 }
                 let operations = sorted.compactMap { $0.operation }
                 self?.queue.addOperations(operations, waitUntilFinished: true)
-                /// Remove all the transactions from the pool of validated operations once they're executed.
-                self?.validatedOperations.removeAll()
                 promise(.success(true))
             }
         }
@@ -182,10 +188,7 @@ extension Node {
                 case .failure(let error):
                     print("block creation error", error)
             }
-        } receiveValue: { [weak self] (block) in
-            /// Remove all the validated txs and accounts to prepare the for the creation of the next block
-            self?.validatedTransactions.removeAll()
-            self?.validatedAccounts.removeAll()
+        } receiveValue: { (block) in
             completion(block)
         }
         .store(in: &storage)
@@ -196,76 +199,66 @@ extension Node {
     func verifyBlock() {
         
         /// Fetch the latest block to compare the hash against the parent hash of the current block as well as the block numbers
-        localStorage.getLatestBlock { [weak self] (lastBlock: LightBlock?, error: NodeError?) in
-            if let error = error {
-                print(error as Any)
-                return
-            }
-            
-            guard let lastBlock = lastBlock else {
-                /// If no blockchain exists locally, it means none was properly downloaded at the beginning.
-                NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
-                    if let error = error {
-                        print("request all error", error)
-                        return
-                    }
-                }
-                return
-            }
-            
-            /// Fetch the genesis block to compare against since the miner of the the genesis block is the only legitimate validator.
-            self?.localStorage.getBlocks(from: Int32(0), format: "number == %i") { [weak self] (blocks: [FullBlock]?, error: NodeError?) in
+        guard let latestBlock: LightBlock = try? localStorage.getLatestBlock() else {
+            /// If no blockchain exists locally, it means none was properly downloaded at the beginning.
+            NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
                 if let error = error {
-                    print(error as Any)
+                    print("request all error", error)
                     return
-                }
-                
-                guard let blocks = blocks, let genesisBlock = blocks.first else {
-                    return
-                }
-                
-                guard let allBlocks = self?.unvalidatedBlocks.allItems else {
-                    return
-                }
-                
-                /// Conditions to be met to be a valid block.
-                /// 1. Has to be created by the legitimate validator.
-                /// 2. The parent hash of the block has to match the previous block's block hash.
-                /// 3. The block's number has to be one higher than the last block.
-                /// 4. The recreated block hash has to match the purported hash in the block.
-                for block in allBlocks where (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == lastBlock.id) && (block.number == (lastBlock.number + 1)) {
-                    
-                    do {
-                        let blockHash = try block.generateBlockHash()
-                        if blockHash != block.hash {
-                            continue
-                        }
-                    } catch {
-                        continue
-                    }
-                    
-                    /// Save the verified block. It's now effectively part of the blockchain.
-                    self?.saveSync([block]) { error in
-                        print("non validator block save error", error as Any)
-                        return
-                    }
-                }
-                
-                /// If this point is reached, that means no proper block has been found
-                NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
-                    if let error = error {
-                        print("request all error", error)
-                        return
-                    }
                 }
             }
+            return
+        }
+        
+        guard let genesisBlock: FullBlock = try? localStorage.getBlock(Int32(0)) else {
+            /// If no blockchain exists locally, it means none was properly downloaded at the beginning.
+            NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
+                if let error = error {
+                    print("request all error", error)
+                    return
+                }
+            }
+            return
+        }
+        
+        /// Fetch the unvalidated blocks to be validated. Only one in the pool should be the valid block
+        let allBlocks = self.unvalidatedBlocks.allItems
+        if allBlocks.count == 0 {
+            return
+        }
+        
+        /// Conditions to be met to be a valid block.
+        /// 1. Has to be created by the legitimate validator.
+        /// 2. The parent hash of the block has to match the previous block's block hash.
+        /// 3. The block's number has to be one higher than the last block.
+        /// 4. The recreated block hash has to match the purported hash in the block.
+        for block in allBlocks where (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == latestBlock.id) && (block.number == (latestBlock.number + 1)) {
+            
+            do {
+                let blockHash = try block.generateBlockHash()
+                if blockHash != block.hash {
+                    continue
+                }
+            } catch {
+                continue
+            }
+            
+            /// Save the verified block. It's now effectively part of the blockchain.
+            self.saveSync([block]) { error in
+                if let error = error {
+                    print("non validator block save error", error as Any)
+                    return
+                }
+                
+                block.
+            }
+            break
         }
     }
     
     // MARK: - createBlockByEveryNode
     /// This method is to be used for when every node is a validator
     func createBlockByEveryNode(completion: @escaping (LightBlock) -> Void) {
-        
         Deferred {
             /// Select the majority block from a pool of pending blocks
             Future<FullBlock?, NodeError> { [weak self] promise in

@@ -78,7 +78,7 @@ final class NodeTests: XCTestCase {
                 
                 do {
                     // Create a public signature
-                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data, chainID: BigUInt(11111))
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data)
                     guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: KeysService().keystoreManager(), transaction: tx, from: originalSender, password: "1") else {
                         fatalError("Unable to sign transaction")
                     }
@@ -137,7 +137,7 @@ final class NodeTests: XCTestCase {
                 
                 do {
                     // Create a public signature
-                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data, chainID: BigUInt(11111))
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: transaction.nonce, to: transaction.to, value: transaction.value!, data: transaction.data)
                     guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: KeysService().keystoreManager(), transaction: tx, from: originalSender, password: "1") else {
                         fatalError("Unable to sign transaction")
                     }
@@ -409,12 +409,5 @@ final class NodeTests: XCTestCase {
 //            }
         }
     }
-    
-    func test_100() {
-        let address = EthereumAddress("0x18cD9fDa7d584401D04E30bf73FB0013EfE65bb0")!
-        var tx = EthereumTransaction(nonce: BigUInt(0), to: address, value: BigUInt(100), data: Data())
-        tx.UNSAFE_setChainID(BigUInt(111111))
-        
-        print(tx.intrinsicChainID)
-    }
+
 }

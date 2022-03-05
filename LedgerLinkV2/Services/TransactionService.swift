@@ -70,19 +70,21 @@ final class TransactionService {
                     /// Instead, the sender's balance will be accessed from the validator's blockchain and the value be subtracted from there.
                 }
                 
+                
+                /// Chain ID is set by the Host of the blockchain. This is to distinguish the original blockchain from any other blockchains that might postentially coexist, akin to EIP155.
+                /// It cannot be saved into EthereumTransaction's chainID since the "fromRaw" method doesn't decode chainID. The result become null even if chainID is set.
+                let chainID = UserDefaults.standard.integer(forKey: "chainID")
+                
                 /// Include the extra data such as the contract method , timestamp, latest block number, and/or a newly created account
-                let extraData = TransactionExtraData(account: account, timestamp: Date(), latestBlockNumber: BigUInt(block?.number ?? 1))
+                let extraData = TransactionExtraData(account: account, latestBlockNumber: BigUInt(block?.number ?? 1), chainID: BigUInt(chainID))
                 guard let encodedExtraData = try? JSONEncoder().encode(extraData) else {
                     completion(nil, NodeError.encodingError)
                     return
                 }
                 
-                /// Chain ID is set by the Host of the blockchain. This is to distinguish the original blockchain from any other blockchains that might postentially coexist, akin to EIP155.
-                let chainID = UserDefaults.standard.integer(forKey: "chainID")
-                
                 do {
                     // Create a public signature
-                    let tx = EthereumTransaction.createLocalTransaction(nonce: account.nonce, to: to ?? myAddress, value: value, data: encodedExtraData, chainID: BigUInt(chainID))
+                    let tx = EthereumTransaction.createLocalTransaction(nonce: account.nonce, to: to ?? myAddress, value: value, data: encodedExtraData)
                     guard let signedTx = try EthereumTransaction.signLocalTransaction(keystoreManager: keystoreManager, transaction: tx, from: myAddress, password: password) else {
                         completion(nil, NodeError.generalError("Unable to sign transaction"))
                         return

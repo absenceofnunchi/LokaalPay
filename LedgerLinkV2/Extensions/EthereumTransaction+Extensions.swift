@@ -36,10 +36,8 @@ extension EthereumTransaction {
     /// Create a transaction signature for a local transaction.
     /// Doesn't require gas because no mining reward exists.
     /// TODO: Change the chain ID to the 4-digit password set by the host
-    public static func createLocalTransaction(nonce: BigUInt, to: EthereumAddress, value: BigUInt = BigUInt(0), data: Data = Data(), chainID: BigUInt) -> EthereumTransaction {
-        var tx = EthereumTransaction(nonce: nonce, to: to, value: value, data: data)
-        tx.UNSAFE_setChainID(chainID)
-        return tx
+    public static func createLocalTransaction(nonce: BigUInt, to: EthereumAddress, value: BigUInt = BigUInt(0), data: Data = Data()) -> EthereumTransaction {
+        return EthereumTransaction(nonce: nonce, to: to, value: value, data: data)
     }
     
     public static func signLocalTransaction(keystoreManager: KeystoreManager? = nil, transaction: EthereumTransaction, from: EthereumAddress, password: String) throws -> EthereumTransaction? {

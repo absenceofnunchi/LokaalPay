@@ -104,68 +104,56 @@ final class Node {
         Deferred {
             /// Sender's account. Subtract the value from the sender's balance
             Future<Account, NodeError> { [weak self] promise in
-                self?.fetch(.addressString(addressString)) { (accounts: [Account]?, error: NodeError?) in
-                    if let error = error {
-                        promise(.failure(error))
-                    }
-                    
-                    guard let accounts = accounts,
-                          var account = accounts.first else {
-                              promise(.failure(NodeError.generalError("Unable to find the account")))
-                        return
-                    }
-                    
-                    guard let value = transaction.value,
-                          account.balance >= value else {
-                              promise(.failure(NodeError.generalError("Not enough balance")))
-                        return
-                    }
-                    
-                    account.balance -= value
-                    promise(.success(account))
+                guard var senderAccount: Account = try? self?.localStorage.getAccount(addressString) else {
+                    promise(.failure(.generalError("Unable to find the sender's account")))
+                    return
                 }
+                
+                guard let value = transaction.value,
+                      senderAccount.balance >= value else {
+                          promise(.failure(NodeError.generalError("Not enough balance")))
+                          return
+                      }
+                
+                senderAccount.balance -= value
+                promise(.success(senderAccount))
             }
             .eraseToAnyPublisher()
         }
         .flatMap { [weak self] (sender) -> AnyPublisher<[Account], NodeError> in
             /// Recipient's account. Add the value to the balance
             Future<[Account], NodeError> { promise in
-                self?.fetch(.addressString(transaction.to.address)) { (accounts: [Account]?, error: NodeError?) in
-                    if let error = error {
-                        promise(.failure(error))
+                guard var recipient: Account = try? self?.localStorage.getAccount(transaction.to.address) else {
+                    promise(.failure(.generalError("Unable to find the recipient's account")))
+                    return
+                }
+                
+                /// If the account exists, update the amount. If not, create a new one.
+                if let value = transaction.value {
+                    recipient.balance += value
+                    let finalAccounts = [sender, recipient]
+                    promise(.success(finalAccounts))
+                } else {
+                    /// TODO: the newly created account should somehow be eligible for the host's credits
+                    let password = Int.random(in: 1000...9999)
+                    guard let newWallet = try? EthereumKeystoreV3(password: "\(password)") else {
+                        promise(.failure(.generalError("Unable to generate a new address")))
+                        return
                     }
                     
-                    print("accounts", accounts as Any)
-                    
-                    /// If the account exists, update the amount. If not, create a new one.
-                    if let accounts = accounts,
-                       var recipient = accounts.first,
-                       let value = transaction.value {
-                        recipient.balance += value
-                        let finalAccounts = [sender, recipient]
-                        promise(.success(finalAccounts))
-                    } else {
-                        /// TODO: the newly created account should somehow be eligible for the host's credits
-                        let password = Int.random(in: 1000...9999)
-                        guard let newWallet = try? EthereumKeystoreV3(password: "\(password)") else {
-                            promise(.failure(.generalError("Unable to generate a new address")))
-                            return
-                        }
-                        
-                        guard let address = newWallet.addresses?.first else {
-                            promise(.failure(.generalError("Unable to generate a new address")))
-                            return
-                        }
-                        
-                        guard let value = transaction.value else {
-                            promise(.failure(.generalError("Unable to generate get the sent balance")))
-                            return
-                        }
-                        
-                        let recipient = Account(address: address, nonce: 0, balance: value)
-                        let finalAccounts = [sender, recipient]
-                        promise(.success(finalAccounts))
+                    guard let address = newWallet.addresses?.first else {
+                        promise(.failure(.generalError("Unable to generate a new address")))
+                        return
                     }
+                    
+                    guard let value = transaction.value else {
+                        promise(.failure(.generalError("Unable to generate get the sent balance")))
+                        return
+                    }
+                    
+                    let recipient = Account(address: address, nonce: 0, balance: value)
+                    let finalAccounts = [sender, recipient]
+                    promise(.success(finalAccounts))
                 }
             }
             .eraseToAnyPublisher()
@@ -390,10 +378,6 @@ final class Node {
         unvalidatedBlocks.add(block)
     }
     
-    func clearUnvalidatedBlocks() {
-        unvalidatedBlocks.removeAll()
-    }
-
     /// Process the transactions received from peers according to the contract methods.
     func processTransaction(_ data: Data, peerID: MCPeerID) {
         verifyValidator { [weak self] (isValidator) in
@@ -572,7 +556,7 @@ final class Node {
               }
         
         let chainID = UserDefaults.standard.integer(forKey: "chainID")
-        guard decodedTx.intrinsicChainID == BigUInt(chainID) else {
+        guard decodedExtraData.chainID == BigUInt(chainID) else {
             completion((nil, nil), .generalError("Incorrect chain ID"))
             return
         }
@@ -735,7 +719,6 @@ final class Node {
     }
 
     /// Receive the block sent from peers
-    /// Select the block with the most tally
     private func parseBlock(_ block: LightBlock) {
         guard let fullBlock = block.decode() else { return }
         addUnvalidatedBlock(fullBlock)
