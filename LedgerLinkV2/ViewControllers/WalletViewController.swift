@@ -195,7 +195,9 @@ final class WalletViewController: UIViewController {
         }
         
         guard let sendAmount = sendAmountLabel.text,
-              let value = BigUInt(sendAmount) else {
+              !sendAmount.isEmpty,
+              let value = BigUInt(sendAmount),
+              value != 0 else {
             throw NodeError.generalError("Amount cannot be zero.")
         }
         

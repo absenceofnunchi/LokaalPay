@@ -28,7 +28,7 @@ extension Node {
             if isValidator {
                 self?.createBlock(completion: completion)
             } else {
-                self?.verifyBlock()
+                self?.verifyBlock(completion: completion)
             }
         }
     }
@@ -96,7 +96,7 @@ extension Node {
     // MARK: - createBlock
     /// The validator/host of the blockchain executes the transactions and creates a new block to be propagated.
     /// Creating a block involves executing all the pending validated transactions and including them as well as the updated accounts in a new block.
-    func createBlock(completion: @escaping (LightBlock) -> Void) {
+    func createBlock(completion: @escaping (LightBlock?) -> Void) {
         
         Deferred {
             /// Execute all the pending transactions in the pool of validated operations in order by sorting them according to the timestamp first and adding them to a queue
@@ -196,7 +196,7 @@ extension Node {
     
     // MARK: - verifyBlock
     /// Received block to be verified by a non-validator and added to the local blockchain.
-    func verifyBlock() {
+    func verifyBlock(completion: @escaping (LightBlock?) -> Void) {
         
         /// Fetch the latest block to compare the hash against the parent hash of the current block as well as the block numbers
         guard let latestBlock: LightBlock = try? localStorage.getLatestBlock() else {
@@ -232,28 +232,74 @@ extension Node {
         /// 2. The parent hash of the block has to match the previous block's block hash.
         /// 3. The block's number has to be one higher than the last block.
         /// 4. The recreated block hash has to match the purported hash in the block.
-        for block in allBlocks where (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == latestBlock.id) && (block.number == (latestBlock.number + 1)) {
+
+        let verifiedBlocks: [FullBlock] = allBlocks.compactMap { block in
+            guard (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == latestBlock.id) && (block.number == (latestBlock.number + 1)) else {
+                return nil
+            }
             
             do {
                 let blockHash = try block.generateBlockHash()
                 if blockHash != block.hash {
-                    continue
+                    return nil
                 }
             } catch {
-                continue
+                return nil
             }
             
+            /// The existing accounts need to be deleted since the most updated accounts are the only source of truth.
+            block.accounts?.forEach { self.delete($0) }
+            block.accounts?.forEach { print("accounts in the block", $0.id) }
+            
             /// Save the verified block. It's now effectively part of the blockchain.
-            self.saveSync([block]) { error in
+            self.localStorage.saveRelationalBlock(block: block, completion: { error in
                 if let error = error {
                     print("non validator block save error", error as Any)
                     return
                 }
-                
-                block.
-            }
-            break
+            })
+            
+            return block
         }
+        
+        if verifiedBlocks.count == 0 {
+            /// If the code has reached this point, that means there is either no up-to-date blockchain available or the newly arrived block isn't legitimate.
+            NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { error in
+                if let error = error {
+                    print("request all error", error)
+                    return
+                }
+            }
+        }
+        
+//        for block in allBlocks where (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == latestBlock.id) && (block.number == (latestBlock.number + 1)) {
+//
+//            do {
+//                let blockHash = try block.generateBlockHash()
+//                if blockHash != block.hash {
+//                    continue
+//                }
+//            } catch {
+//                continue
+//            }
+//
+//            /// The existing accounts need to be deleted since the most updated accounts are the only source of truth.
+//            block.accounts?.forEach { self.delete($0) }
+//            block.accounts?.forEach { print("accounts in the block", $0.id) }
+//
+//            /// Save the verified block. It's now effectively part of the blockchain.
+//            self.localStorage.saveRelationalBlock(block: block, completion: { error in
+//                if let error = error {
+//                    print("non validator block save error", error as Any)
+//                    return
+//                }
+//
+//                completion(nil)
+//                return
+//            })
+//
+//            break
+//        }
     }
     
     // MARK: - createBlockByEveryNode
@@ -282,8 +328,8 @@ extension Node {
                                 /// Correct block to be saved
                                 /// Save the transactions, accounts, and a block in a relational way
                                 Node.shared.localStorage.saveRelationalBlock(block: newBlock) { error in
-                                    /// Now that a valid block has been selected remove all old blocks
-                                    self?.clearUnvalidatedBlocks()
+                                    /// Now that a valid block has been created/saved, remove all old blocks
+                                    self?.unvalidatedBlocks.removeAll()
                                     
                                     if let error = error {
                                         promise(.failure(error))

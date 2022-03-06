@@ -449,7 +449,7 @@ final class BlockchainTests: XCTestCase {
         transactions.forEach { Node.shared.addValidatedTransaction($0) }
         
         Node.shared.createBlock { block in
-            XCTAssertEqual(block.number, 1)
+            XCTAssertEqual(block!.number, 1)
         }
         
         Node.shared.deleteAll()

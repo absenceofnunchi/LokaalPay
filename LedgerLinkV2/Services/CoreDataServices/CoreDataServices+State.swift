@@ -47,6 +47,7 @@ extension LocalStorage {
             guard let result = results.first else {
                 throw NodeError.generalError("Parsing error")
             }
+            print("results from get Account", results)
             
             guard let data = result.data else {
                 throw NodeError.generalError("Parsing error2")

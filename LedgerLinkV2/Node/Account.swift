@@ -14,7 +14,7 @@ public struct Account: Equatable {
     var nonce: BigUInt
     var balance: BigUInt = 0
     var codeHash: String = "0x"
-    var storageRoot: String = "0x"
+    var storageRoot: String
     
     /// From binary. Used when Core Data fetches encoded Account in a binary form.
     init(_ data: Data) throws {
@@ -33,12 +33,12 @@ public struct Account: Equatable {
         self.storageRoot = account.storageRoot
     }
     
-    init(address: EthereumAddress, nonce: BigUInt, balance: BigUInt = 0, codeHash: String = "0x", storageRoot: String = "0x") {
+    init(address: EthereumAddress, nonce: BigUInt, balance: BigUInt = 0, codeHash: String = "0x") {
         self.address = address
         self.nonce = nonce
         self.balance = balance
         self.codeHash = codeHash
-        self.storageRoot = storageRoot
+        self.storageRoot = (address.address + nonce.description + balance.description + codeHash).sha256()
     }
 }
 
@@ -57,7 +57,6 @@ extension Account: Codable {
         try encoder.encode(nonce, forKey: .nonce)
         try encoder.encode(balance, forKey: .balance)
         try encoder.encode(codeHash, forKey: .codeHash)
-        try encoder.encode(storageRoot, forKey: .storageRoot)
     }
     
     public init(from decoder: Decoder) throws {
@@ -66,9 +65,8 @@ extension Account: Codable {
         let nonce: BigUInt = try container.decode(BigUInt.self, forKey: .nonce)
         let balance: BigUInt = try container.decode(BigUInt.self, forKey: .balance)
         let codeHash: String = try container.decode(String.self, forKey: .codeHash)
-        let storageRoot: String = try container.decode(String.self, forKey: .address)
         
-        self.init(address: address, nonce: nonce, balance: balance, codeHash: codeHash, storageRoot: storageRoot)
+        self.init(address: address, nonce: nonce, balance: balance, codeHash: codeHash)
     }
 }
 
@@ -86,7 +84,8 @@ extension Account {
 
         var address: EthereumAddress
         var nonce, balance: BigUInt
-        var codeHash, storageRoot: String
+        var codeHash: String
+//        var storageRoot: String
         switch rlpItem.count {
             case 5?:
                 switch rlpItem[0]!.content {
@@ -116,18 +115,23 @@ extension Account {
                 } else {
                     codeHash = codeHashData.toHexString()
                 }
-                guard let storageRootData = rlpItem[4]!.data else {return nil}
-                if toChecksumFormat {
-                    let temp = storageRootData.toHexString()
-                    storageRoot = EthereumAddress.toChecksumAddress(temp) ?? "0x"
-                } else {
-                    storageRoot = storageRootData.toHexString()
-                }
+//                guard let storageRootData = rlpItem[4]!.data else {return nil}
+//                if toChecksumFormat {
+//                    let temp = storageRootData.toHexString()
+//                    storageRoot = EthereumAddress.toChecksumAddress(temp) ?? "0x"
+//                } else {
+//                    storageRoot = storageRootData.toHexString()
+//                }
                 
-                return Account(address: address, nonce: nonce, balance: balance, codeHash: codeHash, storageRoot: storageRoot)
+                return Account(address: address, nonce: nonce, balance: balance, codeHash: codeHash)
             default:
                 return nil
         }
+    }
+    
+    mutating func updateStorageRoot(with newValue: BigUInt) {
+        let newStorageRoot = (self.nonce.description + (self.balance + newValue).description + self.storageRoot + self.codeHash).sha256()
+        self.storageRoot = (storageRoot + newStorageRoot).sha256()
     }
 }
 

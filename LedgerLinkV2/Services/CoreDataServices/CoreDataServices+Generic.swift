@@ -845,11 +845,14 @@ extension LocalStorage {
     }
     
     /// Delete all within the same category
-    func deleteAll(of entity: EntityName) {
+    func deleteAll(of entity: EntityName, format: String = "id == %@", predicate: String? = nil) {
         coreDataStack.saveContext()
         
         // Create Fetch Request
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity.rawValue)
+        if let predicate = predicate {
+            fetchRequest.predicate = NSPredicate(format: format, predicate)
+        }
         
         // Initialize Batch Delete Request
         let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)

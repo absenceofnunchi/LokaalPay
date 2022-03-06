@@ -16,7 +16,12 @@ final class NodeTests: XCTestCase {
     func test_createNewBlock() {
         Node.shared.deleteAll()
         for i in 0...5 {
-            Node.shared.createBlock { (lightBlock: LightBlock) in
+            Node.shared.createBlock { (lightBlock: LightBlock?) in
+                XCTAssertNotNil(lightBlock)
+                guard let lightBlock = lightBlock else {
+                    return
+                }
+
                 XCTAssertEqual(lightBlock.number, Int32(i + 1))
                 
                 Node.shared.fetch(.lightBlockId(lightBlock.id)) { (fetchedBlocks: [LightBlock]?, error: NodeError?) in
@@ -325,7 +330,12 @@ final class NodeTests: XCTestCase {
             Node.shared.addUnvalidatedBlock(newBlock)
             
             /// Verify the new block
-            Node.shared.verifyBlock()
+            Node.shared.verifyBlock { lightBlock in
+                XCTAssertNil(lightBlock)
+                if let lightBlock = lightBlock {
+                    print(lightBlock)
+                }
+            }
         }
         
         guard let lightNode0 = try? LightBlock(data: genesisBlock),
@@ -410,4 +420,17 @@ final class NodeTests: XCTestCase {
         }
     }
 
+    func test_test111() {
+        let a = [1, 2, 3]
+        
+        let result: [Int] = a.compactMap { num in
+            if num == 2 {
+                return 2
+            } else {
+                return nil
+            }
+        }
+        
+        print(result)
+    }
 }

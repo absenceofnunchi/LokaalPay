@@ -85,8 +85,8 @@ final class Node {
         localStorage.delete(element)
     }
     
-    func deleteAll(of entity: LocalStorage.EntityName) {
-        localStorage.deleteAll(of: entity)
+    func deleteAll(of entity: LocalStorage.EntityName, format: String = "id == %@", predicate: String? = nil) {
+        localStorage.deleteAll(of: entity, format: format, predicate: predicate)
     }
     
     func deleteAll() {
@@ -116,6 +116,7 @@ final class Node {
                       }
                 
                 senderAccount.balance -= value
+                senderAccount.updateStorageRoot(with: value)
                 promise(.success(senderAccount))
             }
             .eraseToAnyPublisher()
@@ -131,6 +132,7 @@ final class Node {
                 /// If the account exists, update the amount. If not, create a new one.
                 if let value = transaction.value {
                     recipient.balance += value
+                    recipient.updateStorageRoot(with: value)
                     let finalAccounts = [sender, recipient]
                     promise(.success(finalAccounts))
                 } else {
@@ -191,6 +193,7 @@ final class Node {
                     completion(nil , error)
                 }
 
+                print("check my balance", accounts as Any)
                 if let accounts = accounts, let account = accounts.first {
                     completion(account, nil)
                 }

@@ -111,24 +111,28 @@ final class NetworkManager: NSObject {
             self.nearbyBrowser.startBrowsingForPeers()
         }
 
-        /// The relay history has to be refreshed
-        /// Dispatching blocks on a regular interval
+        /// Validator: dispatches newly created blocks on a regular interval
+        /// Non validator: refreshes the pools of transactions accounts, operations, and the relay history on a regular interval
         Node.shared.processBlock { [weak self] (block) in
-            do {
-                let encoded = try JSONEncoder().encode(block)
-                let contractMethod = ContractMethod.sendBlock(encoded)
-                let encodedMethod = try JSONEncoder().encode(contractMethod)
-                self?.sendDataToAllPeers(data: encodedMethod)
-                self?.transactionRelayHistory.removeAll()
-                self?.blockRelayHistory.removeAll()
-                /// Remove all the validated txs and accounts to prepare the for the creation of the next block
-                Node.shared.validatedTransactions.removeAll()
-                Node.shared.validatedAccounts.removeAll()
-                /// Remove all the transactions from the pool of validated operations since they have all been executed.
-                Node.shared.validatedOperations.removeAll()
-            } catch {
-                print("block send error", error)
+            if let block = block {
+                do {
+                    
+                    let encoded = try JSONEncoder().encode(block)
+                    let contractMethod = ContractMethod.sendBlock(encoded)
+                    let encodedMethod = try JSONEncoder().encode(contractMethod)
+                    self?.sendDataToAllPeers(data: encodedMethod)
+                } catch {
+                    print("block send error", error)
+                }
             }
+            
+            self?.transactionRelayHistory.removeAll()
+            self?.blockRelayHistory.removeAll()
+            /// Remove all the validated txs and accounts to prepare the for the creation of the next block
+            Node.shared.validatedTransactions.removeAll()
+            Node.shared.validatedAccounts.removeAll()
+            /// Remove all the transactions from the pool of validated operations since they have all been executed.
+            Node.shared.validatedOperations.removeAll()
         }
     }
     

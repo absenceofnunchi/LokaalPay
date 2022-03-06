@@ -70,12 +70,12 @@ struct Vectors {
     static var accounts: [Account] {
         var arr = [Account]()
         for i in 0 ..< addresses.count {
-            let account = Account(address: addresses[i], nonce: BigUInt(i), balance: BigUInt(i), codeHash: checksumHashes[i], storageRoot: checksumHashes[i])
+            let account = Account(address: addresses[i], nonce: BigUInt(i), balance: BigUInt(i), codeHash: checksumHashes[i])
             arr.append(account)
         }
         
-        arr.append(Account(address: EthereumAddress("0x035362D35E16D0E6c35cC99ECffbCbA91Ff1747F")!, nonce: BigUInt(1), balance: BigUInt(6), codeHash: "0x139b782cE2da824b98b6Af358f725259799D2f74", storageRoot: "0x")) /// missing storageRoot
-        arr.append(Account(address: EthereumAddress("0x07a8ba3F4fd4Db7f3381C07ee5a309c1aacE9C59")!, nonce: BigUInt(1), balance: BigUInt(6), codeHash: "0x", storageRoot: "0x139b782cE2da824b98b6Af358f725259799D2f74")) /// missin codeHash
+        arr.append(Account(address: EthereumAddress("0x035362D35E16D0E6c35cC99ECffbCbA91Ff1747F")!, nonce: BigUInt(1), balance: BigUInt(6), codeHash: "0x139b782cE2da824b98b6Af358f725259799D2f74")) /// missing storageRoot
+        arr.append(Account(address: EthereumAddress("0x07a8ba3F4fd4Db7f3381C07ee5a309c1aacE9C59")!, nonce: BigUInt(1), balance: BigUInt(1), codeHash: "0x")) /// missin codeHash
         return arr
     }
     
@@ -156,7 +156,7 @@ struct Vectors {
         }
         
         let account = Account(address: address, nonce: BigUInt(0))
-        let extraData = TransactionExtraData(account: account, timestamp: Date(), latestBlockNumber: BigUInt(10))
+        let extraData = TransactionExtraData(account: account, timestamp: Date(), latestBlockNumber: BigUInt(10), chainID: BigUInt(100))
         guard let encodedExtraData = try? JSONEncoder().encode(extraData) else {
             return nil
         }

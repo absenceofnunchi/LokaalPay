@@ -146,7 +146,7 @@ class CodableTests: XCTestCase {
         }
     }
     
-    func test_pakcet() {
+    func test_packet() {
         let packet = Packet(accounts: treeConfigurableAccounts, transactions: treeConfigurableTransactions, blocks: lightBlocks)
 
         do {
