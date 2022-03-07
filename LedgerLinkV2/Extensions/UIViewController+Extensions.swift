@@ -69,6 +69,16 @@ extension UIViewController {
             }
         }
     }
+    
+    func tapToDismissKeyboard() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tappedToDismiss))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc func tappedToDismiss() {
+        view.endEditing(true)
+    }
 }
 
 // MARK: - SaveAlertHandle
@@ -85,5 +95,11 @@ private class SaveAlertHandle {
     
     class func get() -> UIAlertController? {
         return alertHandle
+    }
+}
+
+extension UIView {
+    var allSubviews: [UIView] {
+        return self.subviews.flatMap { [$0] + $0.allSubviews }
     }
 }

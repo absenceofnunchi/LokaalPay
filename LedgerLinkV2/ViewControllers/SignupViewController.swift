@@ -22,6 +22,7 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
     private var passwordTextField: UITextField!
     private var createButton: UIButton!
     private var deleteBlockchainButton: UIButton!
+    private var logoutButton: UIButton!
     private var addressTitleLabel: UILabel!
     private var addressLabel: UILabel!
     private var roleTitleLabel: UILabel!
@@ -157,6 +158,15 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
         deleteBlockchainButton.layer.cornerRadius = 10
         deleteBlockchainButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(deleteBlockchainButton)
+        
+        logoutButton = UIButton()
+        logoutButton.setTitle("Logout", for: .normal)
+        logoutButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
+        logoutButton.tag = 4
+        logoutButton.backgroundColor = .black
+        logoutButton.layer.cornerRadius = 10
+        logoutButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(logoutButton)
     }
     
     private func setConstraints() {
@@ -214,7 +224,12 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
             deleteBlockchainButton.topAnchor.constraint(equalTo: createButton.bottomAnchor, constant: 20),
             deleteBlockchainButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             deleteBlockchainButton.heightAnchor.constraint(equalToConstant: 50),
-            deleteBlockchainButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            deleteBlockchainButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            logoutButton.topAnchor.constraint(equalTo: deleteBlockchainButton.bottomAnchor, constant: 20),
+            logoutButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            logoutButton.heightAnchor.constraint(equalToConstant: 50),
+            logoutButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     
@@ -222,13 +237,14 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
         switch sender.tag {
             case 0:
                 initiateConnectionAndCreateWallet()
-                break
             case 1:
                 deleteAllBlockchain()
             case 2:
                 isHost = true
             case 3:
                 isHost = false
+            case 4:
+                AuthSwitcher.logout()
             default:
                 break
         }
@@ -254,7 +270,7 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
         
     private func requestBlockchain() {
         NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { [weak self](error) in
-            if let error = error {
+            if let error = error {  
                 self?.dismiss(animated: true, completion: nil)
                 self?.alert.show(error, for: self)
                 return

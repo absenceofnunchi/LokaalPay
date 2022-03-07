@@ -16,34 +16,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
         
-        if let windowScene = scene as? UIWindowScene {
-            self.window = UIWindow(windowScene: windowScene)
-            
-            
-            let signupVC = SignupViewController()
-            signupVC.tabBarItem = UITabBarItem(title: "Signup", image: UIImage(named: "lock"), selectedImage: UIImage(named: "lock"))
-            
-            let mainVC = MainViewController()
-            let mainNav = UINavigationController(rootViewController: mainVC)
-            mainNav.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(named: "network"), selectedImage: UIImage(named: "network"))
-            
-            let walletVC = WalletViewController()
-            walletVC.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
-
-            let explorerVC = ExplorerViewController()
-            let explorerNav = UINavigationController(rootViewController: explorerVC)
-            explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
-            
-            let tabBar = CustomTabBarController()
-            tabBar.setViewControllers([signupVC, mainNav, walletVC, explorerNav], animated: true)
-            self.window?.rootViewController = tabBar
-            self.window?.makeKeyAndVisible()
-        }
-        
-//        NotificationCenter.default.addObserver(self, selector: #selector(run), name: UIScene.willDeactivateNotification, object: nil)
-        
+        AuthSwitcher.updateRootVC()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -102,7 +76,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var timer: DispatchSourceTimer?
     func registerBackgroundTask() {
         backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
-            self?.run()
             self?.endBackgroundTask()
         }
         assert(backgroundTask != .invalid)
@@ -112,10 +85,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         print("Background task ended.")
         UIApplication.shared.endBackgroundTask(backgroundTask)
         backgroundTask = .invalid
-    }
-    
-    @objc func run() {
-
     }
 }
 
