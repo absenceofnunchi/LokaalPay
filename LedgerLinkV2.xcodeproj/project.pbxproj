@@ -30,6 +30,8 @@
 		492D985D27A998C0003BFAB4 /* LedgerLinkV2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985C27A998C0003BFAB4 /* LedgerLinkV2UITests.swift */; };
 		492D985F27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D985E27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift */; };
 		4932600E27CC23DB009B8390 /* UIViewController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4932600D27CC23DA009B8390 /* UIViewController+Extensions.swift */; };
+		494456FE27D6B74000C9B743 /* ActionSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494456FD27D6B74000C9B743 /* ActionSheetViewController.swift */; };
+		4944570127D6B84200C9B743 /* PartialPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4944570027D6B84200C9B743 /* PartialPresentationController.swift */; };
 		4950591F27B05B6A006B9294 /* CoreDataServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950591E27B05B6A006B9294 /* CoreDataServices.swift */; };
 		4950592227B06140006B9294 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592127B06140006B9294 /* Errors.swift */; };
 		4950592827B08B40006B9294 /* SigninViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592727B08B40006B9294 /* SigninViewController.swift */; };
@@ -154,6 +156,8 @@
 		492D985C27A998C0003BFAB4 /* LedgerLinkV2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinkV2UITests.swift; sourceTree = "<group>"; };
 		492D985E27A998C0003BFAB4 /* LedgerLinkV2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinkV2UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		4932600D27CC23DA009B8390 /* UIViewController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Extensions.swift"; sourceTree = "<group>"; };
+		494456FD27D6B74000C9B743 /* ActionSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionSheetViewController.swift; sourceTree = "<group>"; };
+		4944570027D6B84200C9B743 /* PartialPresentationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartialPresentationController.swift; sourceTree = "<group>"; };
 		4950591E27B05B6A006B9294 /* CoreDataServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataServices.swift; sourceTree = "<group>"; };
 		4950592127B06140006B9294 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		4950592727B08B40006B9294 /* SigninViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigninViewController.swift; sourceTree = "<group>"; };
@@ -284,6 +288,7 @@
 				49FC14F127B31DEC00D215B6 /* Node */,
 				499AF11E27AF6E7C00CAF0EA /* Services */,
 				49C3E76327AB3EB500D989E8 /* Networking */,
+				494456FF27D6B7EA00C9B743 /* Controllers */,
 				499C31E927D595D700680C4A /* Animators */,
 				49C3E76227AB3EAE00D989E8 /* ViewControllers */,
 				4950592027B0612D006B9294 /* Models */,
@@ -338,6 +343,14 @@
 				492D984127A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld */,
 			);
 			path = CoreData;
+			sourceTree = "<group>";
+		};
+		494456FF27D6B7EA00C9B743 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				4944570027D6B84200C9B743 /* PartialPresentationController.swift */,
+			);
+			path = Controllers;
 			sourceTree = "<group>";
 		};
 		4950592027B0612D006B9294 /* Models */ = {
@@ -462,6 +475,7 @@
 				490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */,
 				49F6E12D27C729AA00790A75 /* ExplorerViewController.swift */,
 				49F6E12F27C72ADD00790A75 /* DetailTableViewController.swift */,
+				494456FD27D6B74000C9B743 /* ActionSheetViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -734,6 +748,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				494456FE27D6B74000C9B743 /* ActionSheetViewController.swift in Sources */,
 				499AF12427B04E6D00CAF0EA /* KeysService.swift in Sources */,
 				492D983D27A998BA003BFAB4 /* MainViewController.swift in Sources */,
 				490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */,
@@ -792,6 +807,7 @@
 				4976EB4E27CFD15100C10DBD /* StateCoreData+CoreDataClass.swift in Sources */,
 				490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */,
 				490367C827BB612400DFDE2B /* ScannerViewController.swift in Sources */,
+				4944570127D6B84200C9B743 /* PartialPresentationController.swift in Sources */,
 				49F6E12E27C729AA00790A75 /* ExplorerViewController.swift in Sources */,
 				492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */,
 				4976EB5227CFD15100C10DBD /* BlockCoreData+CoreDataClass.swift in Sources */,
