@@ -20,35 +20,24 @@ final class EventViewController: RegisterViewController {
     private var imageSubtitleLabel: UILabel!
     private var gradientView: GradientView!
     private var imageButton: UIButton!
-    
-    /// Event name and password
-    private var eventInfoLabel: UILabel!
-    private var gradientView2: GradientView!
-    private var textFieldBlurView: BlurEffectContainerView!
     private var imageBlurView: BlurEffectContainerView!
-    private var eventNameTextField: UITextField!
+    private var imageSymbolView: UIImageView!
     private var passwordTextField: UITextField!
     private var passwordConfirmTextField: UITextField!
-    private var descriptionTextView: UITextView!
-    private var stackView: UIStackView!
-    private var imageSymbolView: UIImageView!    
+    private var personalPasswordTextField: UITextField!
+    private var personalPasswordConfirmTextField: UITextField!
+    
+    /// Event name and password
+    private var generalInfoBoxView: UIView!
+    private var hostInfoBoxView: UIView!
+    
+    /// create event button
+    private var passwordStatusLabel: UILabel!
+    private var buttonContainer: UIView!
+    private var passwordBlurView: BlurEffectContainerView!
     
     final override func configureUI() {
         super.configureUI()
-        
-        /// title and subtitle label
-        let testTextField = UITextField()
-        testTextField.layer.borderColor = UIColor.white.cgColor
-        testTextField.layer.borderWidth = 1
-        testTextField.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(testTextField)
-        
-        NSLayoutConstraint.activate([
-            testTextField.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 550),
-            testTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
-            testTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
-            testTextField.heightAnchor.constraint(equalToConstant: 50),
-        ])
         
         /// Image upload button
         imageTitleLabel = UILabel()
@@ -91,138 +80,132 @@ final class EventViewController: RegisterViewController {
         gradientView.setFill()
         gradientView.sendSubviewToBack(gradientView)
         gradientView.isUserInteractionEnabled = false
-
-        /// Event name and password
-        eventInfoLabel = UILabel()
-        eventInfoLabel.text = "General Information"
-        eventInfoLabel.font = UIFont.rounded(ofSize: 18, weight: .bold)
-        eventInfoLabel.textColor = .lightGray
-        eventInfoLabel.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(eventInfoLabel)
         
-//        gradientView2 = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor])
-        gradientView2 = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1).cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor])
-        gradientView2.layer.cornerRadius = 10
-        gradientView2.clipsToBounds = true
-        gradientView2.backgroundColor = .black
-        gradientView2.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(gradientView2)
-
-        textFieldBlurView = BlurEffectContainerView(blurStyle: .dark, effectViewAlpha:  0.8) /// The alpha is for the black color of the effect view's background.
-        textFieldBlurView.layer.cornerRadius = 10
-        textFieldBlurView.translatesAutoresizingMaskIntoConstraints = false
-        gradientView2.addSubview(textFieldBlurView)
-        textFieldBlurView.setFill()
-
-        /// Event name label
-        eventNameTextField = UITextField()
-        eventNameTextField.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        eventNameTextField.leftPadding()
-        eventNameTextField.textColor = .lightGray
-        eventNameTextField.layer.borderColor = UIColor.lightGray.cgColor
-        eventNameTextField.layer.borderWidth = 0.5
-        eventNameTextField.layer.cornerRadius = 10
-        eventNameTextField.attributedPlaceholder = createAttributedString(imageString: "square.stack.3d.down.forward", imageColor: .gray, text: " Event Name")
-        eventNameTextField.translatesAutoresizingMaskIntoConstraints = false
-
-        /// Password name label
-        passwordTextField = UITextField()
-        passwordTextField.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        passwordTextField.leftPadding()
-        passwordTextField.textColor = .lightGray
-        passwordTextField.isSecureTextEntry = true
-        passwordTextField.layer.borderColor = UIColor.lightGray.cgColor
-        passwordTextField.layer.borderWidth = 0.5
-        passwordTextField.layer.cornerRadius = 10
-        passwordTextField.attributedPlaceholder = createAttributedString(imageString: "lock", imageColor: .gray, text: " Password")
-        passwordTextField.translatesAutoresizingMaskIntoConstraints = false
-
-        /// Password confirmation label
-        passwordConfirmTextField = UITextField()
-//        passwordConfirmTextField.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        passwordConfirmTextField.leftPadding()
-        passwordConfirmTextField.textColor = .lightGray
-        passwordConfirmTextField.isSecureTextEntry = true
-        passwordConfirmTextField.layer.borderColor = UIColor.lightGray.cgColor
-        passwordConfirmTextField.layer.borderWidth = 0.5
-        passwordConfirmTextField.layer.cornerRadius = 10
-        passwordConfirmTextField.attributedPlaceholder = createAttributedString(imageString: "lock", imageColor: .gray, text: " Confirm Password")
-        passwordConfirmTextField.translatesAutoresizingMaskIntoConstraints = false
+        let eventNameTextField = createTextField(placeHolderText: " Event Name", placeHolderImageString: "square.stack.3d.down.forward")
+        passwordTextField = createTextField(placeHolderText: " Password", placeHolderImageString: "lock", isPassword: true)
+        passwordTextField.tag = 100
+        passwordConfirmTextField = createTextField(placeHolderText: " Confirm Password", placeHolderImageString: "lock", isPassword: true)
+        passwordConfirmTextField.tag = 101
+        let descriptionTextView = createTextView(placeHolderText: " Briefly describe your event", placeHolderImageString: "doc.append")
+        generalInfoBoxView = createInfoBoxView(title: "General Information", subTitle: "To share with your guests", arrangedSubviews: [eventNameTextField, passwordTextField, passwordConfirmTextField, descriptionTextView])
+        scrollView.addSubview(generalInfoBoxView)
         
-        /// Description textview
-        descriptionTextView = UITextView()
-        descriptionTextView.delegate = self
-        descriptionTextView.textColor = .lightGray
-        descriptionTextView.backgroundColor = .clear
-        descriptionTextView.allowsEditingTextAttributes = true
-        descriptionTextView.autocorrectionType = .yes
-        descriptionTextView.layer.borderColor = UIColor.lightGray.cgColor
-        descriptionTextView.layer.borderWidth = 0.5
-        descriptionTextView.layer.cornerRadius = 10
-        descriptionTextView.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
-        descriptionTextView.clipsToBounds = true
-        descriptionTextView.isScrollEnabled = true
-        descriptionTextView.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        descriptionTextView.attributedText = createAttributedString(imageString: "doc.append", imageColor: UIColor.gray, text: " Briefly describe your event!")
-        descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(descriptionTextView)
-
-        stackView = UIStackView(arrangedSubviews: [eventNameTextField, passwordTextField, passwordConfirmTextField, descriptionTextView])
-        stackView.axis = .vertical
-        stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        textFieldBlurView.addSubview(stackView)
+        personalPasswordTextField = createTextField(placeHolderText: " Password", placeHolderImageString: "lock", isPassword: true)
+        personalPasswordTextField.tag = 102
+        personalPasswordConfirmTextField = createTextField(placeHolderText: " Confirm Password", placeHolderImageString: "lock", isPassword: true)
+        personalPasswordConfirmTextField.tag = 103
+        hostInfoBoxView = createInfoBoxView(title: "Host Account", subTitle: "For the host only", arrangedSubviews: [personalPasswordTextField, personalPasswordConfirmTextField])
+        scrollView.addSubview(hostInfoBoxView)
+        
+        passwordBlurView = BlurEffectContainerView(blurStyle: .regular)
+        passwordBlurView.frame = CGRect(origin: CGPoint(x: view.bounds.origin.x, y: view.bounds.origin.y), size: CGSize(width: view.bounds.size.width, height: 100))
+        passwordBlurView.transform = CGAffineTransform(translationX: 0, y: -100)
+        view.addSubview(passwordBlurView)
+        
+        passwordStatusLabel = createLabel(text: "")
+        passwordStatusLabel.textAlignment = .center
+        passwordStatusLabel.backgroundColor = .clear
+        passwordStatusLabel.font = UIFont.rounded(ofSize: 14, weight: .regular)
+        passwordStatusLabel.textColor = UIColor.red
+        passwordStatusLabel.isHidden = true
+        passwordBlurView.addSubview(passwordStatusLabel)
+        
+        buttonContainer = UIView()
+        buttonContainer.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(buttonContainer)
+        
+        let buttonGradientView = GradientView()
+        buttonGradientView.layer.cornerRadius = 10
+        buttonGradientView.clipsToBounds = true
+        buttonGradientView.isUserInteractionEnabled = false
+        
+        let createButton = ButtonWithShadow()
+        createButton.setTitle("Create Event", for: .normal)
+        createButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
+        createButton.tag = 4
+        createButton.backgroundColor = .darkGray
+//        createButton.addSubview(buttonGradientView)
+//        createButton.sendSubviewToBack(buttonGradientView)
+        createButton.titleLabel?.font = UIFont.rounded(ofSize: 18, weight: .bold)
+        buttonContainer.addSubview(createButton)
+        buttonGradientView.setFill()
+        createButton.setFill()
     }
     
-    // Info box consists of a unit of text fields and text views
-    private func createInfoBox() {
-        let boxContainerView = UIView()
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+//        guard passwordTextField.text == passwordConfirmTextField.text &&
+//                personalPasswordTextField.text == personalPasswordConfirmTextField.text else {
+//                    return true
+//                }
+        let yDelta = view.bounds.origin.y - passwordBlurView.frame.origin.y
+            
+        print("yDelta", yDelta)
+        print("yDelta == 0 ? 100 : 0", yDelta == 0 ? 100 : 0)
         
-        /// Event name and password
-        let eventInfoLabel = UILabel()
-        eventInfoLabel.text = "General Information"
-        eventInfoLabel.font = UIFont.rounded(ofSize: 18, weight: .bold)
-        eventInfoLabel.textColor = .lightGray
-        eventInfoLabel.translatesAutoresizingMaskIntoConstraints = false
-        boxContainerView.addSubview(eventInfoLabel)
+        if (!(passwordTextField.text?.isEmpty ?? true) ||
+            !(passwordConfirmTextField.text?.isEmpty ?? true)) &&
+            passwordTextField.text != passwordConfirmTextField.text {
+            passwordStatusLabel.isHidden = false
+            passwordStatusLabel.text = "Guest passwords don't match"
+            passwordTextField.textColor = UIColor.red
+            passwordConfirmTextField.textColor = UIColor.red
+            
+            UIView.animate(withDuration: 0.5) { [weak self] in
+                self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
+            }
+        } else if (!(passwordTextField.text?.isEmpty ?? true) ||
+                   !(passwordConfirmTextField.text?.isEmpty ?? true)) &&
+                    ((passwordTextField.text?.count)! < 3) {
+            passwordStatusLabel.isHidden = false
+            passwordStatusLabel.text = "Guest password is too short"
+            passwordConfirmTextField.textColor = UIColor.red
+            passwordTextField.textColor = UIColor.red
+            
+            UIView.animate(withDuration: 0.5) { [weak self] in
+                self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
+            }
+        } else if (!(personalPasswordTextField.text?.isEmpty ?? true) ||
+            !(personalPasswordConfirmTextField.text?.isEmpty ?? true)) &&
+            personalPasswordTextField.text != personalPasswordConfirmTextField.text {
+            passwordStatusLabel.isHidden = false
+            passwordStatusLabel.text = "Host passwords don't match"
+            personalPasswordTextField.textColor = UIColor.red
+            personalPasswordConfirmTextField.textColor = UIColor.red
+            
+            UIView.animate(withDuration: 0.5) { [weak self] in
+                self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
+            }
+        } else if (!(personalPasswordTextField.text?.isEmpty ?? true) ||
+                   !(personalPasswordConfirmTextField.text?.isEmpty ?? true)) &&
+                    ((personalPasswordTextField.text?.count)! < 3) {
+            passwordStatusLabel.isHidden = false
+            passwordStatusLabel.text = "Host password is too short"
+            personalPasswordConfirmTextField.textColor = UIColor.red
+            personalPasswordTextField.textColor = UIColor.red
+            
+            UIView.animate(withDuration: 0.5) { [weak self] in
+                self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
+            }
+        } else {
+            if textField.tag == 100 || textField.tag == 101 {
+                passwordTextField.textColor = UIColor.lightGray
+                passwordConfirmTextField.textColor = UIColor.lightGray
+                
+                UIView.animate(withDuration: 0.5) { [weak self] in
+                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
+                }
+            } else {
+                personalPasswordTextField.textColor = UIColor.lightGray
+                personalPasswordConfirmTextField.textColor = UIColor.lightGray
+                
+                UIView.animate(withDuration: 0.5) { [weak self] in
+                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
+                }
+            }
+ 
+        }
         
-        //        gradientView2 = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor])
-        let gradientView2 = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1).cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor])
-        gradientView2.layer.cornerRadius = 10
-        gradientView2.clipsToBounds = true
-        gradientView2.backgroundColor = .black
-        gradientView2.translatesAutoresizingMaskIntoConstraints = false
-        boxContainerView.addSubview(gradientView2)
-        
-        textFieldBlurView = BlurEffectContainerView(blurStyle: .dark, effectViewAlpha:  0.8) /// The alpha is for the black color of the effect view's background.
-        textFieldBlurView.layer.cornerRadius = 10
-        textFieldBlurView.translatesAutoresizingMaskIntoConstraints = false
-        gradientView2.addSubview(textFieldBlurView)
-        textFieldBlurView.setFill()
-    }
-    
-    private func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
-        /// Create an attributed strings using a symbol and a text
-        let imageAttahment = NSTextAttachment()
-        imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
-        let imageOffsetY: CGFloat = -5.0
-        imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
-        let imageString = NSAttributedString(attachment: imageAttahment)
-        let textString = NSAttributedString(string: text)
-        
-        /// Add them to a mutable attributed string
-        let mas = NSMutableAttributedString(string: "")
-        mas.append(imageString)
-        mas.append(textString)
-        
-        /// Add attributes
-        let rangeText = (mas.string as NSString).range(of: mas.string)
-        mas.addAttributes([
-            NSAttributedString.Key.foregroundColor: UIColor.gray,
-            .font: UIFont.rounded(ofSize: 14, weight: .bold)
-        ], range: rangeText)
-        
-        return mas
+        return true
     }
     
     final override func setConstraints() {
@@ -249,30 +232,179 @@ final class EventViewController: RegisterViewController {
             imageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             imageButton.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.2),
             
-            eventInfoLabel.topAnchor.constraint(equalTo: imageButton.bottomAnchor, constant: 40),
-            eventInfoLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            eventInfoLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            eventInfoLabel.heightAnchor.constraint(equalToConstant: 30),
+            generalInfoBoxView.topAnchor.constraint(equalTo: imageButton.bottomAnchor, constant: 40),
+            generalInfoBoxView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            generalInfoBoxView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            generalInfoBoxView.heightAnchor.constraint(equalToConstant: 420),
             
-            gradientView2.topAnchor.constraint(equalTo: eventInfoLabel.bottomAnchor, constant: 10),
-            gradientView2.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            gradientView2.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            gradientView2.heightAnchor.constraint(equalToConstant: 370),
-
-            stackView.topAnchor.constraint(equalTo: gradientView2.topAnchor, constant: 30),
-            stackView.leadingAnchor.constraint(equalTo: textFieldBlurView.leadingAnchor, constant: 30),
-            stackView.trailingAnchor.constraint(equalTo: textFieldBlurView.trailingAnchor, constant: -30),
-            stackView.bottomAnchor.constraint(equalTo: textFieldBlurView.bottomAnchor, constant: -30),
-
-            eventNameTextField.heightAnchor.constraint(equalToConstant: 50),
-            passwordTextField.heightAnchor.constraint(equalToConstant: 50),
-            passwordConfirmTextField.heightAnchor.constraint(equalToConstant: 50),
-            descriptionTextView.heightAnchor.constraint(equalToConstant: 100)
+            hostInfoBoxView.topAnchor.constraint(equalTo: generalInfoBoxView.bottomAnchor, constant: 40),
+            hostInfoBoxView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            hostInfoBoxView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            hostInfoBoxView.heightAnchor.constraint(equalToConstant: 220),
+            
+//            passwordBlurView.topAnchor.constraint(equalTo: view.topAnchor, constant: -100),
+//            passwordBlurView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+//            passwordBlurView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+//            passwordBlurView.heightAnchor.constraint(equalToConstant: 100),
+            
+            passwordStatusLabel.bottomAnchor.constraint(equalTo: passwordBlurView.bottomAnchor, constant: 0),
+            passwordStatusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            passwordStatusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            passwordStatusLabel.heightAnchor.constraint(equalToConstant: 50),
+            
+            buttonContainer.topAnchor.constraint(equalTo: hostInfoBoxView.bottomAnchor, constant: 40),
+            buttonContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            buttonContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            buttonContainer.heightAnchor.constraint(equalToConstant: 50),
         ])
+    }
+
+    private func createLabel(text: String, size: CGFloat = 18) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = UIFont.rounded(ofSize: size, weight: .bold)
+        label.textColor = .lightGray
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }
+    
+    private func createTextField(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 50, isPassword: Bool = false) -> UITextField {
+        let textField = UITextField()
+        textField.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        textField.leftPadding()
+        textField.delegate = self
+        textField.textColor = .lightGray
+        textField.isSecureTextEntry = isPassword
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.borderWidth = 0.5
+        textField.layer.cornerRadius = 10
+        textField.attributedPlaceholder = createAttributedString(imageString: placeHolderImageString, imageColor: .gray, text: placeHolderText)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.heightAnchor.constraint(equalToConstant: height).isActive = true
+        return textField
+    }
+    
+    private func createTextView(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 100) -> UITextView {
+        let textView = UITextView()
+        textView.delegate = self
+        textView.textColor = .lightGray
+        textView.backgroundColor = .clear
+        textView.allowsEditingTextAttributes = true
+        textView.autocorrectionType = .yes
+        textView.layer.borderColor = UIColor.lightGray.cgColor
+        textView.layer.borderWidth = 0.5
+        textView.layer.cornerRadius = 10
+        textView.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
+        textView.clipsToBounds = true
+        textView.isScrollEnabled = true
+        textView.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        textView.attributedText = createAttributedString(imageString: placeHolderImageString, imageColor: UIColor.gray, text: placeHolderText)
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.heightAnchor.constraint(equalToConstant: height).isActive = true
+
+        return textView
+    }
+    
+    // Info box consists of a unit of text fields and text views
+    private func createInfoBoxView(title: String, subTitle: String, arrangedSubviews: [UIView]) -> UIView {
+        let boxContainerView = UIView()
+        boxContainerView.translatesAutoresizingMaskIntoConstraints = false
+        
+        /// Event name and password
+        let titleLabel = createLabel(text: title)
+        boxContainerView.addSubview(titleLabel)
+        
+        let subtitleLabel = createLabel(text: subTitle, size: 12)
+        subtitleLabel.textColor = .gray
+        boxContainerView.addSubview(subtitleLabel)
+        
+        let lineView = UIView()
+        lineView.translatesAutoresizingMaskIntoConstraints = false
+        boxContainerView.addSubview(lineView)
+        
+        //        gradientView2 = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor])
+//        let gradientView = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1).cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor])
+//        gradientView.layer.cornerRadius = 10
+//        gradientView.clipsToBounds = true
+//        gradientView.backgroundColor = .black
+//        gradientView.translatesAutoresizingMaskIntoConstraints = false
+//        boxContainerView.addSubview(gradientView)
+//
+//        let blurView = BlurEffectContainerView(blurStyle: .dark, effectViewAlpha:  0.8) /// The alpha is for the black color of the effect view's background.
+//        blurView.layer.cornerRadius = 10
+//        blurView.translatesAutoresizingMaskIntoConstraints = false
+//        gradientView.addSubview(blurView)
+//        blurView.setFill()
+        
+        let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
+        stackView.axis = .vertical
+        stackView.distribution = .equalSpacing
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        boxContainerView.addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: boxContainerView.topAnchor, constant: 0),
+            titleLabel.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+            titleLabel.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+            titleLabel.heightAnchor.constraint(equalToConstant: 30),
+            
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 0),
+            subtitleLabel.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+            subtitleLabel.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+            subtitleLabel.heightAnchor.constraint(equalToConstant: 20),
+            
+//            gradientView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
+//            gradientView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+//            gradientView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+//            gradientView.bottomAnchor.constraint(equalTo: boxContainerView.bottomAnchor),
+            
+//            stackView.topAnchor.constraint(equalTo: blurView.topAnchor, constant: 20),
+//            stackView.leadingAnchor.constraint(equalTo: blurView.leadingAnchor, constant: 20),
+//            stackView.trailingAnchor.constraint(equalTo: blurView.trailingAnchor, constant: -20),
+//            stackView.bottomAnchor.constraint(equalTo: blurView.bottomAnchor, constant: -20),
+            
+            stackView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
+            stackView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+            stackView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+            stackView.bottomAnchor.constraint(equalTo: boxContainerView.bottomAnchor, constant: 0),
+        ])
+        
+        return boxContainerView
+    }
+    
+    private func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
+        /// Create an attributed strings using a symbol and a text
+        let imageAttahment = NSTextAttachment()
+        imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
+        let imageOffsetY: CGFloat = -5.0
+        imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
+        let imageString = NSAttributedString(attachment: imageAttahment)
+        let textString = NSAttributedString(string: text)
+        
+        /// Add them to a mutable attributed string
+        let mas = NSMutableAttributedString(string: "")
+        mas.append(imageString)
+        mas.append(textString)
+        
+        /// Add attributes
+        let rangeText = (mas.string as NSString).range(of: mas.string)
+        mas.addAttributes([
+            NSAttributedString.Key.foregroundColor: UIColor.gray,
+            .font: UIFont.rounded(ofSize: 14, weight: .bold)
+        ], range: rangeText)
+        
+        return mas
     }
     
     override func getContentSizeHeight() -> CGFloat {
-        return super.getContentSizeHeight() + imageTitleLabel.bounds.size.height + imageSubtitleLabel.bounds.size.height + gradientView2.bounds.size.height + stackView.bounds.size.height + eventInfoLabel.bounds.size.height + 100
+        return super.getContentSizeHeight()
+        + imageTitleLabel.bounds.size.height
+        + imageSubtitleLabel.bounds.size.height
+        + imageButton.bounds.size.height
+        + generalInfoBoxView.bounds.size.height
+        + hostInfoBoxView.bounds.size.height
+        + buttonContainer.bounds.size.height
+        + 250
     }
     
     @objc final override func buttonPressed(_ sender: UIButton) {
@@ -307,6 +439,8 @@ final class EventViewController: RegisterViewController {
                     })
                 }
                 present(alertVC, animated: true)
+            case 4:
+                print("create event")
             default:
                 break
         }
@@ -336,6 +470,8 @@ extension EventViewController: UITextViewDelegate, UITextFieldDelegate {
         point.y += textField.bounds.size.height
         scrollView.setContentOffset(point, animated: true)
     }
+    
+
 }
 
 extension EventViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {

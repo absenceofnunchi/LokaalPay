@@ -10,7 +10,6 @@ import UIKit
 class RegisterViewController: UIViewController {
     var scrollView: UIScrollView!
     var backButton: UIButton!
-    var createButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,7 +66,6 @@ class RegisterViewController: UIViewController {
         let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
         feedbackGenerator.impactOccurred()
         
-        print("sender", sender)
         switch sender.tag {
             case 5:
                 print("dismiss")
