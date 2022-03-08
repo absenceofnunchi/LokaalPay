@@ -32,6 +32,7 @@
 		4932600E27CC23DB009B8390 /* UIViewController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4932600D27CC23DA009B8390 /* UIViewController+Extensions.swift */; };
 		494456FE27D6B74000C9B743 /* ActionSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494456FD27D6B74000C9B743 /* ActionSheetViewController.swift */; };
 		4944570127D6B84200C9B743 /* PartialPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4944570027D6B84200C9B743 /* PartialPresentationController.swift */; };
+		4944570327D6C7E700C9B743 /* ButtonWithShadow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4944570227D6C7E700C9B743 /* ButtonWithShadow.swift */; };
 		4950591F27B05B6A006B9294 /* CoreDataServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950591E27B05B6A006B9294 /* CoreDataServices.swift */; };
 		4950592227B06140006B9294 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592127B06140006B9294 /* Errors.swift */; };
 		4950592827B08B40006B9294 /* SigninViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4950592727B08B40006B9294 /* SigninViewController.swift */; };
@@ -158,6 +159,7 @@
 		4932600D27CC23DA009B8390 /* UIViewController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Extensions.swift"; sourceTree = "<group>"; };
 		494456FD27D6B74000C9B743 /* ActionSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionSheetViewController.swift; sourceTree = "<group>"; };
 		4944570027D6B84200C9B743 /* PartialPresentationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartialPresentationController.swift; sourceTree = "<group>"; };
+		4944570227D6C7E700C9B743 /* ButtonWithShadow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonWithShadow.swift; sourceTree = "<group>"; };
 		4950591E27B05B6A006B9294 /* CoreDataServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataServices.swift; sourceTree = "<group>"; };
 		4950592127B06140006B9294 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		4950592727B08B40006B9294 /* SigninViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigninViewController.swift; sourceTree = "<group>"; };
@@ -420,6 +422,7 @@
 				490367C927BC48E000DFDE2B /* AlertView.swift */,
 				4909287827D65E3E00D1597E /* BlurEffectContainerView.swift */,
 				4909287627D64D6D00D1597E /* GradientView.swift */,
+				4944570227D6C7E700C9B743 /* ButtonWithShadow.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -795,6 +798,7 @@
 				4909287927D65E3E00D1597E /* BlurEffectContainerView.swift in Sources */,
 				4950592827B08B40006B9294 /* SigninViewController.swift in Sources */,
 				4907BEE627D127120079C20D /* Node+CreateBlock.swift in Sources */,
+				4944570327D6C7E700C9B743 /* ButtonWithShadow.swift in Sources */,
 				497633D427C22F360044B426 /* TestTree.swift in Sources */,
 				492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */,
 				496CC5A227CCA60E0016B1C5 /* Multiset.swift in Sources */,
