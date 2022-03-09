@@ -1,13 +1,40 @@
 //
-//  IsolateAnimator.swift
+//  IsolateAnimator2.swift
 //  LedgerLinkV2
 //
 //  Created by J C on 2022-03-06.
 //
 
+/*
+ Abstract:
+ A custom transition from EventVC to main.
+ */
+
 import UIKit
 
-class IsolateAnimator: NSObject, UIViewControllerAnimatedTransitioning {
+class HostLoginTransitionDelegate: NSObject, UIViewControllerTransitioningDelegate {
+    var selectedTag: Int!
+    
+    init(selectedTag: Int) {
+        self.selectedTag = selectedTag
+    }
+    
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        let forwardAnimator = IsolateAnimator2(selectedTag: selectedTag)
+        return forwardAnimator
+    }
+    
+    //    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    //        return BackwardAnimator(menuData: menuData, imageRect: imageRect, constraints: constraints)
+    //    }
+}
+
+class IsolateAnimator2: NSObject, UIViewControllerAnimatedTransitioning {
+    var selectedTag: Int!
+    
+    init(selectedTag: Int) {
+        self.selectedTag = selectedTag
+    }
     
     func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         return 2.5
@@ -18,36 +45,20 @@ class IsolateAnimator: NSObject, UIViewControllerAnimatedTransitioning {
               let toVC = transitionContext.viewController(forKey: .to),
               let toView = transitionContext.view(forKey: .to) else { return }
         
-        // snapshot before the non-selected elements become transparent
-//        let snapshot = fromView.snapshotView(afterScreenUpdates: true)!
-        
-        // make everything transparent except for the selected element
-//        for v in fromView.allSubviews {
-//            if v.tag != 2 {
-//                if let label = v as? UILabel {
-//                    label.textColor = .black
-//                }
-//
-//                v.layer.borderWidth = 0
-//            }
-//        }
-
-        guard let button = fromView.viewWithTag(2) as? UIButton else {
+        guard let button = fromView.viewWithTag(selectedTag) as? UIButton else {
             return
         }
         
         let finalFrame = transitionContext.finalFrame(for: toVC)
         toView.frame = finalFrame
-//        toView.alpha = 0
+        //        toView.alpha = 0
         let containerView = transitionContext.containerView
         containerView.insertSubview(toView, at: 0)
         containerView.insertSubview(fromView, at: 1)
-//        containerView.insertSubview(snapshot, at: 2)
-
+        
         UIView.animateKeyframes(withDuration: 2, delay: 0, options: .calculationModeCubic) {
-            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.3) {
-//                snapshot.alpha = 0
-                for subview in fromView.allSubviews where subview.tag != 2 {
+            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.3) { [weak self] in
+                for subview in fromView.allSubviews where subview.tag != self?.selectedTag {
                     if let label = subview as? UILabel {
                         label.alpha = 0
                         label.layer.backgroundColor = UIColor.black.cgColor
@@ -67,7 +78,7 @@ class IsolateAnimator: NSObject, UIViewControllerAnimatedTransitioning {
                 toView.alpha = 1
             }
         } completion: { (_) in
-//            snapshot.removeFromSuperview()
+            //            snapshot.removeFromSuperview()
             fromView.removeFromSuperview()
             transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         }

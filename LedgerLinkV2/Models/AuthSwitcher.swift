@@ -27,23 +27,11 @@ class AuthSwitcher {
     static func updateRootVC() {
         let isLoggedIn = userDefaults.bool(forKey: UserDefaultsKey.isloggedIn)
         let isHost = userDefaults.bool(forKey: UserDefaultsKey.isHost)
-        let isEntered = userDefaults.bool(forKey: UserDefaultsKey.isEntered)
+//        let isEntered = userDefaults.bool(forKey: UserDefaultsKey.isEntered)
         var rootViewController: UIViewController!
-
-        if isEntered {
-            if isHost {
-                if isLoggedIn {
-                    rootViewController = loadMain()
-                } else {
-                    rootViewController = EventViewController()
-                }
-            } else {
-                if isLoggedIn {
-                    rootViewController = loadMain()
-                } else {
-                    rootViewController = JoinViewController()
-                }
-            }
+        
+        if isLoggedIn {
+            rootViewController = loadMain(isHost: isHost)
         } else {
             rootViewController = IntroViewController()
         }
@@ -57,7 +45,11 @@ class AuthSwitcher {
         sceneDelegate.window?.makeKeyAndVisible()
     }
     
-    static func loadMain() -> UIViewController {
+    static func loadMain(isHost: Bool) -> UIViewController {
+        
+        let walletVC = WalletViewController()
+        walletVC.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
+        
         let signupVC = SignupViewController()
         signupVC.tabBarItem = UITabBarItem(title: "Signup", image: UIImage(named: "lock"), selectedImage: UIImage(named: "lock"))
         
@@ -65,20 +57,18 @@ class AuthSwitcher {
         let mainNav = UINavigationController(rootViewController: mainVC)
         mainNav.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(named: "network"), selectedImage: UIImage(named: "network"))
         
-        let walletVC = WalletViewController()
-        walletVC.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
-        
         let explorerVC = ExplorerViewController()
         let explorerNav = UINavigationController(rootViewController: explorerVC)
         explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
         
         let tabBar = CustomTabBarController()
-        tabBar.setViewControllers([signupVC, mainNav, walletVC, explorerNav], animated: true)
+        tabBar.setViewControllers([walletVC, signupVC, mainNav, explorerNav], animated: true)
         return tabBar
     }
     
     static func logout() {
         userDefaults.set(false, forKey: UserDefaultsKey.isloggedIn)
+        userDefaults.set(false, forKey: UserDefaultsKey.isHost)
         updateRootVC()
     }
     

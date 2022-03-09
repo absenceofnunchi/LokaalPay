@@ -9,7 +9,11 @@ import UIKit
 
 class GradientView: UIView {
     var gradientLayer: CAGradientLayer!
-    var gradientColors: [CGColor]!
+    var gradientColors: [CGColor]! {
+        didSet {
+            gradientLayer.colors = gradientColors
+        }
+    }
     
     let newColors = [
         UIColor.purple.cgColor,
@@ -50,5 +54,12 @@ class GradientView: UIView {
         super.layoutSubviews()
         
         gradientLayer.frame = self.bounds
+    }
+    
+    func animate() {
+        gradientLayer.setAnimatedColors(newColors,
+                                        animated: true,
+                                        withDuration: 5,
+                                        timingFunctionName: .linear)
     }
 }

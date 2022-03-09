@@ -2,285 +2,207 @@
 //  WalletViewController.swift
 //  LedgerLinkV2
 //
-//  Created by J C on 2022-02-05.
+//  Created by J C on 2022-03-08.
 //
 
 import UIKit
-import web3swift
-import BigInt
-import Network
 
-final class WalletViewController: UIViewController {
-    private var receivedTextField: UITextField!
-    private var scanButton: UIButton!
-    private var balanceLabel: UILabel!
-    private var balanceButton: UIButton!
-    private var sendAmountLabel: UITextField!
-    private var sendButton: UIButton!
-    private var qrCodeButton: UIButton!
-    private var tableView: UITableView!
-    private var results: [String] = []
-    private let alert = AlertView()
-    private let transactionService = TransactionService()
-    private let wallet = LocalStorage()
+struct MyData: Hashable {
+    let colors: [CGColor]
+    let title: String
+    let image: UIImage
+    let identifier = UUID()
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identifier)
+    }
+}
 
+class WalletViewController: UIViewController {
+
+    enum Section: Int {
+        case horizontal
+        case vertical
+        
+        var columnCount: Int {
+            switch self {
+                case .horizontal:
+                    return 1
+                case .vertical:
+                    return 2
+            }
+        }
+    }
+    
+    /// items
+    var myDataCollection: [MyData] = [
+        MyData(colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!),
+        MyData(colors: [UIColor.purple.cgColor, UIColor.orange.cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!)
+    ]
+    
+    var dataSource: UICollectionViewDiffableDataSource<Section, MyData>! = nil
+    var collectionView: UICollectionView! = nil
+    
+    override func loadView() {
+        let v = UIView()
+        v.backgroundColor = .black
+        view = v
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
-        configureTableView()
-        setConstraints()
+        configureHierarchy()
+        configureDataSource()
     }
-    
-    func configureUI() {
-        tapToDismissKeyboard()
+}
 
-        view.backgroundColor = .white
+extension WalletViewController {
+    private func createLayout() -> UICollectionViewCompositionalLayout {
+        let sectionProvider = { (sectionIndex: Int, layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
+            // item
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.5))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            
+            guard let layoutKind = Section(rawValue: sectionIndex) else { return nil }
+            
+            // group
+            var group: NSCollectionLayoutGroup!
+            let groupFractionalWidth = CGFloat(layoutEnvironment.container.effectiveContentSize.width > 500 ? 0.425 : 0.60)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(groupFractionalWidth), heightDimension: .absolute(layoutEnvironment.container.effectiveContentSize.height))
+            if layoutKind == .horizontal {
+                group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: layoutKind.columnCount)
+                group.contentInsets = NSDirectionalEdgeInsets(top: 50, leading: 5, bottom: 0, trailing: 5)
+            } else {
+                group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitem: item, count: layoutKind.columnCount)
+                group.contentInsets = NSDirectionalEdgeInsets(top: 50, leading: 5, bottom: 0, trailing: 5)
+            }
+            
+            // section
+            let section = NSCollectionLayoutSection(group: group)
+            section.interGroupSpacing = 30
+            section.orthogonalScrollingBehavior = .groupPagingCentered
+            section.visibleItemsInvalidationHandler = { items, offset, environment in
+                let visibleFrame = CGRect(origin: offset, size: environment.container.contentSize)
+                let cells = items.filter { $0.representedElementCategory == .cell }
+                for item in cells {
+                    let distanceFromCenter = abs(visibleFrame.midX - item.center.x)
+                    let scaleZone = CGFloat(70)
+                    let scaleFactor = distanceFromCenter / scaleZone
+                    if distanceFromCenter < scaleZone {
+                        let scale = 1 + 0.5 * (1 - abs(scaleFactor))
+                        let transform = CGAffineTransform(scaleX: scale, y: scale)
+                        item.transform = transform
+                    }
+                }
+            }
+            
+            return section
+        }
         
-        receivedTextField = UITextField()
-        receivedTextField.placeholder = "Recipient Address: "
-        receivedTextField.textColor = .orange
-        receivedTextField.layer.borderColor = UIColor.black.cgColor
-        receivedTextField.layer.borderWidth = 1
-        receivedTextField.textAlignment = .left
-        receivedTextField.layer.cornerRadius = 10
-        receivedTextField.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(receivedTextField)
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.interSectionSpacing = 20
         
-        scanButton = UIButton()
-        scanButton.setTitle("Scan Address", for: .normal)
-        scanButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
-        scanButton.tag = 1
-        scanButton.backgroundColor = .black
-        scanButton.layer.cornerRadius = 10
-        scanButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(scanButton)
-        
-        balanceLabel = UILabel()
-        balanceLabel.text = "Balance: "
-        balanceLabel.textColor = .orange
-        balanceLabel.layer.borderColor = UIColor.black.cgColor
-        balanceLabel.layer.borderWidth = 1
-        balanceLabel.textAlignment = .left
-        balanceLabel.layer.cornerRadius = 10
-        balanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(balanceLabel)
+        let layout = UICollectionViewCompositionalLayout(sectionProvider: sectionProvider, configuration: config)
+        return layout
+    }
+}
 
-        balanceButton = UIButton()
-        balanceButton.setTitle("Check Balance", for: .normal)
-        balanceButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
-        balanceButton.tag = 2
-        balanceButton.backgroundColor = .black
-        balanceButton.layer.cornerRadius = 10
-        balanceButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(balanceButton)
+extension WalletViewController {
+    private func configureHierarchy() {
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+        collectionView.backgroundColor = .black
+        collectionView.delegate = self
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(collectionView)
         
-        sendAmountLabel = UITextField()
-        sendAmountLabel.placeholder = "Amount"
-        sendAmountLabel.textColor = .orange
-        sendAmountLabel.layer.borderColor = UIColor.black.cgColor
-        sendAmountLabel.layer.borderWidth = 1
-        sendAmountLabel.textAlignment = .left
-        sendAmountLabel.layer.cornerRadius = 10
-        sendAmountLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(sendAmountLabel)
-        
-        sendButton = UIButton()
-        sendButton.setTitle("Send Money", for: .normal)
-        sendButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
-        sendButton.tag = 0
-        sendButton.backgroundColor = .black
-        sendButton.layer.cornerRadius = 10
-        sendButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(sendButton)
-        
-        qrCodeButton = UIButton()
-        qrCodeButton.setTitle("Show QR Code", for: .normal)
-        qrCodeButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
-        qrCodeButton.tag = 3
-        qrCodeButton.backgroundColor = .black
-        qrCodeButton.layer.cornerRadius = 10
-        qrCodeButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(qrCodeButton)
-        
-        /// for testing
-        NetworkManager.shared.blockchainReceiveHandler = blockchainReceiveHandler
-    }
-    
-    func configureTableView() {
-        tableView = UITableView()
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(tableView)
-    }
-    
-    func setConstraints() {
         NSLayoutConstraint.activate([
-            receivedTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
-            receivedTextField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            receivedTextField.heightAnchor.constraint(equalToConstant: 50),
-            receivedTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            scanButton.topAnchor.constraint(equalTo: receivedTextField.bottomAnchor, constant: 20),
-            scanButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            scanButton.heightAnchor.constraint(equalToConstant: 50),
-            scanButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            balanceLabel.topAnchor.constraint(equalTo: scanButton.bottomAnchor, constant: 20),
-            balanceLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            balanceLabel.heightAnchor.constraint(equalToConstant: 50),
-            balanceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            balanceButton.topAnchor.constraint(equalTo: balanceLabel.bottomAnchor, constant: 20),
-            balanceButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            balanceButton.heightAnchor.constraint(equalToConstant: 50),
-            balanceButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            sendAmountLabel.topAnchor.constraint(equalTo: balanceButton.bottomAnchor, constant: 20),
-            sendAmountLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            sendAmountLabel.heightAnchor.constraint(equalToConstant: 50),
-            sendAmountLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            sendButton.topAnchor.constraint(equalTo: sendAmountLabel.bottomAnchor, constant: 20),
-            sendButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            sendButton.heightAnchor.constraint(equalToConstant: 50),
-            sendButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            qrCodeButton.topAnchor.constraint(equalTo: sendButton.bottomAnchor, constant: 20),
-            qrCodeButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            qrCodeButton.heightAnchor.constraint(equalToConstant: 50),
-            qrCodeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            tableView.topAnchor.constraint(equalTo: qrCodeButton.bottomAnchor, constant: 50),
-            tableView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collectionView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.3),
+            collectionView.widthAnchor.constraint(equalTo: view.widthAnchor)
         ])
     }
     
-    @objc private func buttonPressed(_ sender: UIButton) {
-        switch sender.tag {
-            case 0:
-                /// Send value
-                do {
-                    try send()
-                } catch {
-                    alert.show(error, for: self)
-                }
-                
-                break
-            case 1:
-                scan()
-                break
-            case 2:
-                checkBalance()
-                break
-            case 3:
-                showQRCode()
-                break
-            default:
-                break
-        }
-    }
-    
-    /// Send value to a peer
-    private func send() throws {
-        showSpinner()
-        view.endEditing(true)
+    private func configureDataSource() {
         
-        guard let address = receivedTextField.text,
-              let toAddress = EthereumAddress(address) else {
-            throw NodeError.generalError("Your address could not be prepared.")
+        let horizontalCellRegistration = UICollectionView.CellRegistration<CardCell, MyData> { (cell, indexPath, myData) in
+            cell.colors = myData.colors
+            cell.titleLabel.text = myData.title
+            cell.imageView.image = myData.image
         }
         
-        guard let sendAmount = sendAmountLabel.text,
-              !sendAmount.isEmpty,
-              let value = BigUInt(sendAmount),
-              value != 0 else {
-            throw NodeError.generalError("Amount cannot be zero.")
+        let verticalCellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, MyData> { (cell, indexPath, myData) in
+            cell.backgroundView?.backgroundColor = .red
         }
         
-        transactionService.prepareTransaction(.transferValue, to: toAddress, value: value, password: "1") { [weak self] (data, error) in
-            if let error = error {
-                print(error)
-                return
-            }
-            
-            if let data = data {
-                NetworkManager.shared.sendDataToAllPeers(data: data)
-                /// For validators only to include the validated transactions in a block
-                Node.shared.addValidatedTransaction(data)
-                self?.sendAmountLabel.text = nil
-                self?.hideSpinner()
-            }
-        }
+        dataSource = UICollectionViewDiffableDataSource<Section, MyData>(collectionView: collectionView, cellProvider: { (collectionView: UICollectionView, indexPath, myData: MyData) -> UICollectionViewCell? in
+            return Section(rawValue: indexPath.section)! == .horizontal ?
+            collectionView.dequeueConfiguredReusableCell(using: horizontalCellRegistration, for: indexPath, item: myData) :
+            collectionView.dequeueConfiguredReusableCell(using: verticalCellRegistration, for: indexPath, item: myData)
+        })
         
-        checkBalance()
-    }
-
-    private func scan() {
-        let scannerVC = ScannerViewController()
-        scannerVC.delegate = self
-        self.present(scannerVC, animated: true, completion: nil)
-    }
-    
-    private func showQRCode() {
-        var walletModel: KeyWalletModel?
-        do {
-            walletModel = try wallet.getWallet()
-        } catch {
-            alert.show(error, for: self)
-        }
-        
-        let qrCodeVC = QRCodeViewController()
-        qrCodeVC.addressString = walletModel?.address
-        self.present(qrCodeVC, animated: true, completion: nil)
-    }
-    
-    private func checkBalance() {
-        Node.shared.getMyAccount { [weak self] (account, error) in
-            if let error = error {
-                self?.alert.show(error, for: self)
-            }
-            
-            if let account = account {
-                self?.balanceLabel.text = account.balance.description
-            }
-        }
-    }
-    
-    func blockchainReceiveHandler(_ message: String) {
-        DispatchQueue.main.async { [weak self] in
-            let ac = UIAlertController(title: "Success", message: message, preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            self?.present(ac, animated: true)
-        }
+        var snapshot = NSDiffableDataSourceSnapshot<Section, MyData>()
+        snapshot.appendSections([.horizontal, .vertical])
+        snapshot.appendItems(myDataCollection)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
 
-extension WalletViewController: UITableViewDelegate, UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+extension WalletViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return results.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let sender = results[indexPath.row]
-        cell.textLabel?.text = sender
-        return cell
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        scrollView.contentOffset.y = 0.0
     }
 }
 
-extension WalletViewController: ScannerDelegate {
+class CardCell: UICollectionViewCell {
+    let gradientView = GradientView()
+    var colors: [CGColor] = [] {
+        didSet {
+            gradientView.gradientColors = colors
+        }
+    }
+    let titleLabel = UILabel()
+    let imageView = UIImageView()
     
-    // MARK: - scannerDidOutput
-    func scannerDidOutput(code: String) {
-        let text = code
-        receivedTextField.text = text
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        configure()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("Not implemented")
+    }
+}
+
+extension CardCell {
+    func configure() {
+        gradientView.layer.cornerRadius = 10
+        gradientView.clipsToBounds = true
+//        gradientView.alpha = 0.7
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(gradientView)
+        gradientView.setFill()
+    
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        gradientView.addSubview(imageView)
+        
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.adjustsFontForContentSizeCategory = true
+        titleLabel.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        titleLabel.textAlignment = .center
+        gradientView.addSubview(titleLabel)
+        
+        NSLayoutConstraint.activate([
+            imageView.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
+            imageView.centerYAnchor.constraint(equalTo: gradientView.centerYAnchor, constant: -20),
+            imageView.heightAnchor.constraint(equalToConstant:50),
+            imageView.widthAnchor.constraint(equalToConstant:50),
+            
+            titleLabel.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
+            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10),
+            titleLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor),
+        ])
     }
 }

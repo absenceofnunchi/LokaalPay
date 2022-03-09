@@ -20,7 +20,7 @@ final class IntroViewController: UIViewController {
     private var createButton: UIButton!
     private var joinButton: UIButton!
     private let userDefaults = UserDefaults.standard
-    var stackViewConstraints: [NSLayoutConstraint]!
+    private var selectedTag: Int! /// For passing the tag onto the custom transition animator
 
     final override func viewDidLoad() {
         super.viewDidLoad()
@@ -162,6 +162,8 @@ final class IntroViewController: UIViewController {
     }
     
     @objc private func buttonPressed(_ sender: UIButton) {
+        selectedTag = sender.tag
+        
         switch sender.tag {
             case 2:
                 loginAsHost()
@@ -176,23 +178,9 @@ final class IntroViewController: UIViewController {
     
     private func loginAsHost() {
         let eventVC = EventViewController()
-        let loginAnimator = LoginAnimator()
-        eventVC.transitioningDelegate = loginAnimator
+        let loginTransitionDelegate = LoginTransitionDelegate(selectedTag: selectedTag)
+        eventVC.transitioningDelegate = loginTransitionDelegate
         eventVC.modalPresentationStyle = .fullScreen
         self.present(eventVC, animated: true, completion: nil)
-    }
-}
-
-extension UIView {
-    func setFill() {
-        guard let superview = superview else { return }
-        self.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            self.topAnchor.constraint(equalTo: superview.topAnchor),
-            self.leadingAnchor.constraint(equalTo: superview.leadingAnchor),
-            self.trailingAnchor.constraint(equalTo: superview.trailingAnchor),
-            self.bottomAnchor.constraint(equalTo: superview.bottomAnchor),
-        ])
     }
 }

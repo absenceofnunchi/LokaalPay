@@ -59,15 +59,7 @@ class ButtonWithShadow: UIButton {
     override func backgroundImage(for state: UIControl.State) -> UIImage? {
         return UIImage()
     }
-    
-    override func backgroundRect(forBounds bounds: CGRect) -> CGRect {
-        var result = super.backgroundRect(forBounds:bounds)
-        if self.isHighlighted {
-            result = result.insetBy(dx: 100, dy: 100)
-        }
-        return result
-    }
-    
+
     func updateLayerProperties() {
         layer.masksToBounds = true
         layer.cornerRadius = 12.0

@@ -102,4 +102,16 @@ extension UIView {
     var allSubviews: [UIView] {
         return self.subviews.flatMap { [$0] + $0.allSubviews }
     }
+    
+    func setFill() {
+        guard let superview = superview else { return }
+        self.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            self.topAnchor.constraint(equalTo: superview.topAnchor),
+            self.leadingAnchor.constraint(equalTo: superview.leadingAnchor),
+            self.trailingAnchor.constraint(equalTo: superview.trailingAnchor),
+            self.bottomAnchor.constraint(equalTo: superview.bottomAnchor),
+        ])
+    }
 }

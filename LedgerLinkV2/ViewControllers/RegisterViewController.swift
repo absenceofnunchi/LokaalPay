@@ -104,14 +104,6 @@ extension RegisterViewController {
         self.scrollView.contentInset = contentInsets
         self.scrollView.scrollIndicatorInsets = contentInsets
         
-        //        var aRect : CGRect = self.view.frame
-        //        aRect.size.height -= keyboardSize.height
-        //        if let activeField = self.descTextView {
-        //            if (!aRect.contains(activeField.frame.origin)) {
-        //                self.scrollView.scrollRectToVisible(activeField.frame, animated: true)
-        //            }
-        //        }
-        
     }
     
     @objc private func keyboardWillHide(notification: NSNotification) {
