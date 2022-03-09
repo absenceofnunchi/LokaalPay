@@ -7,46 +7,43 @@
 
 import UIKit
 
-struct MyData: Hashable {
-    let colors: [CGColor]
-    let title: String
-    let image: UIImage
-    let identifier = UUID()
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(identifier)
-    }
-}
-
 class WalletViewController: UIViewController {
-
-    enum Section: Int {
-        case horizontal
-        case vertical
+    enum Section: Int, CaseIterable {
+        case horizontal, vertical
         
         var columnCount: Int {
             switch self {
                 case .horizontal:
                     return 1
+                    
                 case .vertical:
-                    return 2
+                    return 3
             }
         }
     }
     
-    /// items
-    var myDataCollection: [MyData] = [
-        MyData(colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!),
-        MyData(colors: [UIColor.purple.cgColor, UIColor.orange.cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!)
+    struct MenuData: Hashable {
+        let section: Section
+        let colors: [CGColor]
+        let title: String
+        let image: UIImage
+        let identifier = UUID()
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(identifier)
+        }
+    }
+    
+    var menuDataArray: [MenuData] = [
+        MenuData(section: .horizontal, colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!),
+        MenuData(section: .horizontal, colors: [UIColor.purple.cgColor, UIColor.orange.cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!),
+        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Reset Password", image: UIImage(systemName: "arrow.up")!),
+        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Transaction History", image: UIImage(systemName: "arrow.up")!),
+        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Private Key", image: UIImage(systemName: "arrow.up")!),
+        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Delete", image: UIImage(systemName: "arrow.up")!)
     ]
     
-    var dataSource: UICollectionViewDiffableDataSource<Section, MyData>! = nil
+    var dataSource: UICollectionViewDiffableDataSource<Section, MenuData>! = nil
     var collectionView: UICollectionView! = nil
-    
-    override func loadView() {
-        let v = UIView()
-        v.backgroundColor = .black
-        view = v
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,92 +53,165 @@ class WalletViewController: UIViewController {
 }
 
 extension WalletViewController {
-    private func createLayout() -> UICollectionViewCompositionalLayout {
-        let sectionProvider = { (sectionIndex: Int, layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
-            // item
-            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.5))
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+    /// - Tag: PerSection
+    private func generateLayout() -> UICollectionViewLayout {
+        let layout = UICollectionViewCompositionalLayout { (sectionIndex: Int,
+                                                            layoutEnvironment: NSCollectionLayoutEnvironment)
+            -> NSCollectionLayoutSection? in
+            let isWideView = layoutEnvironment.container.effectiveContentSize.width > 500
             
-            guard let layoutKind = Section(rawValue: sectionIndex) else { return nil }
-            
-            // group
-            var group: NSCollectionLayoutGroup!
-            let groupFractionalWidth = CGFloat(layoutEnvironment.container.effectiveContentSize.width > 500 ? 0.425 : 0.60)
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(groupFractionalWidth), heightDimension: .absolute(layoutEnvironment.container.effectiveContentSize.height))
-            if layoutKind == .horizontal {
-                group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: layoutKind.columnCount)
-                group.contentInsets = NSDirectionalEdgeInsets(top: 50, leading: 5, bottom: 0, trailing: 5)
-            } else {
-                group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitem: item, count: layoutKind.columnCount)
-                group.contentInsets = NSDirectionalEdgeInsets(top: 50, leading: 5, bottom: 0, trailing: 5)
+            let sectionLayoutKind = Section.allCases[sectionIndex]
+            switch (sectionLayoutKind) {
+                case .horizontal: return self.generateHorizontalLayout(
+                    isWide: isWideView)
+                case .vertical: return self.generateVerticalLayout(isWide: isWideView)
             }
-            
-            // section
-            let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = 30
-            section.orthogonalScrollingBehavior = .groupPagingCentered
-            section.visibleItemsInvalidationHandler = { items, offset, environment in
-                let visibleFrame = CGRect(origin: offset, size: environment.container.contentSize)
-                let cells = items.filter { $0.representedElementCategory == .cell }
-                for item in cells {
-                    let distanceFromCenter = abs(visibleFrame.midX - item.center.x)
-                    let scaleZone = CGFloat(70)
-                    let scaleFactor = distanceFromCenter / scaleZone
-                    if distanceFromCenter < scaleZone {
-                        let scale = 1 + 0.5 * (1 - abs(scaleFactor))
-                        let transform = CGAffineTransform(scaleX: scale, y: scale)
-                        item.transform = transform
-                    }
+        }
+        return layout
+    }
+    
+    private func generateHorizontalLayout(isWide: Bool) -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .fractionalHeight(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = NSDirectionalEdgeInsets(
+            top: 50,
+            leading: 10,
+            bottom: 50,
+            trailing: 5)
+        
+        let groupFractionalWidth: CGFloat = isWide ? 0.425 : 0.6
+        let groupFractionalHeight: CGFloat = isWide ? 1/5 : 1/4
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(groupFractionalWidth),
+            heightDimension: .fractionalHeight(groupFractionalHeight)
+        )
+        
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 1)
+        //        group.contentInsets = NSDirectionalEdgeInsets(
+        //            top: 50,
+        //            leading: 50,
+        //            bottom: 5,
+        //            trailing: 5)
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 30
+        section.orthogonalScrollingBehavior = .groupPagingCentered
+        section.visibleItemsInvalidationHandler = { items, offset, environment in
+            let visibleFrame = CGRect(origin: offset, size: environment.container.contentSize)
+            let cells = items.filter { $0.representedElementCategory == .cell }
+            for item in cells {
+                let distanceFromCenter = abs(visibleFrame.midX - item.center.x)
+                let scaleZone = CGFloat(70)
+                let scaleFactor = distanceFromCenter / scaleZone
+                if distanceFromCenter < scaleZone {
+                    let scale = 1 + 0.5 * (1 - abs(scaleFactor))
+                    let transform = CGAffineTransform(scaleX: scale, y: scale)
+                    item.transform = transform
                 }
             }
-            
-            return section
         }
         
-        let config = UICollectionViewCompositionalLayoutConfiguration()
-        config.interSectionSpacing = 20
+        return section
+    }
+    
+    private func generateVerticalLayout(isWide: Bool) -> NSCollectionLayoutSection {
+        /// Item
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .fractionalHeight(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = NSDirectionalEdgeInsets(
+            top: 20,
+            leading: 20,
+            bottom: 20,
+            trailing: 20)
         
-        let layout = UICollectionViewCompositionalLayout(sectionProvider: sectionProvider, configuration: config)
-        return layout
+        /// Group
+        let groupFractionalWidth: CGFloat = 0.5
+        let groupFractionalHeight: CGFloat = isWide ? 4/5 : 2/4
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(groupFractionalWidth),
+            heightDimension: .fractionalHeight(groupFractionalHeight)
+        )
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitem: item, count: 2)
+        
+        /// Section
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(44))
+        let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: "Menu",
+            alignment: .top)
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.boundarySupplementaryItems = [sectionHeader]
+        section.orthogonalScrollingBehavior = .groupPaging
+        
+        return section
     }
 }
 
 extension WalletViewController {
-    private func configureHierarchy() {
-        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+    func configureHierarchy() {
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: generateLayout())
+        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.backgroundColor = .black
-        collectionView.delegate = self
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
-        
-        NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            collectionView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.3),
-            collectionView.widthAnchor.constraint(equalTo: view.widthAnchor)
-        ])
+        collectionView.delegate = self
     }
-    
-    private func configureDataSource() {
+    func configureDataSource() {
         
-        let horizontalCellRegistration = UICollectionView.CellRegistration<CardCell, MyData> { (cell, indexPath, myData) in
-            cell.colors = myData.colors
-            cell.titleLabel.text = myData.title
-            cell.imageView.image = myData.image
+        let CardCellRegistration = UICollectionView.CellRegistration<CardCell, MenuData> { (cell, indexPath, menuData) in
+            // Populate the cell with our item description.
+            cell.titleLabel.text = menuData.title
+            cell.colors = menuData.colors
+            cell.imageView.image = menuData.image
         }
         
-        let verticalCellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, MyData> { (cell, indexPath, myData) in
-            cell.backgroundView?.backgroundColor = .red
+        let textCellRegistration = UICollectionView.CellRegistration<CardCell, MenuData> { (cell, indexPath, menuData) in
+            // Populate the cell with our item description.
+            cell.titleLabel.text = menuData.title
+            cell.titleLabel.textColor = .white
+            cell.colors = menuData.colors
+            cell.imageView.image = menuData.image
+            cell.contentView.layer.cornerRadius = Section(rawValue: indexPath.section)! == .vertical ? 15 : 5
+            cell.titleLabel.textAlignment = .center
         }
         
-        dataSource = UICollectionViewDiffableDataSource<Section, MyData>(collectionView: collectionView, cellProvider: { (collectionView: UICollectionView, indexPath, myData: MyData) -> UICollectionViewCell? in
+        dataSource = UICollectionViewDiffableDataSource<Section, MenuData>(collectionView: collectionView) {
+            (collectionView: UICollectionView, indexPath: IndexPath, identifier: MenuData) -> UICollectionViewCell? in
+            // Return the cell.
             return Section(rawValue: indexPath.section)! == .horizontal ?
-            collectionView.dequeueConfiguredReusableCell(using: horizontalCellRegistration, for: indexPath, item: myData) :
-            collectionView.dequeueConfiguredReusableCell(using: verticalCellRegistration, for: indexPath, item: myData)
-        })
+            collectionView.dequeueConfiguredReusableCell(using: CardCellRegistration, for: indexPath, item: identifier) :
+            collectionView.dequeueConfiguredReusableCell(using: textCellRegistration, for: indexPath, item: identifier)
+        }
         
-        var snapshot = NSDiffableDataSourceSnapshot<Section, MyData>()
-        snapshot.appendSections([.horizontal, .vertical])
-        snapshot.appendItems(myDataCollection)
+        let headerRegistration = UICollectionView.SupplementaryRegistration
+        <TextCell>(elementKind: "Menu") {
+            (supplementaryView, string, indexPath) in
+            supplementaryView.label.text = "Wallet Menu"
+            supplementaryView.label.textColor = .darkGray
+            supplementaryView.label.font = UIFont.rounded(ofSize: 15, weight: .bold)
+        }
+        
+        dataSource.supplementaryViewProvider = { (view, kind, index) in
+            return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: headerRegistration, for: index)
+        }
+        
+        // initial data
+        var snapshot = NSDiffableDataSourceSnapshot<Section, MenuData>()
+        Section.allCases.forEach { [weak self] section in
+            snapshot.appendSections([section])
+            guard let filteredMenuDataArray = self?.menuDataArray.filter ({ $0.section == section }) else { return }
+            snapshot.appendItems(filteredMenuDataArray)
+        }
+
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
@@ -151,9 +221,9 @@ extension WalletViewController: UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: true)
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        scrollView.contentOffset.y = 0.0
-    }
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        scrollView.contentOffset.y = 0.0
+//    }
 }
 
 class CardCell: UICollectionViewCell {
