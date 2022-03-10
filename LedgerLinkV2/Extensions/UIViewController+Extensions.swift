@@ -7,6 +7,8 @@
 
 import UIKit
 
+// MARK: - UIViewController
+
 extension UIViewController {
     /*! @fn showSpinner
      @brief Shows the please wait spinner.
@@ -79,9 +81,67 @@ extension UIViewController {
     @objc func tappedToDismiss() {
         view.endEditing(true)
     }
+    
+    func createTextField(placeHolderText: String, placeHolderImageString: String, isPassword: Bool = false) -> UITextField {
+        let textField = UITextField()
+        textField.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        textField.leftPadding()
+        textField.textColor = .lightGray
+        textField.isSecureTextEntry = isPassword
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.borderWidth = 0.5
+        textField.layer.cornerRadius = 10
+        textField.attributedPlaceholder = createAttributedString(imageString: placeHolderImageString, imageColor: .gray, text: placeHolderText)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }
+    
+    func createTextView(placeHolderText: String, placeHolderImageString: String) -> UITextView {
+        let textView = UITextView()
+        textView.textColor = .lightGray
+        textView.backgroundColor = .clear
+        textView.allowsEditingTextAttributes = true
+        textView.autocorrectionType = .yes
+        textView.layer.borderColor = UIColor.lightGray.cgColor
+        textView.layer.borderWidth = 0.5
+        textView.layer.cornerRadius = 10
+        textView.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
+        textView.clipsToBounds = true
+        textView.isScrollEnabled = true
+        textView.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        textView.attributedText = createAttributedString(imageString: placeHolderImageString, imageColor: UIColor.gray, text: placeHolderText)
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return textView
+    }
+    
+    private func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
+        /// Create an attributed strings using a symbol and a text
+        let imageAttahment = NSTextAttachment()
+        imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
+        let imageOffsetY: CGFloat = -5.0
+        imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
+        let imageString = NSAttributedString(attachment: imageAttahment)
+        let textString = NSAttributedString(string: text)
+        
+        /// Add them to a mutable attributed string
+        let mas = NSMutableAttributedString(string: "")
+        mas.append(imageString)
+        mas.append(textString)
+        
+        /// Add attributes
+        let rangeText = (mas.string as NSString).range(of: mas.string)
+        mas.addAttributes([
+            NSAttributedString.Key.foregroundColor: UIColor.gray,
+            .font: UIFont.rounded(ofSize: 14, weight: .bold)
+        ], range: rangeText)
+        
+        return mas
+    }
 }
 
 // MARK: - SaveAlertHandle
+
 private class SaveAlertHandle {
     static var alertHandle: UIAlertController?
     
@@ -98,6 +158,8 @@ private class SaveAlertHandle {
     }
 }
 
+// MARK: - UIView
+
 extension UIView {
     var allSubviews: [UIView] {
         return self.subviews.flatMap { [$0] + $0.allSubviews }
@@ -113,5 +175,69 @@ extension UIView {
             self.trailingAnchor.constraint(equalTo: superview.trailingAnchor),
             self.bottomAnchor.constraint(equalTo: superview.bottomAnchor),
         ])
+    }
+    
+    func roundCorners(topLeft: CGFloat = 0, topRight: CGFloat = 0, bottomLeft: CGFloat = 0, bottomRight: CGFloat = 0) {//(topLeft: CGFloat, topRight: CGFloat, bottomLeft: CGFloat, bottomRight: CGFloat) {
+        let topLeftRadius = CGSize(width: topLeft, height: topLeft)
+        let topRightRadius = CGSize(width: topRight, height: topRight)
+        let bottomLeftRadius = CGSize(width: bottomLeft, height: bottomLeft)
+        let bottomRightRadius = CGSize(width: bottomRight, height: bottomRight)
+        let maskPath = UIBezierPath(shouldRoundRect: bounds, topLeftRadius: topLeftRadius, topRightRadius: topRightRadius, bottomLeftRadius: bottomLeftRadius, bottomRightRadius: bottomRightRadius)
+        let shape = CAShapeLayer()
+        shape.path = maskPath.cgPath
+        layer.mask = shape
+    }
+}
+
+// MARK: - UIBezierPath
+
+extension UIBezierPath {
+    convenience init(shouldRoundRect rect: CGRect, topLeftRadius: CGSize = .zero, topRightRadius: CGSize = .zero, bottomLeftRadius: CGSize = .zero, bottomRightRadius: CGSize = .zero){
+        
+        self.init()
+        
+        let path = CGMutablePath()
+        
+        let topLeft = rect.origin
+        let topRight = CGPoint(x: rect.maxX, y: rect.minY)
+        let bottomRight = CGPoint(x: rect.maxX, y: rect.maxY)
+        let bottomLeft = CGPoint(x: rect.minX, y: rect.maxY)
+        
+        if topLeftRadius != .zero{
+            path.move(to: CGPoint(x: topLeft.x+topLeftRadius.width, y: topLeft.y))
+        } else {
+            path.move(to: CGPoint(x: topLeft.x, y: topLeft.y))
+        }
+        
+        if topRightRadius != .zero{
+            path.addLine(to: CGPoint(x: topRight.x-topRightRadius.width, y: topRight.y))
+            path.addCurve(to:  CGPoint(x: topRight.x, y: topRight.y+topRightRadius.height), control1: CGPoint(x: topRight.x, y: topRight.y), control2:CGPoint(x: topRight.x, y: topRight.y+topRightRadius.height))
+        } else {
+            path.addLine(to: CGPoint(x: topRight.x, y: topRight.y))
+        }
+        
+        if bottomRightRadius != .zero{
+            path.addLine(to: CGPoint(x: bottomRight.x, y: bottomRight.y-bottomRightRadius.height))
+            path.addCurve(to: CGPoint(x: bottomRight.x-bottomRightRadius.width, y: bottomRight.y), control1: CGPoint(x: bottomRight.x, y: bottomRight.y), control2: CGPoint(x: bottomRight.x-bottomRightRadius.width, y: bottomRight.y))
+        } else {
+            path.addLine(to: CGPoint(x: bottomRight.x, y: bottomRight.y))
+        }
+        
+        if bottomLeftRadius != .zero{
+            path.addLine(to: CGPoint(x: bottomLeft.x+bottomLeftRadius.width, y: bottomLeft.y))
+            path.addCurve(to: CGPoint(x: bottomLeft.x, y: bottomLeft.y-bottomLeftRadius.height), control1: CGPoint(x: bottomLeft.x, y: bottomLeft.y), control2: CGPoint(x: bottomLeft.x, y: bottomLeft.y-bottomLeftRadius.height))
+        } else {
+            path.addLine(to: CGPoint(x: bottomLeft.x, y: bottomLeft.y))
+        }
+        
+        if topLeftRadius != .zero{
+            path.addLine(to: CGPoint(x: topLeft.x, y: topLeft.y+topLeftRadius.height))
+            path.addCurve(to: CGPoint(x: topLeft.x+topLeftRadius.width, y: topLeft.y) , control1: CGPoint(x: topLeft.x, y: topLeft.y) , control2: CGPoint(x: topLeft.x+topLeftRadius.width, y: topLeft.y))
+        } else {
+            path.addLine(to: CGPoint(x: topLeft.x, y: topLeft.y))
+        }
+        
+        path.closeSubpath()
+        cgPath = path
     }
 }

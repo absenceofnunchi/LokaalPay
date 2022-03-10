@@ -214,7 +214,13 @@ final class Node {
         }
     }
     
-    func createWallet(password: String, chainID: String, isHost: Bool = false, completion: @escaping (Data) -> Void) {
+    func createWallet(
+        password: String,
+        chainID: String,
+        isHost: Bool = false,
+        extraData: Data? = nil,
+        completion: @escaping (Data) -> Void
+    ) {
         Deferred {
             Future<KeyWalletModel, NodeError> { promise in
                 KeysService().createNewWallet(password: password) { (keyWalletModel, error) in
@@ -269,7 +275,12 @@ final class Node {
             .flatMap { [weak self] data -> AnyPublisher<Data, NodeError> in
                 Future<Data, NodeError> { promise in
                     if isHost {
-                        self?.mintGenesisBlock(transactionData: data, promise: promise)
+                        guard let extraData = extraData else {
+                            promise(.failure(.generalError("Unable to extract extra data for the genesis block")))
+                            return
+                        }
+
+                        self?.mintGenesisBlock(transactionData: data, extraData: extraData, promise: promise)
                     } else {
                         promise(.success(data))
                     }
@@ -295,7 +306,7 @@ final class Node {
     /// Create a genesis block and save to Core Data
     /// Create a second block and add it to the unvalidated pool of blocks.
     /// The genesis block and the second block will be compared by the node and proceed to creating another block.
-    func mintGenesisBlock(transactionData: Data, promise: @escaping (Result<Data, NodeError>) -> Void) {
+    func mintGenesisBlock(transactionData: Data, extraData: Data, promise: @escaping (Result<Data, NodeError>) -> Void) {
         print("mintGenesisBlock----------------")
         
         guard let account = getMyAccount() else {
@@ -322,11 +333,9 @@ final class Node {
                 return
             }
             
-            let genesisBlock = try FullBlock(number: 0, parentHash: Data(), nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: [treeConfigTx], accounts: [treeConfigAcct])
-            
-            /// Second block is needed because a block creation only begins when two consecutive blocks are compared
-            //                let secondBlock = try FullBlock(number: 1, parentHash: genesisBlock.hash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: nil, accounts: nil)
-            
+            let genesisBlock = try FullBlock(number: 0, parentHash: Data(), nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: extraData, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: [treeConfigTx], accounts: [treeConfigAcct])
+            print("genesisBlock", genesisBlock)
+
             /// Genesis block is saved because it requires no validation
             self.saveSync([genesisBlock]) { (error) in
                 if let error = error {
@@ -509,7 +518,6 @@ final class Node {
                     }
                     break
                 case .sendBlock(let data):
-                    print("sendBlock", data)
                     /// Light blocks sent from peers on a regular interval
                     NetworkManager.shared.relayBlock(data)
                     let decoded = try JSONDecoder().decode(LightBlock.self, from: data)

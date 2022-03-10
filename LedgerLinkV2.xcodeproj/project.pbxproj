@@ -95,6 +95,10 @@
 		49F6E12E27C729AA00790A75 /* ExplorerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F6E12D27C729AA00790A75 /* ExplorerViewController.swift */; };
 		49F6E13027C72ADD00790A75 /* DetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F6E12F27C72ADD00790A75 /* DetailTableViewController.swift */; };
 		49FBF5C527D9149A00B21EED /* TestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FBF5C427D9149A00B21EED /* TestVC.swift */; };
+		49FBF5C727D96D1200B21EED /* SendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FBF5C627D96D1200B21EED /* SendViewController.swift */; };
+		49FBF5C927D970F600B21EED /* FlipAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FBF5C827D970F600B21EED /* FlipAnimator.swift */; };
+		49FBF5CB27D98EF400B21EED /* ReceiveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FBF5CA27D98EF400B21EED /* ReceiveViewController.swift */; };
+		49FBF5CD27D9B80600B21EED /* UserDefaultKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FBF5CC27D9B80600B21EED /* UserDefaultKey.swift */; };
 		49FC14F327B3236D00D215B6 /* Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F227B3236D00D215B6 /* Blocks.swift */; };
 		49FC14F527B323A800D215B6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F427B323A800D215B6 /* Account.swift */; };
 		49FC14F727B32A1100D215B6 /* MerkleTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FC14F627B32A1100D215B6 /* MerkleTree.swift */; };
@@ -224,6 +228,10 @@
 		49F6E12D27C729AA00790A75 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
 		49F6E12F27C72ADD00790A75 /* DetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTableViewController.swift; sourceTree = "<group>"; };
 		49FBF5C427D9149A00B21EED /* TestVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestVC.swift; sourceTree = "<group>"; };
+		49FBF5C627D96D1200B21EED /* SendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendViewController.swift; sourceTree = "<group>"; };
+		49FBF5C827D970F600B21EED /* FlipAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipAnimator.swift; sourceTree = "<group>"; };
+		49FBF5CA27D98EF400B21EED /* ReceiveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveViewController.swift; sourceTree = "<group>"; };
+		49FBF5CC27D9B80600B21EED /* UserDefaultKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultKey.swift; sourceTree = "<group>"; };
 		49FC14F227B3236D00D215B6 /* Blocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blocks.swift; sourceTree = "<group>"; };
 		49FC14F427B323A800D215B6 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		49FC14F627B32A1100D215B6 /* MerkleTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleTree.swift; sourceTree = "<group>"; };
@@ -363,6 +371,7 @@
 			isa = PBXGroup;
 			children = (
 				4950592127B06140006B9294 /* Errors.swift */,
+				49FBF5CC27D9B80600B21EED /* UserDefaultKey.swift */,
 				499C31E127D55A4200680C4A /* AuthSwitcher.swift */,
 				490367CD27BCC07D00DFDE2B /* ContractMethods.swift */,
 				49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */,
@@ -444,6 +453,7 @@
 		499C31E927D595D700680C4A /* Animators */ = {
 			isa = PBXGroup;
 			children = (
+				49FBF5C827D970F600B21EED /* FlipAnimator.swift */,
 				4996EA2C27D8274D005702B4 /* HostLoginTransitionDelegate.swift */,
 				499C31EC27D59A1B00680C4A /* LoginTransitionDelegate.swift */,
 			);
@@ -485,6 +495,8 @@
 				49F6E12D27C729AA00790A75 /* ExplorerViewController.swift */,
 				49F6E12F27C72ADD00790A75 /* DetailTableViewController.swift */,
 				494456FD27D6B74000C9B743 /* ActionSheetViewController.swift */,
+				49FBF5C627D96D1200B21EED /* SendViewController.swift */,
+				49FBF5CA27D98EF400B21EED /* ReceiveViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -817,6 +829,7 @@
 				499AF11B27AE1F0D00CAF0EA /* StatusViewController.swift in Sources */,
 				4976EB4E27CFD15100C10DBD /* StateCoreData+CoreDataClass.swift in Sources */,
 				490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */,
+				49FBF5CD27D9B80600B21EED /* UserDefaultKey.swift in Sources */,
 				490367C827BB612400DFDE2B /* ScannerViewController.swift in Sources */,
 				4944570127D6B84200C9B743 /* PartialPresentationController.swift in Sources */,
 				49F6E12E27C729AA00790A75 /* ExplorerViewController.swift in Sources */,
@@ -833,13 +846,16 @@
 				4950592227B06140006B9294 /* Errors.swift in Sources */,
 				49FC150127B5EDC200D215B6 /* NodeDB.swift in Sources */,
 				499C31E427D57B3400680C4A /* EventViewController.swift in Sources */,
+				49FBF5CB27D98EF400B21EED /* ReceiveViewController.swift in Sources */,
 				49FBF5C527D9149A00B21EED /* TestVC.swift in Sources */,
 				4976EB5027CFD15100C10DBD /* TransactionCoreData+CoreDataClass.swift in Sources */,
 				49FC14F327B3236D00D215B6 /* Blocks.swift in Sources */,
+				49FBF5C927D970F600B21EED /* FlipAnimator.swift in Sources */,
 				490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */,
 				49FC150727B62C8900D215B6 /* Data+Extensions.swift in Sources */,
 				49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */,
 				4950592A27B08B4F006B9294 /* SignupViewController.swift in Sources */,
+				49FBF5C727D96D1200B21EED /* SendViewController.swift in Sources */,
 				4950591F27B05B6A006B9294 /* CoreDataServices.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

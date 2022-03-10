@@ -94,7 +94,8 @@ public struct FullBlock: Codable {
         try encoder.encode(transactionsRoot.toHexString(), forKey: .transactionsRoot)
         try encoder.encode(stateRoot.toHexString(), forKey: .stateRoot)
         try encoder.encode(receiptsRoot.toHexString(), forKey: .receiptsRoot)
-        try encoder.encode(extraData?.toHexString(), forKey: .extraData)
+        let compressedExtraData = extraData?.compressed
+        try encoder.encode(compressedExtraData, forKey: .extraData)
         try encoder.encode(size.serialize().toHexString(), forKey: .size)
         try encoder.encode(gasLimit?.serialize().toHexString(), forKey: .gasLimit)
         try encoder.encode(gasUsed?.serialize().toHexString(), forKey: .gasUsed)
@@ -130,8 +131,8 @@ public struct FullBlock: Codable {
         guard let receiptsRoot = try decodeHexToData(container, key: .receiptsRoot) else {throw Web3Error.dataError}
         self.receiptsRoot = receiptsRoot
         
-        let extraData = try decodeHexToData(container, key: .extraData, allowOptional: true)
-        self.extraData = extraData
+        let compressedExtraData = try decodeHexToData(container, key: .extraData, allowOptional: true)
+        self.extraData = compressedExtraData?.decompressed
         
         guard let size = try decodeHexToBigUInt(container, key: .size) else {throw Web3Error.dataError}
         self.size = size
@@ -174,14 +175,16 @@ extension FullBlock {
         if let gasUsed = gasUsed {
             leaves.append(gasUsed.serialize())
         }
+        
         if let uncles = uncles,
            let encoded = try? JSONEncoder().encode(uncles) {
             leaves.append(encoded)
         }
         
-        if let extraData = extraData {
-            leaves.append(extraData)
-        }
+        /// MerkleTree is unable to process EventInfo as the extra data.
+//        if let extraData = extraData {
+//            leaves.append(extraData)
+//        }
         
         let rootNode = try MerkleTree<Data>.buildTree(fromData: leaves)
         if case .Node(hash: let merkleRoot, datum: _, left: _, right: _) = rootNode {

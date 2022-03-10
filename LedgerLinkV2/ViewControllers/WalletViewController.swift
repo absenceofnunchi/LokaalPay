@@ -7,7 +7,7 @@
 
 import UIKit
 
-class WalletViewController: UIViewController {
+final class WalletViewController: UIViewController {
     enum Section: Int, CaseIterable {
         case horizontal, vertical
         
@@ -33,19 +33,27 @@ class WalletViewController: UIViewController {
         }
     }
     
-    var menuDataArray: [MenuData] = [
-        MenuData(section: .horizontal, colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!),
-        MenuData(section: .horizontal, colors: [UIColor.purple.cgColor, UIColor.orange.cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!),
-        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Reset Password", image: UIImage(systemName: "arrow.up")!),
-        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Transaction History", image: UIImage(systemName: "arrow.up")!),
-        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Private Key", image: UIImage(systemName: "arrow.up")!),
-        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.darkGray.cgColor, UIColor.gray.cgColor], title: "Delete", image: UIImage(systemName: "arrow.up")!)
+    private var menuDataArray: [MenuData] = [
+        MenuData(section: .horizontal, colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+        MenuData(section: .horizontal, colors: [UIColor.purple.cgColor, UIColor.orange.cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+//        MenuData(section: .horizontal, colors: [UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+//        MenuData(section: .horizontal, colors: [UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+        
+//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Reset Password", image: UIImage(systemName: "lock.rotation.open")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Transaction History", image: UIImage(systemName: "book.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Private Key", image: UIImage(systemName: "lock.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Delete", image: UIImage(systemName: "trash.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal))
+        
+        MenuData(section: .vertical, colors: [UIColor(red: 70/255, green: 70/255, blue: 70/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Reset Password", image: UIImage(systemName: "lock.rotation.open")!.withTintColor(.red, renderingMode: .alwaysOriginal)),
+        MenuData(section: .vertical, colors: [UIColor(red: 70/255, green: 70/255, blue: 70/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Transaction History", image: UIImage(systemName: "book.circle")!.withTintColor(.green, renderingMode: .alwaysOriginal)),
+        MenuData(section: .vertical, colors: [UIColor(red: 70/255, green: 70/255, blue: 70/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Private Key", image: UIImage(systemName: "lock.circle")!.withTintColor(.cyan, renderingMode: .alwaysOriginal)),
+        MenuData(section: .vertical, colors: [UIColor(red: 70/255, green: 70/255, blue: 70/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Delete", image: UIImage(systemName: "trash.circle")!.withTintColor(.purple, renderingMode: .alwaysOriginal))
     ]
     
-    var dataSource: UICollectionViewDiffableDataSource<Section, MenuData>! = nil
-    var collectionView: UICollectionView! = nil
+    private var dataSource: UICollectionViewDiffableDataSource<Section, MenuData>! = nil
+    private var collectionView: UICollectionView! = nil
     
-    override func viewDidLoad() {
+    final override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
         configureDataSource()
@@ -125,10 +133,10 @@ extension WalletViewController {
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = NSDirectionalEdgeInsets(
-            top: 20,
-            leading: 20,
-            bottom: 20,
-            trailing: 20)
+            top: 15,
+            leading: 15,
+            bottom: 15,
+            trailing: 15)
         
         /// Group
         let groupFractionalWidth: CGFloat = 0.5
@@ -164,7 +172,7 @@ extension WalletViewController {
         view.addSubview(collectionView)
         collectionView.delegate = self
     }
-    func configureDataSource() {
+    private func configureDataSource() {
         
         let CardCellRegistration = UICollectionView.CellRegistration<CardCell, MenuData> { (cell, indexPath, menuData) in
             // Populate the cell with our item description.
@@ -180,7 +188,22 @@ extension WalletViewController {
             cell.colors = menuData.colors
             cell.imageView.image = menuData.image
             cell.contentView.layer.cornerRadius = Section(rawValue: indexPath.section)! == .vertical ? 15 : 5
-            cell.titleLabel.textAlignment = .center
+//            cell.titleLabel.textAlignment = .center
+//            cell.layer.borderColor = UIColor.darkGray.cgColor
+//            cell.layer.borderWidth = 0.5
+//            cell.layer.cornerRadius = 20
+//            cell.clipsToBounds = true
+            
+//            print("indexPath", indexPath)
+//            if indexPath.item % 2 == 0 {
+//                cell.radiusTopRight = 40
+//                cell.radiusBottomLeft = 40
+//            } else {
+//                cell.radiusTopLeft = 40
+//                cell.radiusBottomRight = 40
+//            }
+            
+            cell.radiusTopRight = 40
         }
         
         dataSource = UICollectionViewDiffableDataSource<Section, MenuData>(collectionView: collectionView) {
@@ -218,15 +241,29 @@ extension WalletViewController {
 
 extension WalletViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)
+//        collectionView.deselectItem(at: indexPath, animated: true)
+        
+        let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+        feedbackGenerator.impactOccurred()
+        
+        let item = menuDataArray[indexPath.item]
+        
+        switch item.title {
+            case "Send":
+                print("Send")
+                let sendVC = SendViewController()
+//                let flipDelegate = FlipTransitionDelegate(indexItem: indexPath.item)
+//                sendVC.transitioningDelegate = flipDelegate
+//                sendVC.modalPresentationStyle = .fullScreen
+                present(sendVC, animated: true)
+                break
+            default:
+                break
+        }
     }
-    
-//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        scrollView.contentOffset.y = 0.0
-//    }
 }
 
-class CardCell: UICollectionViewCell {
+final class CardCell: UICollectionViewCell {
     let gradientView = GradientView()
     var colors: [CGColor] = [] {
         didSet {
@@ -235,6 +272,29 @@ class CardCell: UICollectionViewCell {
     }
     let titleLabel = UILabel()
     let imageView = UIImageView()
+    var radiusTopLeft: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
+    
+    var radiusTopRight: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
+    
+    var radiusBottomLeft: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
+
+    var radiusBottomRight: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -248,9 +308,10 @@ class CardCell: UICollectionViewCell {
 
 extension CardCell {
     func configure() {
-        gradientView.layer.cornerRadius = 10
+        contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+
         gradientView.clipsToBounds = true
-//        gradientView.alpha = 0.7
+        gradientView.alpha = 0.7
         gradientView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(gradientView)
         gradientView.setFill()
@@ -260,19 +321,28 @@ extension CardCell {
         
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        titleLabel.font = UIFont.rounded(ofSize: 13, weight: .bold)
         titleLabel.textAlignment = .center
         gradientView.addSubview(titleLabel)
         
         NSLayoutConstraint.activate([
-            imageView.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
-            imageView.centerYAnchor.constraint(equalTo: gradientView.centerYAnchor, constant: -20),
-            imageView.heightAnchor.constraint(equalToConstant:50),
-            imageView.widthAnchor.constraint(equalToConstant:50),
+//            imageView.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
+//            imageView.centerYAnchor.constraint(equalTo: gradientView.centerYAnchor, constant: -20),
+//            imageView.heightAnchor.constraint(equalToConstant:40),
+//            imageView.widthAnchor.constraint(equalToConstant:40),
             
-            titleLabel.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
-            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10),
-            titleLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor),
+//            titleLabel.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
+//            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10),
+//            titleLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor),
+            
+            imageView.topAnchor.constraint(equalTo: gradientView.topAnchor, constant: 20),
+            imageView.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
+            imageView.heightAnchor.constraint(equalToConstant:40),
+            imageView.widthAnchor.constraint(equalToConstant:40),
+            
+            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
+            titleLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
+//            titleLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor),
         ])
     }
 }

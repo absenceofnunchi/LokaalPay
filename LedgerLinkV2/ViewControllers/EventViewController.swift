@@ -22,14 +22,17 @@ final class EventViewController: RegisterViewController {
     private var imageButton: UIButton!
     private var imageBlurView: BlurEffectContainerView!
     private var imageSymbolView: UIImageView!
-    private var passwordTextField: UITextField!
-    private var passwordConfirmTextField: UITextField!
-    private var personalPasswordTextField: UITextField!
-    private var personalPasswordConfirmTextField: UITextField!
     
     /// Event name and password
+    private var eventNameTextField: UITextField!
+    private var currencyNameTextField: UITextField!
     private var generalInfoBoxView: UIView!
     private var hostInfoBoxView: UIView!
+    private var passwordTextField: UITextField!
+    private var passwordConfirmTextField: UITextField!
+    private var descriptionTextView: UITextView!
+    private var personalPasswordTextField: UITextField!
+    private var personalPasswordConfirmTextField: UITextField!
     
     /// create event button
     private var passwordStatusLabel: UILabel!
@@ -38,9 +41,13 @@ final class EventViewController: RegisterViewController {
     private var buttonContainer: UIView!
     private var passwordBlurView: BlurEffectContainerView!
     private var selectedTag: Int! /// For passsing the tag of the button to the custom transition animator
+    private var alert: AlertView!
+    private var imageData: Data!
     
     final override func configureUI() {
         super.configureUI()
+        
+        alert = AlertView()
         
         /// Image upload button
         imageTitleLabel = UILabel()
@@ -52,7 +59,7 @@ final class EventViewController: RegisterViewController {
         
         imageSubtitleLabel = UILabel()
         imageSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        imageSubtitleLabel.text = "Event info and a password for your guests!"
+        imageSubtitleLabel.text = "Event info and a passcode for your guests!"
         imageSubtitleLabel.font = UIFont.rounded(ofSize: 15, weight: .bold)
         imageSubtitleLabel.textColor = .lightGray
         scrollView.addSubview(imageSubtitleLabel)
@@ -84,21 +91,45 @@ final class EventViewController: RegisterViewController {
         gradientView.sendSubviewToBack(gradientView)
         gradientView.isUserInteractionEnabled = false
         
-        let eventNameTextField = createTextField(placeHolderText: " Event Name", placeHolderImageString: "square.stack.3d.down.forward")
-        passwordTextField = createTextField(placeHolderText: " Password", placeHolderImageString: "lock", isPassword: true)
-        passwordTextField.tag = 100
-        passwordConfirmTextField = createTextField(placeHolderText: " Confirm Password", placeHolderImageString: "lock", isPassword: true)
-        passwordConfirmTextField.tag = 101
-        let descriptionTextView = createTextView(placeHolderText: " Briefly describe your event", placeHolderImageString: "doc.append")
+        eventNameTextField = createTextField(placeHolderText: " Event Name", placeHolderImageString: "square.stack.3d.down.forward")
+        eventNameTextField.delegate = self
+        eventNameTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
-        generalInfoBoxView = createInfoBoxView(title: "General Information", subTitle: "To share with your guests", arrangedSubviews: [eventNameTextField, passwordTextField, passwordConfirmTextField, descriptionTextView])
+        currencyNameTextField = createTextField(placeHolderText: " Currency Name", placeHolderImageString: "creditcard")
+        currencyNameTextField.delegate = self
+        currencyNameTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        passwordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true)
+        passwordTextField.keyboardType = .decimalPad
+        passwordTextField.delegate = self
+        passwordTextField.tag = 100
+        passwordTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        passwordConfirmTextField = createTextField(placeHolderText: " Confirm Passcode", placeHolderImageString: "lock", isPassword: true)
+        passwordConfirmTextField.keyboardType = .decimalPad
+        passwordConfirmTextField.delegate = self
+        passwordConfirmTextField.tag = 101
+        passwordConfirmTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        descriptionTextView = createTextView(placeHolderText: " Briefly describe your event", placeHolderImageString: "doc.append")
+        descriptionTextView.delegate = self
+        descriptionTextView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        
+        generalInfoBoxView = createInfoBoxView(title: "General Information", subTitle: "To share with your guests", arrangedSubviews: [eventNameTextField, currencyNameTextField, passwordTextField, passwordConfirmTextField, descriptionTextView])
         scrollView.addSubview(generalInfoBoxView)
         
-        personalPasswordTextField = createTextField(placeHolderText: " Password", placeHolderImageString: "lock", isPassword: true)
+        personalPasswordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true)
+        personalPasswordTextField.keyboardType = .decimalPad
+        personalPasswordTextField.delegate = self
         personalPasswordTextField.tag = 102
-        personalPasswordConfirmTextField = createTextField(placeHolderText: " Confirm Password", placeHolderImageString: "lock", isPassword: true)
+        personalPasswordTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+
+        personalPasswordConfirmTextField = createTextField(placeHolderText: " Confirm Passcode", placeHolderImageString: "lock", isPassword: true)
+        personalPasswordConfirmTextField.keyboardType = .decimalPad
+        personalPasswordConfirmTextField.delegate = self
         personalPasswordConfirmTextField.tag = 103
-        
+        personalPasswordConfirmTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+
         hostInfoBoxView = createInfoBoxView(title: "Host Account", subTitle: "For the host only", arrangedSubviews: [personalPasswordTextField, personalPasswordConfirmTextField])
         scrollView.addSubview(hostInfoBoxView)
         
@@ -166,17 +197,12 @@ final class EventViewController: RegisterViewController {
             generalInfoBoxView.topAnchor.constraint(equalTo: imageButton.bottomAnchor, constant: 40),
             generalInfoBoxView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             generalInfoBoxView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            generalInfoBoxView.heightAnchor.constraint(equalToConstant: 420),
+            generalInfoBoxView.heightAnchor.constraint(equalToConstant: 470),
             
             hostInfoBoxView.topAnchor.constraint(equalTo: generalInfoBoxView.bottomAnchor, constant: 40),
             hostInfoBoxView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             hostInfoBoxView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             hostInfoBoxView.heightAnchor.constraint(equalToConstant: 210),
-            
-//            passwordBlurView.topAnchor.constraint(equalTo: view.topAnchor, constant: -100),
-//            passwordBlurView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-//            passwordBlurView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-//            passwordBlurView.heightAnchor.constraint(equalToConstant: 100),
             
             passwordStatusLabel.bottomAnchor.constraint(equalTo: passwordBlurView.bottomAnchor, constant: 0),
             passwordStatusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
@@ -255,20 +281,6 @@ final class EventViewController: RegisterViewController {
         lineView.translatesAutoresizingMaskIntoConstraints = false
         boxContainerView.addSubview(lineView)
         
-        //        gradientView2 = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor])
-//        let gradientView = GradientView(colors: [UIColor.white.cgColor, UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1).cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor])
-//        gradientView.layer.cornerRadius = 10
-//        gradientView.clipsToBounds = true
-//        gradientView.backgroundColor = .black
-//        gradientView.translatesAutoresizingMaskIntoConstraints = false
-//        boxContainerView.addSubview(gradientView)
-//
-//        let blurView = BlurEffectContainerView(blurStyle: .dark, effectViewAlpha:  0.8) /// The alpha is for the black color of the effect view's background.
-//        blurView.layer.cornerRadius = 10
-//        blurView.translatesAutoresizingMaskIntoConstraints = false
-//        gradientView.addSubview(blurView)
-//        blurView.setFill()
-        
         let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
         stackView.axis = .vertical
         stackView.distribution = .equalSpacing
@@ -290,16 +302,6 @@ final class EventViewController: RegisterViewController {
             lineView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
             lineView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
             lineView.heightAnchor.constraint(equalToConstant: 0.5),
-            
-//            gradientView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
-//            gradientView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
-//            gradientView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
-//            gradientView.bottomAnchor.constraint(equalTo: boxContainerView.bottomAnchor),
-            
-//            stackView.topAnchor.constraint(equalTo: blurView.topAnchor, constant: 20),
-//            stackView.leadingAnchor.constraint(equalTo: blurView.leadingAnchor, constant: 20),
-//            stackView.trailingAnchor.constraint(equalTo: blurView.trailingAnchor, constant: -20),
-//            stackView.bottomAnchor.constraint(equalTo: blurView.bottomAnchor, constant: -20),
             
             stackView.topAnchor.constraint(equalTo: lineView.bottomAnchor, constant: 20),
             stackView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
@@ -350,6 +352,8 @@ final class EventViewController: RegisterViewController {
         
         switch sender.tag {
             case 1:
+                /// Prompt user for camera or gallery to upload an image
+                
                 let buttonInfoArr = [
                     ButtonInfo(title: "Camera", tag: 2, backgroundColor: .black),
                     ButtonInfo(title: "Gallery", tag: 3, backgroundColor: .black)
@@ -378,57 +382,220 @@ final class EventViewController: RegisterViewController {
                 }
                 present(alertVC, animated: true)
             case 4:
-                UIView.animateKeyframes(withDuration: 2, delay: 0, options: .calculationModeCubic) {
-                    UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.3) { [weak self] in
-                        guard let view = self?.view else { return }
-                        for subview in view.allSubviews where subview.tag != 4 {
-                            if let label = subview as? UILabel {
-                                label.alpha = 0
-                            }
+                /// Validate the fields
+                /// The fields cannot be empty
+                guard isFieldValid(eventNameTextField, alertMsg: "Event name cannot be empty.") else {
+                    return
+                }
 
-                            if let textView = subview as? UITextView {
-                                textView.alpha = 0
-                                textView.backgroundColor = UIColor.black
-                            }
+                guard isFieldValid(currencyNameTextField, alertMsg: "Currency name cannot be empty") else {
+                    return
+                }
 
-
-                            subview.layer.borderColor = UIColor.black.cgColor
-                        }
-                    }
-                    
-                    UIView.addKeyframe(withRelativeStartTime: 0.1, relativeDuration: 0.3) { [weak self] in
-                        self?.buttonGradientView.alpha = 1
-                        self?.buttonGradientView.animate()
-                    }
-                    
-                    UIView.addKeyframe(withRelativeStartTime: 0.8, relativeDuration: 0.3) { [weak self] in
-//                        guard let self = self else { return }
-//                        let center = self.view.convert(self.view.center, from: self.view.superview)
-//                        print("center", center)
-//                        let xDelta = self.createButton.center.x - center.x
-//                        print("xDelta", xDelta)
-//                        let yDelta = self.createButton.center.y - center.y
-//                        self.createButton.transform = CGAffineTransform(translationX: xDelta, y: yDelta)
-                        
-//
-                        self?.createButton.layer.shadowRadius = 0
-                        self?.createButton.layer.shadowOffset = .zero
-                        self?.createButton.layer.shadowColor = .none
-                        self?.createButton.layer.shadowOpacity = 0
-                        self?.buttonContainer.allSubviews.forEach {
-                            $0.backgroundColor = .black
-                            $0.alpha = 0
-                        }
-
-                    }
-                } completion: { (_) in
-                    AuthSwitcher.loginAsHost()
+                guard isFieldValid(passwordTextField, alertMsg: "Event password cannot be empty") else {
+                    return
                 }
                 
+                guard isNumber(passwordTextField, alertMsg: "The passcode has to be numerical") else {
+                    return
+                }
+
+                guard isFieldValid(passwordConfirmTextField, alertMsg: "Event password cannot be empty") else {
+                    return
+                }
+                
+                guard isNumber(passwordConfirmTextField, alertMsg: "The passcode has to be numerical") else {
+                    return
+                }
+
+                guard isFieldValid(descriptionTextView, alertMsg: "Description cannot be empty") else {
+                    return
+                }
+
+                guard isFieldValid(personalPasswordTextField, alertMsg: "Your password cannot be empty") else {
+                    return
+                }
+                
+                guard isNumber(personalPasswordTextField, alertMsg: "The host passcode has to be numerical") else {
+                    return
+                }
+
+                guard isFieldValid(personalPasswordConfirmTextField, alertMsg: "Your password cannot be empty") else {
+                    return
+                }
+                
+                guard isNumber(personalPasswordConfirmTextField, alertMsg: "The host passcode has to be numerical") else {
+                    return
+                }
+
+                UIView.animate(withDuration: 2) { [weak self] in
+                    guard let view = self?.view else { return }
+                    for subview in view.allSubviews where subview.tag != 4 {
+                        if let label = subview as? UILabel {
+                            label.alpha = 0
+                            label.textColor = .clear
+                        }
+
+                        if let textView = subview as? UITextView {
+                            textView.alpha = 0
+                            textView.textColor = .clear
+                            textView.backgroundColor = UIColor.black
+                        }
+
+                        subview.layer.borderColor = UIColor.black.cgColor
+                    }
+
+                    self?.buttonGradientView.alpha = 1
+                }
+
+                buttonGradientView.animate()
+//                UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 100, initialSpringVelocity: 100, options: [.curveEaseIn]) { [weak self] in
+//                    guard let self = self else { return }
+//                    let center = CGPoint(x: self.view.bounds.midX, y: self.view.bounds.midY)
+//                    let yDelta = self.buttonContainer.center.y - center.y
+////                    self.buttonGradientView.transform = CGAffineTransform(translationX: 0, y: yDelta)
+//                    self.buttonContainer.center = center
+//
+//                } completion: { isFinished in
+//                    print(isFinished)
+//                }
+
+
+                startBlockchain(password: passwordTextField.text!, chainID: personalPasswordTextField.text!) { [weak self] (_) in
+                    self?.buttonGradientView.alpha = 0
+                    self?.buttonContainer.alpha = 0
+                    AuthSwitcher.loginAsHost()
+                }
+
+                /// Fade out all the elements except for the button
+//                UIView.animateKeyframes(withDuration: 3, delay: 0, options: .calculationModeCubic) {
+//                    UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) { [weak self] in
+//                        guard let view = self?.view else { return }
+//                        for subview in view.allSubviews where subview.tag != 4 {
+//                            if let label = subview as? UILabel {
+//                                label.alpha = 0
+//                            }
+//
+//                            if let textView = subview as? UITextView {
+//                                textView.alpha = 0
+//                                textView.backgroundColor = UIColor.black
+//                            }
+//
+//                            subview.layer.borderColor = UIColor.black.cgColor
+//                        }
+//                    }
+//
+//                    UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 2/4) { [weak self] in
+//                        self?.buttonGradientView.alpha = 1
+//                        self?.buttonGradientView.animate()
+//                    }
+//
+//                    UIView.addKeyframe(withRelativeStartTime: 0.9, relativeDuration: 1/4) { [weak self] in
+//                        self?.buttonGradientView.alpha = 0
+//                        self?.buttonContainer.alpha = 0
+//                    }
+//                } completion: { (_) in
+//                    AuthSwitcher.loginAsHost()
+//                }
+
                 break
             default:
                 break
         }
+    }
+    
+    /// The event info that will be included int the genesis block.
+    /// The info will be queries and shown to the guests when they want to join an event.
+    struct EventInfo: Codable {
+        let eventName: String
+        let currencyName: String
+        var description: String?
+        var image: Data?
+    }
+    
+    /// Starts the server, creates a wallet, and creates a genesis block.
+    private func startBlockchain(password: String, chainID: String, completion: @escaping (Data) -> Void) {
+        /// start the server
+        NetworkManager.shared.start()
+        Node.shared.deleteAll()
+        
+        /// save the password and the chain ID for future transactions
+        UserDefaults.standard.set(password, forKey: UserDefaultKey.walletPassword)
+        UserDefaults.standard.set(chainID, forKey: UserDefaultKey.chainID)
+        
+        let eventInfo = EventInfo(eventName: eventNameTextField.text!, currencyName: currencyNameTextField.text!, description: descriptionTextView.text, image: imageData)
+        
+        do {
+            let encodedExtraData = try JSONEncoder().encode(eventInfo)
+            /// create a wallet
+            Node.shared.createWallet(password: password, chainID: chainID, isHost: true, extraData: encodedExtraData, completion: completion)
+        } catch {
+            alert.show(error, for: self)
+        }
+    }
+    
+    /// The warning display for the inaccurate or incomplete info the in the form fields.
+    /// Validates two form components: text field and text view
+    private func isFieldValid(_ inputField: UIView, alertMsg: String, width: CGFloat = 250) -> Bool {
+        if let textField = (inputField as? UITextField), let text = textField.text {
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            /// Certain fields cannot be empty
+            if trimmed.isEmpty {
+                showAlert(alertMsg: alertMsg)
+                return false
+            }
+        } else if let textView = (inputField as? UITextView) {
+            /// If the text color is gray, then the field only contains the placeholder.  The placeholder text for text view is just a regular text with a different text color. Therefore, delete.
+            if textView.textColor == UIColor.gray {
+                textView.text = nil
+            }
+        }
+        
+        return true
+    }
+    
+    /// The passcode fields have to be numerical.
+    func isNumber(_ textField: UITextField, alertMsg: String) -> Bool {
+        guard textField.tag == 100 || textField.tag == 101 || textField.tag == 102 || textField.tag == 103 else {
+            return true
+        }
+        
+        /// If the text fields are one of the 4, the content has to be numerical
+        if textField.text!.rangeOfCharacter(from: CharacterSet.decimalDigits.inverted) == nil {
+            // string is a valid number
+            return true
+        } else {
+            // string contained non-digit characters
+            showAlert(alertMsg: alertMsg)
+            return false
+        }
+    }
+    
+    func showAlert(alertMsg: String) {
+        passwordStatusLabel.isHidden = false
+        passwordStatusLabel.text = alertMsg
+        
+        /// Get the y coordinate distance of the password view and the screen so the animation could be toggled between those two coordinates
+        let yDelta = view.bounds.origin.y - passwordBlurView.frame.origin.y
+        
+        let animation = UIViewPropertyAnimator(duration: 4, timingParameters: UICubicTimingParameters())
+        animation.addAnimations {
+            UIView.animateKeyframes(withDuration: 0, delay: 0, animations: { [weak self] in
+                UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) {
+                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
+                }
+                
+                UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 1/2) {
+                    // pause
+                }
+                
+                UIView.addKeyframe(withRelativeStartTime: 2/3, relativeDuration: 1/4) {
+                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
+                }
+            })
+        }
+        
+        animation.startAnimation()
     }
 }
 
@@ -467,7 +634,6 @@ extension EventViewController: UITextViewDelegate, UITextFieldDelegate {
             passwordStatusLabel.text = "Guest passwords don't match"
             passwordTextField.textColor = UIColor.red
             passwordConfirmTextField.textColor = UIColor.red
-            
             UIView.animate(withDuration: 0.5) { [weak self] in
                 self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
             }
@@ -478,7 +644,6 @@ extension EventViewController: UITextViewDelegate, UITextFieldDelegate {
             passwordStatusLabel.text = "Guest password is too short"
             passwordConfirmTextField.textColor = UIColor.red
             passwordTextField.textColor = UIColor.red
-            
             UIView.animate(withDuration: 0.5) { [weak self] in
                 self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
             }
@@ -505,6 +670,7 @@ extension EventViewController: UITextViewDelegate, UITextFieldDelegate {
                 self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
             }
         } else {
+            
             if textField.tag == 100 || textField.tag == 101 {
                 passwordTextField.textColor = UIColor.lightGray
                 passwordConfirmTextField.textColor = UIColor.lightGray
@@ -520,7 +686,6 @@ extension EventViewController: UITextViewDelegate, UITextFieldDelegate {
                     self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
                 }
             }
-            
         }
         
         return true
@@ -531,12 +696,16 @@ extension EventViewController: UIImagePickerControllerDelegate & UINavigationCon
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true, completion: nil)
         
-        guard let url = info[UIImagePickerController.InfoKey.imageURL] as? URL,
-              let data = try? Data(contentsOf: url),
-              let image = UIImage(data: data) else {
+        guard let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else {
+//              let data = try? Data(contentsOf: url),
+//              let image = UIImage(data: data) else {
                   return
               }
         
+        /// Retain the image data to be included in the first block
+        imageData = image.pngData()
+        
+        /// Display the image for the form
         let imageView = UIImageView(image: image)
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 10

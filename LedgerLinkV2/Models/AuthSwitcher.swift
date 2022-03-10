@@ -18,16 +18,16 @@ import UIKit
 class AuthSwitcher {
     static let userDefaults = UserDefaults.standard
     
-    struct UserDefaultsKey {
+    struct AuthUserDefaultsKey {
         static let isEntered = "isEntered"
         static let isHost = "isHost"
         static let isloggedIn = "isLoggedIn"
     }
     
     static func updateRootVC() {
-        let isLoggedIn = userDefaults.bool(forKey: UserDefaultsKey.isloggedIn)
-        let isHost = userDefaults.bool(forKey: UserDefaultsKey.isHost)
-//        let isEntered = userDefaults.bool(forKey: UserDefaultsKey.isEntered)
+        let isLoggedIn = userDefaults.bool(forKey: AuthUserDefaultsKey.isloggedIn)
+        let isHost = userDefaults.bool(forKey: AuthUserDefaultsKey.isHost)
+//        let isEntered = userDefaults.bool(forKey: AuthUserDefaultsKey.isEntered)
         var rootViewController: UIViewController!
         
         if isLoggedIn {
@@ -67,20 +67,20 @@ class AuthSwitcher {
     }
     
     static func logout() {
-        userDefaults.set(false, forKey: UserDefaultsKey.isloggedIn)
-        userDefaults.set(false, forKey: UserDefaultsKey.isHost)
+        userDefaults.set(false, forKey: AuthUserDefaultsKey.isloggedIn)
+        userDefaults.set(false, forKey: AuthUserDefaultsKey.isHost)
         updateRootVC()
     }
     
     static func loginAsHost() {
-        userDefaults.set(true, forKey: UserDefaultsKey.isloggedIn)
-        userDefaults.set(true, forKey: UserDefaultsKey.isHost)
+        userDefaults.set(true, forKey: AuthUserDefaultsKey.isloggedIn)
+        userDefaults.set(true, forKey: AuthUserDefaultsKey.isHost)
         updateRootVC()
     }
     
     static func loginAsGuest() {
-        userDefaults.set(true, forKey: UserDefaultsKey.isloggedIn)
-        userDefaults.set(false, forKey: UserDefaultsKey.isHost)
+        userDefaults.set(true, forKey: AuthUserDefaultsKey.isloggedIn)
+        userDefaults.set(false, forKey: AuthUserDefaultsKey.isHost)
         updateRootVC()
     }
 }

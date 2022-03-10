@@ -171,7 +171,7 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
     
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            passswordTitleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
+            passswordTitleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
             passswordTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             passswordTitleLabel.heightAnchor.constraint(equalToConstant: 50),
             passswordTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -181,7 +181,7 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
             passwordTextField.heightAnchor.constraint(equalToConstant: 50),
             passwordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
-            addressTitleLabel.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 20),
+            addressTitleLabel.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 10),
             addressTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             addressTitleLabel.heightAnchor.constraint(equalToConstant: 50),
             addressTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -191,7 +191,7 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
             addressLabel.heightAnchor.constraint(equalToConstant: 50),
             addressLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            chainIDTitleLabel.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 20),
+            chainIDTitleLabel.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 10),
             chainIDTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             chainIDTitleLabel.heightAnchor.constraint(equalToConstant: 50),
             chainIDTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -201,17 +201,17 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
             chainIDTextField.heightAnchor.constraint(equalToConstant: 50),
             chainIDTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            roleTitleLabel.topAnchor.constraint(equalTo: chainIDTextField.bottomAnchor, constant: 20),
+            roleTitleLabel.topAnchor.constraint(equalTo: chainIDTextField.bottomAnchor, constant: 10),
             roleTitleLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             roleTitleLabel.heightAnchor.constraint(equalToConstant: 50),
             roleTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            yesButton.topAnchor.constraint(equalTo: roleTitleLabel.bottomAnchor, constant: 20),
+            yesButton.topAnchor.constraint(equalTo: roleTitleLabel.bottomAnchor, constant: 10),
             yesButton.widthAnchor.constraint(equalToConstant: 100),
             yesButton.heightAnchor.constraint(equalToConstant: 50),
             yesButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -100),
             
-            noButton.topAnchor.constraint(equalTo: roleTitleLabel.bottomAnchor, constant: 20),
+            noButton.topAnchor.constraint(equalTo: roleTitleLabel.bottomAnchor, constant: 10),
             noButton.widthAnchor.constraint(equalToConstant: 100),
             noButton.heightAnchor.constraint(equalToConstant: 50),
             noButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 100),

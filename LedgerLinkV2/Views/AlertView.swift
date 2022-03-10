@@ -33,4 +33,79 @@ struct AlertView {
             controller.present(alert, animated: true, completion: nil)
         }
     }
+    
+    enum FadingLocation {
+        case center, top
+    }
+    
+    // MARK: - fading
+    /// show a message for a brief period and disappears e.i "Copied"
+    func fading(
+        text: String = "Copied!",
+        controller: UIViewController?,
+        toBePasted: String?,
+        width: CGFloat = 150,
+        location: FadingLocation = .center,
+        completion: (() -> Void)? = nil
+    ) {
+        DispatchQueue.main.async {
+            guard let controller = controller else { return }
+            let dimmingView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+            dimmingView.translatesAutoresizingMaskIntoConstraints = false
+            dimmingView.layer.cornerRadius = 10
+            dimmingView.clipsToBounds = true
+            controller.view.addSubview(dimmingView)
+            
+            let label = UILabel()
+            label.font = UIFont.rounded(ofSize: 14, weight: .bold)
+            label.text = text
+            label.textColor = .white
+            label.textAlignment = .center
+            label.numberOfLines = 0
+            label.sizeToFit()
+            label.backgroundColor = .clear
+            label.alpha = 0
+            label.translatesAutoresizingMaskIntoConstraints = false
+            dimmingView.contentView.addSubview(label)
+            
+            if let tbp = toBePasted {
+                let pasteboard = UIPasteboard.general
+                pasteboard.string = tbp
+            }
+            
+            NSLayoutConstraint.activate([
+                dimmingView.centerXAnchor.constraint(equalTo: controller.view.centerXAnchor),
+                dimmingView.widthAnchor.constraint(equalToConstant: width),
+                dimmingView.heightAnchor.constraint(equalToConstant: 150),
+                
+                label.centerXAnchor.constraint(equalTo: dimmingView.contentView.centerXAnchor),
+                label.centerYAnchor.constraint(equalTo: dimmingView.contentView.centerYAnchor)
+            ])
+            
+            if location == .center {
+                NSLayoutConstraint.activate([
+                    dimmingView.centerYAnchor.constraint(equalTo: controller.view.centerYAnchor)
+                ])
+            } else if location == .top {
+                NSLayoutConstraint.activate([
+                    dimmingView.topAnchor.constraint(equalTo: controller.view.topAnchor, constant: 200)
+                ])
+            }
+            
+            UIView.animate(withDuration: 0.3) {
+                label.alpha = 1
+            }
+            
+            Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { timer in
+                UIView.animate(withDuration: 0.3) {
+                    label.alpha = 0
+                }
+                dimmingView.removeFromSuperview()
+                timer.invalidate()
+                //                controller.dismiss(animated: true, completion: nil)
+            }
+            
+            completion?()
+        }
+    }
 }
