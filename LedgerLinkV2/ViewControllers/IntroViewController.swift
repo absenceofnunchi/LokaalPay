@@ -8,10 +8,6 @@
 import UIKit
 
 final class IntroViewController: UIViewController {
-    private var animator: UIDynamicAnimator!
-    private var snapping: UISnapBehavior!
-    private var dialViewContainer: UIView!
-    private var dialView: UIView!
     private var imageView: UIImageView!
     private var containerView: UIView!
     private var titleContainerView: UIView!
@@ -21,7 +17,7 @@ final class IntroViewController: UIViewController {
     private var joinButton: UIButton!
     private let userDefaults = UserDefaults.standard
     private var selectedTag: Int! /// For passing the tag onto the custom transition animator
-
+    
     final override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -35,7 +31,7 @@ final class IntroViewController: UIViewController {
 //    }
     
     private func configureUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = .black
         
 //        dialViewContainer = UIView(frame: CGRect(origin: view.center, size: CGSize(width: 100, height: 100)))
 //        dialViewContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -44,6 +40,7 @@ final class IntroViewController: UIViewController {
         let bgImage = UIImage(named: "3")
         imageView = UIImageView(image: bgImage)
         imageView.contentMode = .scaleToFill
+        imageView.tag = 200
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
         
@@ -82,7 +79,7 @@ final class IntroViewController: UIViewController {
         createButton.layer.cornerRadius = 10
         createButton.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(createButton)
-        createButton.titleLabel?.tag = 2
+        createButton.titleLabel?.tag = 2 // The alpha of UILabel affects UIButton, tag the button's label with the same tag as the button to prevent the alpha change
         
         joinButton = UIButton()
         joinButton.tag = 1
@@ -94,6 +91,7 @@ final class IntroViewController: UIViewController {
         joinButton.layer.cornerRadius = 10
         joinButton.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(joinButton)
+        joinButton.titleLabel?.tag = 1
     }
     
     private func setConstraints() {
@@ -135,41 +133,17 @@ final class IntroViewController: UIViewController {
         ])
     }
     
-    private func animateDial() {
-        animator = UIDynamicAnimator(referenceView: view)
-        snapping = UISnapBehavior(item: dialView, snapTo: dialView.center)
-        animator.addBehavior(snapping)
-        
-        let pan = UIPanGestureRecognizer(target: self, action: #selector(panned))
-        dialView.addGestureRecognizer(pan)
-    }
-    
-    @objc private func panned(_ sender: UIPanGestureRecognizer) {
-        switch sender.state {
-            case .began:
-                animator.removeBehavior(snapping)
-            case .changed:
-                let translation = sender.translation(in: dialView.superview)
-                dialView.center = CGPoint(x: dialView.center.x + translation.x, y: dialView.center.y + translation.y)
-                sender.setTranslation(.zero, in: dialView.superview)
-            case .ended, .cancelled, .failed:
-                animator.addBehavior(snapping)
-            case .possible:
-                print("possible")
-            default:
-                break
-        }
-    }
-    
     @objc private func buttonPressed(_ sender: UIButton) {
         selectedTag = sender.tag
         
+        let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+        feedbackGenerator.impactOccurred()
         switch sender.tag {
             case 2:
                 loginAsHost()
                 break
             case 1:
-                AuthSwitcher.loginAsGuest()
+                loginAsGuest()
                 break
             default:
                 break
@@ -177,10 +151,28 @@ final class IntroViewController: UIViewController {
     }
     
     private func loginAsHost() {
-        let eventVC = EventViewController()
-        let loginTransitionDelegate = LoginTransitionDelegate(selectedTag: selectedTag)
-        eventVC.transitioningDelegate = loginTransitionDelegate
-        eventVC.modalPresentationStyle = .fullScreen
-        self.present(eventVC, animated: true, completion: nil)
+        let vc = HostLoginViewController()
+        vc.transitioningDelegate = self
+        vc.modalPresentationStyle = .fullScreen
+        self.present(vc, animated: true, completion: nil)
+    }
+    
+    private func loginAsGuest() {
+        let vc = GuestLoginViewController()
+        vc.transitioningDelegate = self
+        vc.modalPresentationStyle = .fullScreen
+        self.present(vc, animated: true, completion: nil)
+    }
+}
+
+/// The transition delegate is located in the presenting VC instead of in a class of its own in order for the animation for dismiss delegate method to be called by it.
+extension IntroViewController: UIViewControllerTransitioningDelegate {
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        let forwardAnimator = IsolateAnimator(selectedTag: selectedTag)
+        return forwardAnimator
+    }
+    
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return BackwardAnimator(selectedTag: selectedTag)
     }
 }

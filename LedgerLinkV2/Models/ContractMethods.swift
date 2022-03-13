@@ -16,6 +16,8 @@ enum ContractMethod: Codable {
     case blockchainDownloadAllRequest
     case blockchainDownloadAllResponse(Packet)
     case sendBlock(Data)
+    case eventsQueryRequest
+    case eventsQueryResponse(Data)
     
     enum CodingKeys: String, CodingKey {
         case createAccount
@@ -25,6 +27,8 @@ enum ContractMethod: Codable {
         case blockchainDownloadAllRequest
         case blockchainDownloadAllResponse
         case sendBlock
+        case eventsQueryRequest
+        case eventsQueryResponse
         
         var data: Data? {
             return Data(self.rawValue.utf8)
@@ -40,6 +44,7 @@ enum ContractMethod: Codable {
             case .transferValue(let rlpEncoded):
                 try container.encode(rlpEncoded, forKey: .transferValue)
             case .blockchainDownloadRequest(let blockNumber):
+                /// Block number is passed to let the recipient know from which point in the blockchain the sender needs to download
                 try container.encode(blockNumber, forKey: .blockchainDownloadRequest)
             case .blockchainDownloadResponse(let packet):
                 let encoded = try JSONEncoder().encode(packet)
@@ -53,6 +58,10 @@ enum ContractMethod: Codable {
                 try container.encode(compressed, forKey: .blockchainDownloadAllResponse)
             case .sendBlock(let data):
                 try container.encode(data, forKey: .sendBlock)
+            case .eventsQueryRequest:
+                try container.encode("eventsQueryRequest", forKey: .eventsQueryRequest)
+            case .eventsQueryResponse(let data):
+                try container.encode(data, forKey: .eventsQueryResponse)
         }
     }
     
@@ -114,6 +123,14 @@ enum ContractMethod: Codable {
 //                guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode sendBlock in ContractMethod") }
 //                let decoded = try JSONDecoder().decode(LightBlock.self, from: decompressed)
                 self = .sendBlock(data)
+            case .eventsQueryRequest:
+                guard let decoded = try? container.decode(String.self, forKey: .eventsQueryRequest), decoded == "eventsQueryRequest" else {
+                    throw NodeError.generalError("Unable to decode eventsQueryRequest in ContractMethod")
+                }
+                self = .eventsQueryRequest
+            case .eventsQueryResponse:
+                let data = try container.decode(Data.self, forKey: .eventsQueryResponse)
+                self = .eventsQueryResponse(data)
             default:
                 throw DecodingError.dataCorrupted(
                     DecodingError.Context(

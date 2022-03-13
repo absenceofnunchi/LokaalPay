@@ -456,9 +456,48 @@ final class BlockchainTests: XCTestCase {
     }
     
     func test_test() {
-        var lBlocks = lightBlocks
-        lBlocks.sort { $0.number < $1.number }
-        lBlocks.forEach { print($0.number) }
-        print(lBlocks.last as Any)
+        Node.shared.deleteAll()
+        
+        let hash = "0xfFbb73852d9DA0DF8a9ecEbB85e896fd1e7D51Ec"
+        guard let converted = hash.data(using: .utf8) else { return }
+        let hashData = converted.sha256()
+        guard let address = EthereumAddress(hash) else { return }
+        let tx = EthereumTransaction(gasPrice: BigUInt(10), gasLimit: BigUInt(10), to: address, value: BigUInt(10), data: Data())
+        guard let treeConfigTx = try? TreeConfigurableTransaction(data: tx) else { return }
+        
+        let eventInfo = EventInfo(eventName: "Event", currencyName: "Dollar", description: nil, image: nil)
+        guard let extraData = try? JSONEncoder().encode(eventInfo) else { return }
+        
+        print("ex", extraData)
+        let hex = extraData.toHexString()
+        print("hex", hex)
+//        let data = Data(hex: hex)
+//
+//        guard let decoded = try? JSONDecoder().decode(EventInfo.self, from: data) else { return }
+//        print("decoded", decoded)
+        
+        guard let block = try? FullBlock(number: BigUInt(0), parentHash: hashData, transactionsRoot: hashData, stateRoot: hashData, receiptsRoot: hashData, extraData: extraData, miner: addresses[0].address, transactions: [treeConfigTx], accounts: treeConfigurableAccounts) else { return }
+
+//        guard let lightBlock = try? LightBlock(data: block) else { return }
+//        print("light", lightBlock)
+//
+//        guard let decoded = lightBlock.decode() else { return }
+//        print("decoded", decoded)
+        
+        Node.shared.saveSync([block]) { error in
+            if let error = error {
+                print("1", error)
+                return
+            }
+
+            Node.shared.localStorage.getBlock(Int32(0)) { block, error in
+                if let error = error {
+                    print("2", error)
+                    return
+                }
+
+                print(block?.extraData as Any)
+            }
+        }
     }
 }

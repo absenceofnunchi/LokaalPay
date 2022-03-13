@@ -41,7 +41,7 @@ final class NetworkManager: NSObject {
     private var storage = Set<AnyCancellable>()
     private var transactionRelayHistory = [Data: Set<MCPeerID>]()
     private var blockRelayHistory = [Data: Set<MCPeerID>]()
-
+    
     override init() {
         super.init()
         self.configureSession()
@@ -58,23 +58,28 @@ final class NetworkManager: NSObject {
     }
     
     // MARK: - `MPCSession` public methods.
-    func start() {
+    func start(startAutoRelay: Bool = true) {
         guard isServerRunning == false else { return }
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceAdvertiser?.startAdvertisingPeer()
         self.nearbyBrowser.startBrowsingForPeers()
         self.isServerRunning = true
-        
+
         /// Start the pinging only at every 0 or 30 second so that all the devices could be synchronized.
-        let date = Date()
-        let roundedDate = date.rounded(on: 30, .second)
-        if self.timer != nil {
-            self.timer.invalidate()
+        /// Auto relay is for a validate to send blocks or for guests to execute and clear validated transactions.
+        /// This isn't needed for occasions like querying events (first blocks) as a new guest.
+        if startAutoRelay {
+            let date = Date()
+            let roundedDate = date.rounded(on: 30, .second)
+            if self.timer != nil {
+                self.timer.invalidate()
+            }
+            
+            /// From the 0 or 30 second mark, the auto relay is run at a specified interval
+            self.timer = Timer(fireAt: roundedDate, interval: 20, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
+            RunLoop.main.add(self.timer, forMode: .common)
         }
-        /// From the 0 or 30 second mark, the auto relay is run at a specified interval
-        self.timer = Timer(fireAt: roundedDate, interval: 20, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
-        RunLoop.main.add(self.timer, forMode: .common)
     }
     
     func suspend() {
@@ -116,7 +121,6 @@ final class NetworkManager: NSObject {
         Node.shared.processBlock { [weak self] (block) in
             if let block = block {
                 do {
-                    
                     let encoded = try JSONEncoder().encode(block)
                     let contractMethod = ContractMethod.sendBlock(encoded)
                     let encodedMethod = try JSONEncoder().encode(contractMethod)
@@ -194,32 +198,6 @@ extension NetworkManager: MCSessionDelegate {
     }
 
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        if let decoded = try? JSONDecoder().decode(String.self, from: data) {
-            print("string", decoded)
-        } else if let decoded = try? JSONDecoder().decode(Data.self, from: data) {
-            print("Data", decoded)
-
-        } else if let decoded = try? JSONDecoder().decode(Int.self, from: data) {
-            print("Int", decoded)
-
-        } else if let decoded = try? JSONDecoder().decode([String].self, from: data) {
-            print("[String]", decoded)
-
-        } else if let decoded = try? JSONDecoder().decode([Data].self, from: data) {
-            print("[Data]", decoded)
-
-        } else if let decoded = try? JSONDecoder().decode([Int].self, from: data) {
-            print("[Int]", decoded)
-
-        } else if let decoded = try? JSONDecoder().decode(Double.self, from: data) {
-            print("string", decoded)
-
-        } else if let decoded = try? JSONDecoder().decode(ContractMethod.self, from: data) {
-            print("ContractMethod", decoded)
-
-        }
-        
-
         Node.shared.processTransaction(data, peerID: peerID)
     }
     

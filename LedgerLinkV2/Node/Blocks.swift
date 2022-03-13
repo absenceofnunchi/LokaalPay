@@ -94,8 +94,8 @@ public struct FullBlock: Codable {
         try encoder.encode(transactionsRoot.toHexString(), forKey: .transactionsRoot)
         try encoder.encode(stateRoot.toHexString(), forKey: .stateRoot)
         try encoder.encode(receiptsRoot.toHexString(), forKey: .receiptsRoot)
-        let compressedExtraData = extraData?.compressed
-        try encoder.encode(compressedExtraData, forKey: .extraData)
+//        let compressedExtraData = extraData?.compressed
+        try encoder.encode(extraData?.toHexString(), forKey: .extraData)
         try encoder.encode(size.serialize().toHexString(), forKey: .size)
         try encoder.encode(gasLimit?.serialize().toHexString(), forKey: .gasLimit)
         try encoder.encode(gasUsed?.serialize().toHexString(), forKey: .gasUsed)
@@ -131,8 +131,9 @@ public struct FullBlock: Codable {
         guard let receiptsRoot = try decodeHexToData(container, key: .receiptsRoot) else {throw Web3Error.dataError}
         self.receiptsRoot = receiptsRoot
         
-        let compressedExtraData = try decodeHexToData(container, key: .extraData, allowOptional: true)
-        self.extraData = compressedExtraData?.decompressed
+//        self.extraData = try container.decode(Data.self, forKey: .extraData)
+        self.extraData = try decodeHexToData(container, key: .extraData, allowOptional: true)
+//        self.extraData = compressedExtraData?.decompressed
         
         guard let size = try decodeHexToBigUInt(container, key: .size) else {throw Web3Error.dataError}
         self.size = size
@@ -357,7 +358,7 @@ struct LightBlock: LightConfigurable, PropertyLoopable {
             let decoded = try JSONDecoder().decode(FullBlock.self, from: decompressed)
             return decoded
         } catch {
-            print(error) /// < -- dataError
+            print("light block decode error: ", error) /// < -- dataError
             return nil
         }
     }

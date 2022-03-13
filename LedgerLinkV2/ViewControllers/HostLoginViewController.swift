@@ -1,5 +1,5 @@
 //
-//  EventViewController.swift
+//  HostLoginViewController.swift
 //  LedgerLinkV2
 //
 //  Created by J C on 2022-03-06.
@@ -14,7 +14,10 @@
 
 import UIKit
 
-final class EventViewController: RegisterViewController {
+final class HostLoginViewController: UIViewController {
+    var scrollView: UIScrollView!
+    var backButton: UIButton!
+
     /// Image upload
     private var imageTitleLabel: UILabel!
     private var imageSubtitleLabel: UILabel!
@@ -44,26 +47,67 @@ final class EventViewController: RegisterViewController {
     private var alert: AlertView!
     private var imageData: Data!
     
-    final override func configureUI() {
-        super.configureUI()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        addKeyboardObserver()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        removeKeyboardObserver()
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
+        configureUI()
+        setConstraints()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        //        let contentRect: CGRect = view.subviews.reduce(into: .zero, { rect, view in
+        //            rect = rect.union(view.frame)
+        //        })
+        //        print("contentRect", contentRect)
+        //        scrollView.contentSize = contentRect.size
+        
+        let height = getContentSizeHeight()
+        scrollView.contentSize = CGSize(width: view.bounds.size.width, height: height)
+    }
+    
+    final func configureUI() {
+        
+        view.backgroundColor = .black
+        tapToDismissKeyboard()
         alert = AlertView()
+        
+        scrollView = UIScrollView()
+        view.addSubview(scrollView)
+        scrollView.setFill()
+        
+        guard let buttonImage = UIImage(systemName: "multiply")?.withTintColor(.lightGray, renderingMode: .alwaysOriginal) else { return }
+        backButton = UIButton.systemButton(with: buttonImage, target: self, action: #selector(buttonPressed))
+        backButton.tag = 5
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(backButton)
         
         /// Image upload button
         imageTitleLabel = UILabel()
-        imageTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         imageTitleLabel.text = "Create Event"
         imageTitleLabel.font = UIFont.rounded(ofSize: 25, weight: .bold)
         imageTitleLabel.textColor = .lightGray
+        imageTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(imageTitleLabel)
-        
+
         imageSubtitleLabel = UILabel()
-        imageSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         imageSubtitleLabel.text = "Event info and a passcode for your guests!"
         imageSubtitleLabel.font = UIFont.rounded(ofSize: 15, weight: .bold)
         imageSubtitleLabel.textColor = .lightGray
+        imageSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(imageSubtitleLabel)
-        
+
         gradientView = GradientView()
         gradientView.layer.cornerRadius = 10
         gradientView.clipsToBounds = true
@@ -79,7 +123,6 @@ final class EventViewController: RegisterViewController {
         imageSymbolView.contentMode = .scaleAspectFill
         imageSymbolView.translatesAutoresizingMaskIntoConstraints = false
         imageBlurView.addSubview(imageSymbolView)
-        imageSymbolView.isUserInteractionEnabled = false
 
         imageButton = UIButton()
         imageButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
@@ -117,7 +160,7 @@ final class EventViewController: RegisterViewController {
         
         generalInfoBoxView = createInfoBoxView(title: "General Information", subTitle: "To share with your guests", arrangedSubviews: [eventNameTextField, currencyNameTextField, passwordTextField, passwordConfirmTextField, descriptionTextView])
         scrollView.addSubview(generalInfoBoxView)
-        
+//
         personalPasswordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true)
         personalPasswordTextField.keyboardType = .decimalPad
         personalPasswordTextField.delegate = self
@@ -132,12 +175,12 @@ final class EventViewController: RegisterViewController {
 
         hostInfoBoxView = createInfoBoxView(title: "Host Account", subTitle: "For the host only", arrangedSubviews: [personalPasswordTextField, personalPasswordConfirmTextField])
         scrollView.addSubview(hostInfoBoxView)
-        
+
         passwordBlurView = BlurEffectContainerView(blurStyle: .regular)
         passwordBlurView.frame = CGRect(origin: CGPoint(x: view.bounds.origin.x, y: view.bounds.origin.y), size: CGSize(width: view.bounds.size.width, height: 100))
         passwordBlurView.transform = CGAffineTransform(translationX: 0, y: -100)
         view.addSubview(passwordBlurView)
-        
+
         passwordStatusLabel = createLabel(text: "")
         passwordStatusLabel.textAlignment = .center
         passwordStatusLabel.backgroundColor = .clear
@@ -145,18 +188,18 @@ final class EventViewController: RegisterViewController {
         passwordStatusLabel.textColor = UIColor.red
         passwordStatusLabel.isHidden = true
         passwordBlurView.addSubview(passwordStatusLabel)
-        
+
         buttonContainer = UIView()
         buttonContainer.tag = 4
         buttonContainer.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(buttonContainer)
-        
+
         buttonGradientView = GradientView()
         buttonGradientView.layer.cornerRadius = 10
         buttonGradientView.clipsToBounds = true
         buttonGradientView.isUserInteractionEnabled = false
         buttonGradientView.alpha = 0
-        
+
         createButton = ButtonWithShadow()
         createButton.setTitle("Create Event", for: .normal)
         createButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
@@ -170,20 +213,23 @@ final class EventViewController: RegisterViewController {
         createButton.setFill()
     }
     
-    final override func setConstraints() {
-        super.setConstraints()
-        
+    final func setConstraints() {
         NSLayoutConstraint.activate([
+            backButton.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50),
+            backButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            backButton.heightAnchor.constraint(equalToConstant: 50),
+            backButton.widthAnchor.constraint(equalToConstant: 50),
+            
             imageTitleLabel.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 100),
             imageTitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             imageTitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             imageTitleLabel.heightAnchor.constraint(equalToConstant: 30),
-            
+
             imageSubtitleLabel.topAnchor.constraint(equalTo: imageTitleLabel.bottomAnchor, constant: 0),
             imageSubtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             imageSubtitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             imageSubtitleLabel.heightAnchor.constraint(equalToConstant: 40),
-            
+
             imageSymbolView.centerXAnchor.constraint(equalTo: imageBlurView.centerXAnchor),
             imageSymbolView.centerYAnchor.constraint(equalTo: imageBlurView.centerYAnchor),
             imageSymbolView.widthAnchor.constraint(equalToConstant: 50),
@@ -198,17 +244,17 @@ final class EventViewController: RegisterViewController {
             generalInfoBoxView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             generalInfoBoxView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             generalInfoBoxView.heightAnchor.constraint(equalToConstant: 470),
-            
+
             hostInfoBoxView.topAnchor.constraint(equalTo: generalInfoBoxView.bottomAnchor, constant: 40),
             hostInfoBoxView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             hostInfoBoxView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             hostInfoBoxView.heightAnchor.constraint(equalToConstant: 210),
-            
+
             passwordStatusLabel.bottomAnchor.constraint(equalTo: passwordBlurView.bottomAnchor, constant: 0),
             passwordStatusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
             passwordStatusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             passwordStatusLabel.heightAnchor.constraint(equalToConstant: 50),
-            
+
             buttonContainer.topAnchor.constraint(equalTo: hostInfoBoxView.bottomAnchor, constant: 40),
             buttonContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             buttonContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
@@ -216,128 +262,9 @@ final class EventViewController: RegisterViewController {
         ])
     }
 
-    private func createLabel(text: String, size: CGFloat = 18) -> UILabel {
-        let label = UILabel()
-        label.text = text
-        label.font = UIFont.rounded(ofSize: size, weight: .bold)
-        label.textColor = .lightGray
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }
     
-    private func createTextField(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 50, isPassword: Bool = false) -> UITextField {
-        let textField = UITextField()
-        textField.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        textField.leftPadding()
-        textField.delegate = self
-        textField.textColor = .lightGray
-        textField.isSecureTextEntry = isPassword
-        textField.layer.borderColor = UIColor.lightGray.cgColor
-        textField.layer.borderWidth = 0.5
-        textField.layer.cornerRadius = 10
-        textField.attributedPlaceholder = createAttributedString(imageString: placeHolderImageString, imageColor: .gray, text: placeHolderText)
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.heightAnchor.constraint(equalToConstant: height).isActive = true
-        return textField
-    }
-    
-    private func createTextView(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 100) -> UITextView {
-        let textView = UITextView()
-        textView.delegate = self
-        textView.textColor = .lightGray
-        textView.backgroundColor = .clear
-        textView.allowsEditingTextAttributes = true
-        textView.autocorrectionType = .yes
-        textView.layer.borderColor = UIColor.lightGray.cgColor
-        textView.layer.borderWidth = 0.5
-        textView.layer.cornerRadius = 10
-        textView.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
-        textView.clipsToBounds = true
-        textView.isScrollEnabled = true
-        textView.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        textView.attributedText = createAttributedString(imageString: placeHolderImageString, imageColor: UIColor.gray, text: placeHolderText)
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.heightAnchor.constraint(equalToConstant: height).isActive = true
-
-        return textView
-    }
-    
-    // Info box consists of a unit of text fields and text views
-    private func createInfoBoxView(title: String, subTitle: String, arrangedSubviews: [UIView]) -> UIView {
-        let boxContainerView = UIView()
-        boxContainerView.translatesAutoresizingMaskIntoConstraints = false
-        
-        /// Event name and password
-        let titleLabel = createLabel(text: title)
-        boxContainerView.addSubview(titleLabel)
-        
-        let subtitleLabel = createLabel(text: subTitle, size: 12)
-        subtitleLabel.textColor = .gray
-        boxContainerView.addSubview(subtitleLabel)
-        
-        let lineView = UIView()
-        lineView.layer.borderColor = UIColor.darkGray.cgColor
-        lineView.layer.borderWidth = 0.5
-        lineView.translatesAutoresizingMaskIntoConstraints = false
-        boxContainerView.addSubview(lineView)
-        
-        let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
-        stackView.axis = .vertical
-        stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        boxContainerView.addSubview(stackView)
-        
-        NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: boxContainerView.topAnchor, constant: 0),
-            titleLabel.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
-            titleLabel.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
-            titleLabel.heightAnchor.constraint(equalToConstant: 25),
-            
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 0),
-            subtitleLabel.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
-            subtitleLabel.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
-            subtitleLabel.heightAnchor.constraint(equalToConstant: 20),
-            
-            lineView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
-            lineView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
-            lineView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
-            lineView.heightAnchor.constraint(equalToConstant: 0.5),
-            
-            stackView.topAnchor.constraint(equalTo: lineView.bottomAnchor, constant: 20),
-            stackView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
-            stackView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
-            stackView.bottomAnchor.constraint(equalTo: boxContainerView.bottomAnchor, constant: 0),
-        ])
-        
-        return boxContainerView
-    }
-    
-    private func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
-        /// Create an attributed strings using a symbol and a text
-        let imageAttahment = NSTextAttachment()
-        imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
-        let imageOffsetY: CGFloat = -5.0
-        imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
-        let imageString = NSAttributedString(attachment: imageAttahment)
-        let textString = NSAttributedString(string: text)
-        
-        /// Add them to a mutable attributed string
-        let mas = NSMutableAttributedString(string: "")
-        mas.append(imageString)
-        mas.append(textString)
-        
-        /// Add attributes
-        let rangeText = (mas.string as NSString).range(of: mas.string)
-        mas.addAttributes([
-            NSAttributedString.Key.foregroundColor: UIColor.gray,
-            .font: UIFont.rounded(ofSize: 14, weight: .bold)
-        ], range: rangeText)
-        
-        return mas
-    }
-    
-    override func getContentSizeHeight() -> CGFloat {
-        return super.getContentSizeHeight()
+    func getContentSizeHeight() -> CGFloat {
+        return backButton.bounds.size.height
         + imageTitleLabel.bounds.size.height
         + imageSubtitleLabel.bounds.size.height
         + imageButton.bounds.size.height
@@ -347,17 +274,18 @@ final class EventViewController: RegisterViewController {
         + 250
     }
     
-    @objc final override func buttonPressed(_ sender: UIButton) {
-        super.buttonPressed(sender)
+    @objc final func buttonPressed(_ sender: UIButton) {
+        let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+        feedbackGenerator.impactOccurred()
         
         switch sender.tag {
             case 1:
                 /// Prompt user for camera or gallery to upload an image
-                
                 let buttonInfoArr = [
                     ButtonInfo(title: "Camera", tag: 2, backgroundColor: .black),
                     ButtonInfo(title: "Gallery", tag: 3, backgroundColor: .black)
                 ]
+                
                 let alertVC = ActionSheetViewController(content: .button(buttonInfoArr))
                 alertVC.buttonAction = { [weak self] tag in
                     self?.dismiss(animated: true, completion: {
@@ -384,49 +312,49 @@ final class EventViewController: RegisterViewController {
             case 4:
                 /// Validate the fields
                 /// The fields cannot be empty
-                guard isFieldValid(eventNameTextField, alertMsg: "Event name cannot be empty.") else {
-                    return
-                }
-
-                guard isFieldValid(currencyNameTextField, alertMsg: "Currency name cannot be empty") else {
-                    return
-                }
-
-                guard isFieldValid(passwordTextField, alertMsg: "Event password cannot be empty") else {
-                    return
-                }
-                
-                guard isNumber(passwordTextField, alertMsg: "The passcode has to be numerical") else {
-                    return
-                }
-
-                guard isFieldValid(passwordConfirmTextField, alertMsg: "Event password cannot be empty") else {
-                    return
-                }
-                
-                guard isNumber(passwordConfirmTextField, alertMsg: "The passcode has to be numerical") else {
-                    return
-                }
-
-                guard isFieldValid(descriptionTextView, alertMsg: "Description cannot be empty") else {
-                    return
-                }
-
-                guard isFieldValid(personalPasswordTextField, alertMsg: "Your password cannot be empty") else {
-                    return
-                }
-                
-                guard isNumber(personalPasswordTextField, alertMsg: "The host passcode has to be numerical") else {
-                    return
-                }
-
-                guard isFieldValid(personalPasswordConfirmTextField, alertMsg: "Your password cannot be empty") else {
-                    return
-                }
-                
-                guard isNumber(personalPasswordConfirmTextField, alertMsg: "The host passcode has to be numerical") else {
-                    return
-                }
+//                guard isFieldValid(eventNameTextField, alertMsg: "Event name cannot be empty.") else {
+//                    return
+//                }
+//
+//                guard isFieldValid(currencyNameTextField, alertMsg: "Currency name cannot be empty") else {
+//                    return
+//                }
+//
+//                guard isFieldValid(passwordTextField, alertMsg: "Event password cannot be empty") else {
+//                    return
+//                }
+//
+//                guard isNumber(passwordTextField, alertMsg: "The passcode has to be numerical") else {
+//                    return
+//                }
+//
+//                guard isFieldValid(passwordConfirmTextField, alertMsg: "Event password cannot be empty") else {
+//                    return
+//                }
+//
+//                guard isNumber(passwordConfirmTextField, alertMsg: "The passcode has to be numerical") else {
+//                    return
+//                }
+//
+//                guard isFieldValid(descriptionTextView, alertMsg: "Description cannot be empty") else {
+//                    return
+//                }
+//
+//                guard isFieldValid(personalPasswordTextField, alertMsg: "Your password cannot be empty") else {
+//                    return
+//                }
+//
+//                guard isNumber(personalPasswordTextField, alertMsg: "The host passcode has to be numerical") else {
+//                    return
+//                }
+//
+//                guard isFieldValid(personalPasswordConfirmTextField, alertMsg: "Your password cannot be empty") else {
+//                    return
+//                }
+//
+//                guard isNumber(personalPasswordConfirmTextField, alertMsg: "The host passcode has to be numerical") else {
+//                    return
+//                }
 
                 UIView.animate(withDuration: 2) { [weak self] in
                     guard let view = self?.view else { return }
@@ -499,18 +427,12 @@ final class EventViewController: RegisterViewController {
 //                }
 
                 break
+            case 5:
+                dismiss(animated: true)
+                break
             default:
                 break
         }
-    }
-    
-    /// The event info that will be included int the genesis block.
-    /// The info will be queries and shown to the guests when they want to join an event.
-    struct EventInfo: Codable {
-        let eventName: String
-        let currencyName: String
-        var description: String?
-        var image: Data?
     }
     
     /// Starts the server, creates a wallet, and creates a genesis block.
@@ -523,7 +445,9 @@ final class EventViewController: RegisterViewController {
         UserDefaults.standard.set(password, forKey: UserDefaultKey.walletPassword)
         UserDefaults.standard.set(chainID, forKey: UserDefaultKey.chainID)
         
-        let eventInfo = EventInfo(eventName: eventNameTextField.text!, currencyName: currencyNameTextField.text!, description: descriptionTextView.text, image: imageData)
+        /// Event info to be included in the genesis block's extra data.
+        /// This will be queried by the guests to choose the event from.
+        let eventInfo = EventInfo(eventName: eventNameTextField.text!, currencyName: currencyNameTextField.text!, description: descriptionTextView.text, image: imageData, chainID: chainID)
         
         do {
             let encodedExtraData = try JSONEncoder().encode(eventInfo)
@@ -599,7 +523,7 @@ final class EventViewController: RegisterViewController {
     }
 }
 
-extension EventViewController: UITextViewDelegate, UITextFieldDelegate {
+extension HostLoginViewController: UITextViewDelegate, UITextFieldDelegate {
     func textViewDidBeginEditing(_ textView: UITextView) {
         if textView.textColor == UIColor.gray {
             textView.text = nil
@@ -692,7 +616,7 @@ extension EventViewController: UITextViewDelegate, UITextFieldDelegate {
     }
 }
 
-extension EventViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {
+extension HostLoginViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true, completion: nil)
         
@@ -703,7 +627,7 @@ extension EventViewController: UIImagePickerControllerDelegate & UINavigationCon
               }
         
         /// Retain the image data to be included in the first block
-        imageData = image.pngData()
+        imageData = image.jpegData(compressionQuality: 0.6)
         
         /// Display the image for the form
         let imageView = UIImageView(image: image)
@@ -716,5 +640,38 @@ extension EventViewController: UIImagePickerControllerDelegate & UINavigationCon
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+    }
+}
+
+extension HostLoginViewController {
+    // MARK: - addKeyboardObserver
+    private func addKeyboardObserver() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    // MARK: - removeKeyboardObserver
+    private func removeKeyboardObserver(){
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        //Need to calculate keyboard exact size due to Apple suggestions
+        
+        guard let info = notification.userInfo,
+              let keyboardSize = (info[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue.size else { return }
+        
+        let contentInsets : UIEdgeInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardSize.height, right: 0.0)
+        self.scrollView.contentInset = contentInsets
+        self.scrollView.scrollIndicatorInsets = contentInsets
+        
+    }
+    
+    @objc private func keyboardWillHide(notification: NSNotification) {
+        //Once keyboard disappears, restore original positions
+        self.scrollView.contentInset = .zero
+        self.scrollView.scrollIndicatorInsets = .zero
+        self.view.endEditing(true)
     }
 }

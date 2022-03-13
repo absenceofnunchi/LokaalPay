@@ -5,17 +5,17 @@
 //  Created by J C on 2022-02-06.
 //
 
-import UIKit
-import BigInt
-import web3swift
-import Combine
-import MultipeerConnectivity
-
 /*
  When wallet creation is triggered, given that there are connected peers,
  1. Host: Mint genesis and create wallet
  2. Non-host: Request for a blockchain and, upon arrival, create wallet.
  */
+
+import UIKit
+import BigInt
+import web3swift
+import Combine
+import MultipeerConnectivity
 
 final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
     private var passswordTitleLabel: UILabel!
@@ -304,9 +304,6 @@ final class SignupViewController: UIViewController, BlockChainDownloadDelegate {
     }
 }
 
-protocol BlockChainDownloadDelegate: AnyObject {
-    func didReceiveBlockchain()
-}
 
 //private func createWallet() {
 //    guard let password = passwordTextField.text,

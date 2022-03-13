@@ -138,6 +138,126 @@ extension UIViewController {
         
         return mas
     }
+    
+    func createLabel(text: String, size: CGFloat = 18) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = UIFont.rounded(ofSize: size, weight: .bold)
+        label.textColor = .lightGray
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }
+    
+    func createTextField(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 50, isPassword: Bool = false) -> UITextField {
+        let textField = UITextField()
+        textField.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        textField.leftPadding()
+        textField.delegate = self
+        textField.textColor = .lightGray
+        textField.isSecureTextEntry = isPassword
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.borderWidth = 0.5
+        textField.layer.cornerRadius = 10
+        textField.attributedPlaceholder = createAttributedString(imageString: placeHolderImageString, imageColor: .gray, text: placeHolderText)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.heightAnchor.constraint(equalToConstant: height).isActive = true
+        return textField
+    }
+    
+    func createTextView(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 100) -> UITextView {
+        let textView = UITextView()
+        textView.delegate = self
+        textView.textColor = .lightGray
+        textView.backgroundColor = .clear
+        textView.allowsEditingTextAttributes = true
+        textView.autocorrectionType = .yes
+        textView.layer.borderColor = UIColor.lightGray.cgColor
+        textView.layer.borderWidth = 0.5
+        textView.layer.cornerRadius = 10
+        textView.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
+        textView.clipsToBounds = true
+        textView.isScrollEnabled = true
+        textView.font = UIFont.rounded(ofSize: 14, weight: .bold)
+        textView.attributedText = createAttributedString(imageString: placeHolderImageString, imageColor: UIColor.gray, text: placeHolderText)
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.heightAnchor.constraint(equalToConstant: height).isActive = true
+        
+        return textView
+    }
+    
+    // Info box consists of a unit of text fields and text views
+    func createInfoBoxView(title: String, subTitle: String, arrangedSubviews: [UIView]) -> UIView {
+        let boxContainerView = UIView()
+        boxContainerView.translatesAutoresizingMaskIntoConstraints = false
+        
+        /// Event name and password
+        let titleLabel = createLabel(text: title)
+        boxContainerView.addSubview(titleLabel)
+        
+        let subtitleLabel = createLabel(text: subTitle, size: 12)
+        subtitleLabel.textColor = .gray
+        boxContainerView.addSubview(subtitleLabel)
+        
+        let lineView = UIView()
+        lineView.layer.borderColor = UIColor.darkGray.cgColor
+        lineView.layer.borderWidth = 0.5
+        lineView.translatesAutoresizingMaskIntoConstraints = false
+        boxContainerView.addSubview(lineView)
+        
+        let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
+        stackView.axis = .vertical
+        stackView.distribution = .equalSpacing
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        boxContainerView.addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: boxContainerView.topAnchor, constant: 0),
+            titleLabel.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+            titleLabel.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+            titleLabel.heightAnchor.constraint(equalToConstant: 25),
+            
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 0),
+            subtitleLabel.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+            subtitleLabel.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+            subtitleLabel.heightAnchor.constraint(equalToConstant: 20),
+            
+            lineView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
+            lineView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+            lineView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+            lineView.heightAnchor.constraint(equalToConstant: 0.5),
+            
+            stackView.topAnchor.constraint(equalTo: lineView.bottomAnchor, constant: 20),
+            stackView.leadingAnchor.constraint(equalTo: boxContainerView.leadingAnchor, constant: 0),
+            stackView.trailingAnchor.constraint(equalTo: boxContainerView.trailingAnchor, constant: 0),
+            stackView.bottomAnchor.constraint(equalTo: boxContainerView.bottomAnchor, constant: 0),
+        ])
+        
+        return boxContainerView
+    }
+    
+    func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
+        /// Create an attributed strings using a symbol and a text
+        let imageAttahment = NSTextAttachment()
+        imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
+        let imageOffsetY: CGFloat = -5.0
+        imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
+        let imageString = NSAttributedString(attachment: imageAttahment)
+        let textString = NSAttributedString(string: text)
+        
+        /// Add them to a mutable attributed string
+        let mas = NSMutableAttributedString(string: "")
+        mas.append(imageString)
+        mas.append(textString)
+        
+        /// Add attributes
+        let rangeText = (mas.string as NSString).range(of: mas.string)
+        mas.addAttributes([
+            NSAttributedString.Key.foregroundColor: UIColor.gray,
+            .font: UIFont.rounded(ofSize: 14, weight: .bold)
+        ], range: rangeText)
+        
+        return mas
+    }
 }
 
 // MARK: - SaveAlertHandle
