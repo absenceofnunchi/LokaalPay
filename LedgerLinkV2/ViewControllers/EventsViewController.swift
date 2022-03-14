@@ -16,7 +16,7 @@ protocol BlockChainDownloadDelegate: AnyObject {
     func didReceiveBlockchain()
 }
 
-class EventsViewController: UIViewController {
+class EventsViewController: UIViewController, BlockChainDownloadDelegate {
     private var backButton: UIButton!
     private var dataSource: UICollectionViewDiffableDataSource<Section, EventInfo>! = nil
     private var collectionView: UICollectionView! = nil
@@ -62,11 +62,11 @@ class EventsViewController: UIViewController {
         configureDataSource()
         
         /// set up the server and node
-//        Node.shared.deleteAll()
-//        Node.shared.eventQueryDelegate = self /// Event Query delegate let's the GuestLoginVC know when the events have been downloaded
-//        Node.shared.downloadDelegate = self /// Download delegate let's the GuestLoginVC know when the blockchain has been downloadeded by calling didReceiveBlockchain
-//        NetworkManager.shared.start(startAutoRelay: false)
-//        NetworkManager.shared.peerConnectedHandler = peerConnectedHandler
+        Node.shared.deleteAll()
+        Node.shared.eventQueryDelegate = self /// Event Query delegate let's the GuestLoginVC know when the events have been downloaded
+        Node.shared.downloadDelegate = self /// Download delegate let's the GuestLoginVC know when the blockchain has been downloadeded by calling didReceiveBlockchain
+        NetworkManager.shared.start(startAutoRelay: false)
+        NetworkManager.shared.peerConnectedHandler = peerConnectedHandler
         
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
@@ -142,11 +142,6 @@ extension EventsViewController {
         )
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 1)
-        //        group.contentInsets = NSDirectionalEdgeInsets(
-        //            top: 50,
-        //            leading: 50,
-        //            bottom: 5,
-        //            trailing: 5)
         
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 30
@@ -315,6 +310,7 @@ extension EventsViewController: UICollectionViewDelegate {
             ),
         ]
         
+        /// Verify that the user has the correct Chain ID which is the password the host set.
         DispatchQueue.main.async { [weak self] in
             let alertVC = AlertViewController(height: 350, standardAlertContent: content)
             alertVC.action = { [weak self] (modal: AlertViewController, mainVC: StandardAlertViewController) in
@@ -331,10 +327,16 @@ extension EventsViewController: UICollectionViewDelegate {
                         return
                     }
                     
+                    UserDefaults.standard.set(event.chainID, forKey: UserDefaultKey.chainID)
+                    
                     self?.dismiss(animated: true, completion: {
                         self?.showSpinner()
+                        /// The network is set to only start the server without the auto relay.
+                        /// Following starts the auto realay
                         NetworkManager.shared.start()
+                        /// Following allows the blockchain download request.
                         self?.createWalletMode = true
+                        self?.isPeerConnected = true
 
                     })
                 }
@@ -346,8 +348,8 @@ extension EventsViewController: UICollectionViewDelegate {
     
     func didReceiveBlockchain() {
         print("didReceiveBlockchain")
-        guard let password = UserDefaults.standard.string(forKey: "password"),
-              let chainID = UserDefaults.standard.string(forKey: "chainID") else {
+        guard let password = UserDefaults.standard.string(forKey: UserDefaultKey.walletPassword),
+              let chainID = UserDefaults.standard.string(forKey: UserDefaultKey.chainID) else {
                   alert.show("Requires Password and the Chain ID", for: self)
                   return
               }
@@ -358,6 +360,7 @@ extension EventsViewController: UICollectionViewDelegate {
 //            let account = Node.shared.getMyAccount()
 //            self?.addressLabel.text = account?.address.address
             NetworkManager.shared.sendDataToAllPeers(data: data)
+            AuthSwitcher.loginAsGuest()
         }
     }
     
@@ -383,13 +386,16 @@ extension EventsViewController: EventQueryDelegate {
                   let extraData = fullBlock.extraData,
                   let eventInfo = try? JSONDecoder().decode(EventInfo.self, from: extraData) else { return }
             
-            var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
-            Section.allCases.forEach { section in
-                snapshot.appendSections([section])
-                snapshot.appendItems([eventInfo])
-            }
             
-            self?.dataSource.applySnapshotUsingReloadData(snapshot)
+            DispatchQueue.main.async {
+                var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
+                Section.allCases.forEach { section in
+                    snapshot.appendSections([section])
+                    snapshot.appendItems([eventInfo])
+                }
+                
+                self?.dataSource.applySnapshotUsingReloadData(snapshot)
+            }
         }
     }
 }

@@ -48,7 +48,8 @@ class AuthSwitcher {
     static func loadMain(isHost: Bool) -> UIViewController {
         
         let walletVC = WalletViewController()
-        walletVC.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
+        let walletNav = UINavigationController(rootViewController: walletVC)
+        walletNav.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
         
         let signupVC = SignupViewController()
         signupVC.tabBarItem = UITabBarItem(title: "Signup", image: UIImage(named: "lock"), selectedImage: UIImage(named: "lock"))
@@ -62,7 +63,7 @@ class AuthSwitcher {
         explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
         
         let tabBar = CustomTabBarController()
-        tabBar.setViewControllers([walletVC, signupVC, mainNav, explorerNav], animated: true)
+        tabBar.setViewControllers([walletNav, signupVC, mainNav, explorerNav], animated: true)
         return tabBar
     }
     

@@ -82,40 +82,7 @@ extension UIViewController {
         view.endEditing(true)
     }
     
-    func createTextField(placeHolderText: String, placeHolderImageString: String, isPassword: Bool = false) -> UITextField {
-        let textField = UITextField()
-        textField.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        textField.leftPadding()
-        textField.textColor = .lightGray
-        textField.isSecureTextEntry = isPassword
-        textField.layer.borderColor = UIColor.lightGray.cgColor
-        textField.layer.borderWidth = 0.5
-        textField.layer.cornerRadius = 10
-        textField.attributedPlaceholder = createAttributedString(imageString: placeHolderImageString, imageColor: .gray, text: placeHolderText)
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        return textField
-    }
-    
-    func createTextView(placeHolderText: String, placeHolderImageString: String) -> UITextView {
-        let textView = UITextView()
-        textView.textColor = .lightGray
-        textView.backgroundColor = .clear
-        textView.allowsEditingTextAttributes = true
-        textView.autocorrectionType = .yes
-        textView.layer.borderColor = UIColor.lightGray.cgColor
-        textView.layer.borderWidth = 0.5
-        textView.layer.cornerRadius = 10
-        textView.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
-        textView.clipsToBounds = true
-        textView.isScrollEnabled = true
-        textView.font = UIFont.rounded(ofSize: 14, weight: .bold)
-        textView.attributedText = createAttributedString(imageString: placeHolderImageString, imageColor: UIColor.gray, text: placeHolderText)
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        
-        return textView
-    }
-    
-    private func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
+    func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
         /// Create an attributed strings using a symbol and a text
         let imageAttahment = NSTextAttachment()
         imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
@@ -148,11 +115,11 @@ extension UIViewController {
         return label
     }
     
-    func createTextField(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 50, isPassword: Bool = false) -> UITextField {
+    func createTextField(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 50, isPassword: Bool = false, delegate: UITextFieldDelegate? = nil) -> UITextField {
         let textField = UITextField()
         textField.font = UIFont.rounded(ofSize: 14, weight: .bold)
         textField.leftPadding()
-        textField.delegate = self
+        textField.delegate = delegate
         textField.textColor = .lightGray
         textField.isSecureTextEntry = isPassword
         textField.layer.borderColor = UIColor.lightGray.cgColor
@@ -164,9 +131,9 @@ extension UIViewController {
         return textField
     }
     
-    func createTextView(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 100) -> UITextView {
+    func createTextView(placeHolderText: String, placeHolderImageString: String, height: CGFloat = 100, delegate: UITextViewDelegate? = nil) -> UITextView {
         let textView = UITextView()
-        textView.delegate = self
+        textView.delegate = delegate
         textView.textColor = .lightGray
         textView.backgroundColor = .clear
         textView.allowsEditingTextAttributes = true
@@ -234,29 +201,61 @@ extension UIViewController {
         
         return boxContainerView
     }
+
     
-    func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
-        /// Create an attributed strings using a symbol and a text
-        let imageAttahment = NSTextAttachment()
-        imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
-        let imageOffsetY: CGFloat = -5.0
-        imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
-        let imageString = NSAttributedString(attachment: imageAttahment)
-        let textString = NSAttributedString(string: text)
+    func applyBarTintColorToTheNavigationBar(
+        tintColor: UIColor = .black,
+        titleTextColor: UIColor = .white
+    ) {
+        guard let navController = navigationController else { return }
+        navController.isHiddenHairline = true
         
-        /// Add them to a mutable attributed string
-        let mas = NSMutableAttributedString(string: "")
-        mas.append(imageString)
-        mas.append(textString)
+        // For comparison, apply the same barTintColor to the toolbar, which has been configured to be opaque.
+        navController.toolbar.barTintColor = tintColor
+        navController.toolbar.isTranslucent = true
         
-        /// Add attributes
-        let rangeText = (mas.string as NSString).range(of: mas.string)
-        mas.addAttributes([
-            NSAttributedString.Key.foregroundColor: UIColor.gray,
-            .font: UIFont.rounded(ofSize: 14, weight: .bold)
-        ], range: rangeText)
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithDefaultBackground()
+        appearance.backgroundImage = UIImage()
+        appearance.backgroundColor = tintColor
+        appearance.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: titleTextColor, NSAttributedString.Key.font: UIFont.rounded(ofSize: 30, weight: .bold)]
+        appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: titleTextColor]
         
-        return mas
+        let navigationBarAppearance = navController.navigationBar
+        navigationBarAppearance.prefersLargeTitles = true
+        navigationBarAppearance.scrollEdgeAppearance = appearance
+        navigationBarAppearance.standardAppearance = appearance
+        navigationBarAppearance.tintColor = titleTextColor
+        navigationBarAppearance.sizeToFit()
+    }
+}
+
+
+extension UINavigationController {
+    var isHiddenHairline: Bool {
+        get {
+            guard let hairline = findHairlineImageViewUnder(navigationBar) else { return true }
+            return hairline.isHidden
+        }
+        set {
+            if let hairline = findHairlineImageViewUnder(navigationBar) {
+                hairline.isHidden = newValue
+            }
+        }
+    }
+    
+    private func findHairlineImageViewUnder(_ view: UIView) -> UIImageView? {
+        if view is UIImageView && view.bounds.size.height <= 1.0 {
+            return view as? UIImageView
+        }
+        
+        for subview in view.subviews {
+            if let imageView = self.findHairlineImageViewUnder(subview) {
+                return imageView
+            }
+        }
+        
+        return nil
     }
 }
 

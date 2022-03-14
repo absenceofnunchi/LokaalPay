@@ -7,11 +7,16 @@
 
 import UIKit
 
-class ReceiveViewController: UIViewController {
+final class ReceiveViewController: WalletModalViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
     }
 
+    override func configureUI() {
+        super.configureUI()
+        
+        titleLabel.text = "Receive Currency"
+    }
 }

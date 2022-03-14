@@ -14,7 +14,7 @@
 
 import UIKit
 
-final class HostLoginViewController: UIViewController {
+final class HostLoginViewController: UIViewController, TopWarningPanel {
     var scrollView: UIScrollView!
     var backButton: UIButton!
 
@@ -38,14 +38,25 @@ final class HostLoginViewController: UIViewController {
     private var personalPasswordConfirmTextField: UITextField!
     
     /// create event button
-    private var passwordStatusLabel: UILabel!
     private var buttonGradientView: GradientView!
     private var createButton: UIButton!
     private var buttonContainer: UIView!
-    private var passwordBlurView: BlurEffectContainerView!
     private var selectedTag: Int! /// For passsing the tag of the button to the custom transition animator
     private var alert: AlertView!
     private var imageData: Data!
+    private var retainer: Retainer! /// Retains the text content of the fields before manually deleting them since the dissolving animation keeps the text intact
+    
+    struct Retainer {
+        let eventName: String
+        let currency: String
+        let description: String?
+        let eventPassword: String
+        let personalPassword: String
+    }
+    
+    /// top warning panel
+    var passwordBlurView: BlurEffectContainerView!
+    var passwordStatusLabel: UILabel!
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -60,19 +71,14 @@ final class HostLoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tapToDismissKeyboard()
         configureUI()
+        configureTopWarningPanel()
         setConstraints()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
-        //        let contentRect: CGRect = view.subviews.reduce(into: .zero, { rect, view in
-        //            rect = rect.union(view.frame)
-        //        })
-        //        print("contentRect", contentRect)
-        //        scrollView.contentSize = contentRect.size
-        
         let height = getContentSizeHeight()
         scrollView.contentSize = CGSize(width: view.bounds.size.width, height: height)
     }
@@ -80,13 +86,13 @@ final class HostLoginViewController: UIViewController {
     final func configureUI() {
         
         view.backgroundColor = .black
-        tapToDismissKeyboard()
         alert = AlertView()
         
         scrollView = UIScrollView()
         view.addSubview(scrollView)
         scrollView.setFill()
         
+        /// modal close button
         guard let buttonImage = UIImage(systemName: "multiply")?.withTintColor(.lightGray, renderingMode: .alwaysOriginal) else { return }
         backButton = UIButton.systemButton(with: buttonImage, target: self, action: #selector(buttonPressed))
         backButton.tag = 5
@@ -134,60 +140,33 @@ final class HostLoginViewController: UIViewController {
         gradientView.sendSubviewToBack(gradientView)
         gradientView.isUserInteractionEnabled = false
         
-        eventNameTextField = createTextField(placeHolderText: " Event Name", placeHolderImageString: "square.stack.3d.down.forward")
-        eventNameTextField.delegate = self
-        eventNameTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        eventNameTextField = createTextField(placeHolderText: " Event Name", placeHolderImageString: "square.stack.3d.down.forward", delegate: self)
         
-        currencyNameTextField = createTextField(placeHolderText: " Currency Name", placeHolderImageString: "creditcard")
-        currencyNameTextField.delegate = self
-        currencyNameTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        currencyNameTextField = createTextField(placeHolderText: " Currency Name", placeHolderImageString: "creditcard", delegate: self)
         
-        passwordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true)
+        passwordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true, delegate: self)
         passwordTextField.keyboardType = .decimalPad
-        passwordTextField.delegate = self
         passwordTextField.tag = 100
-        passwordTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
-        passwordConfirmTextField = createTextField(placeHolderText: " Confirm Passcode", placeHolderImageString: "lock", isPassword: true)
+        passwordConfirmTextField = createTextField(placeHolderText: " Confirm Passcode", placeHolderImageString: "lock", isPassword: true, delegate: self)
         passwordConfirmTextField.keyboardType = .decimalPad
-        passwordConfirmTextField.delegate = self
         passwordConfirmTextField.tag = 101
-        passwordConfirmTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
-        descriptionTextView = createTextView(placeHolderText: " Briefly describe your event", placeHolderImageString: "doc.append")
-        descriptionTextView.delegate = self
-        descriptionTextView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        descriptionTextView = createTextView(placeHolderText: " Briefly describe your event", placeHolderImageString: "doc.append", delegate: self)
         
         generalInfoBoxView = createInfoBoxView(title: "General Information", subTitle: "To share with your guests", arrangedSubviews: [eventNameTextField, currencyNameTextField, passwordTextField, passwordConfirmTextField, descriptionTextView])
         scrollView.addSubview(generalInfoBoxView)
-//
-        personalPasswordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true)
-        personalPasswordTextField.keyboardType = .decimalPad
-        personalPasswordTextField.delegate = self
-        personalPasswordTextField.tag = 102
-        personalPasswordTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
-        personalPasswordConfirmTextField = createTextField(placeHolderText: " Confirm Passcode", placeHolderImageString: "lock", isPassword: true)
+        personalPasswordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true, delegate: self)
+        personalPasswordTextField.keyboardType = .decimalPad
+        personalPasswordTextField.tag = 102
+
+        personalPasswordConfirmTextField = createTextField(placeHolderText: " Confirm Passcode", placeHolderImageString: "lock", isPassword: true, delegate: self)
         personalPasswordConfirmTextField.keyboardType = .decimalPad
-        personalPasswordConfirmTextField.delegate = self
         personalPasswordConfirmTextField.tag = 103
-        personalPasswordConfirmTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
         hostInfoBoxView = createInfoBoxView(title: "Host Account", subTitle: "For the host only", arrangedSubviews: [personalPasswordTextField, personalPasswordConfirmTextField])
         scrollView.addSubview(hostInfoBoxView)
-
-        passwordBlurView = BlurEffectContainerView(blurStyle: .regular)
-        passwordBlurView.frame = CGRect(origin: CGPoint(x: view.bounds.origin.x, y: view.bounds.origin.y), size: CGSize(width: view.bounds.size.width, height: 100))
-        passwordBlurView.transform = CGAffineTransform(translationX: 0, y: -100)
-        view.addSubview(passwordBlurView)
-
-        passwordStatusLabel = createLabel(text: "")
-        passwordStatusLabel.textAlignment = .center
-        passwordStatusLabel.backgroundColor = .clear
-        passwordStatusLabel.font = UIFont.rounded(ofSize: 14, weight: .regular)
-        passwordStatusLabel.textColor = UIColor.red
-        passwordStatusLabel.isHidden = true
-        passwordBlurView.addSubview(passwordStatusLabel)
 
         buttonContainer = UIView()
         buttonContainer.tag = 4
@@ -250,11 +229,6 @@ final class HostLoginViewController: UIViewController {
             hostInfoBoxView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             hostInfoBoxView.heightAnchor.constraint(equalToConstant: 210),
 
-            passwordStatusLabel.bottomAnchor.constraint(equalTo: passwordBlurView.bottomAnchor, constant: 0),
-            passwordStatusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            passwordStatusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            passwordStatusLabel.heightAnchor.constraint(equalToConstant: 50),
-
             buttonContainer.topAnchor.constraint(equalTo: hostInfoBoxView.bottomAnchor, constant: 40),
             buttonContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             buttonContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
@@ -262,7 +236,6 @@ final class HostLoginViewController: UIViewController {
         ])
     }
 
-    
     func getContentSizeHeight() -> CGFloat {
         return backButton.bounds.size.height
         + imageTitleLabel.bounds.size.height
@@ -310,122 +283,7 @@ final class HostLoginViewController: UIViewController {
                 }
                 present(alertVC, animated: true)
             case 4:
-                /// Validate the fields
-                /// The fields cannot be empty
-//                guard isFieldValid(eventNameTextField, alertMsg: "Event name cannot be empty.") else {
-//                    return
-//                }
-//
-//                guard isFieldValid(currencyNameTextField, alertMsg: "Currency name cannot be empty") else {
-//                    return
-//                }
-//
-//                guard isFieldValid(passwordTextField, alertMsg: "Event password cannot be empty") else {
-//                    return
-//                }
-//
-//                guard isNumber(passwordTextField, alertMsg: "The passcode has to be numerical") else {
-//                    return
-//                }
-//
-//                guard isFieldValid(passwordConfirmTextField, alertMsg: "Event password cannot be empty") else {
-//                    return
-//                }
-//
-//                guard isNumber(passwordConfirmTextField, alertMsg: "The passcode has to be numerical") else {
-//                    return
-//                }
-//
-//                guard isFieldValid(descriptionTextView, alertMsg: "Description cannot be empty") else {
-//                    return
-//                }
-//
-//                guard isFieldValid(personalPasswordTextField, alertMsg: "Your password cannot be empty") else {
-//                    return
-//                }
-//
-//                guard isNumber(personalPasswordTextField, alertMsg: "The host passcode has to be numerical") else {
-//                    return
-//                }
-//
-//                guard isFieldValid(personalPasswordConfirmTextField, alertMsg: "Your password cannot be empty") else {
-//                    return
-//                }
-//
-//                guard isNumber(personalPasswordConfirmTextField, alertMsg: "The host passcode has to be numerical") else {
-//                    return
-//                }
-
-                UIView.animate(withDuration: 2) { [weak self] in
-                    guard let view = self?.view else { return }
-                    for subview in view.allSubviews where subview.tag != 4 {
-                        if let label = subview as? UILabel {
-                            label.alpha = 0
-                            label.textColor = .clear
-                        }
-
-                        if let textView = subview as? UITextView {
-                            textView.alpha = 0
-                            textView.textColor = .clear
-                            textView.backgroundColor = UIColor.black
-                        }
-
-                        subview.layer.borderColor = UIColor.black.cgColor
-                    }
-
-                    self?.buttonGradientView.alpha = 1
-                }
-
-                buttonGradientView.animate()
-//                UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 100, initialSpringVelocity: 100, options: [.curveEaseIn]) { [weak self] in
-//                    guard let self = self else { return }
-//                    let center = CGPoint(x: self.view.bounds.midX, y: self.view.bounds.midY)
-//                    let yDelta = self.buttonContainer.center.y - center.y
-////                    self.buttonGradientView.transform = CGAffineTransform(translationX: 0, y: yDelta)
-//                    self.buttonContainer.center = center
-//
-//                } completion: { isFinished in
-//                    print(isFinished)
-//                }
-
-
-                startBlockchain(password: passwordTextField.text!, chainID: personalPasswordTextField.text!) { [weak self] (_) in
-                    self?.buttonGradientView.alpha = 0
-                    self?.buttonContainer.alpha = 0
-                    AuthSwitcher.loginAsHost()
-                }
-
-                /// Fade out all the elements except for the button
-//                UIView.animateKeyframes(withDuration: 3, delay: 0, options: .calculationModeCubic) {
-//                    UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) { [weak self] in
-//                        guard let view = self?.view else { return }
-//                        for subview in view.allSubviews where subview.tag != 4 {
-//                            if let label = subview as? UILabel {
-//                                label.alpha = 0
-//                            }
-//
-//                            if let textView = subview as? UITextView {
-//                                textView.alpha = 0
-//                                textView.backgroundColor = UIColor.black
-//                            }
-//
-//                            subview.layer.borderColor = UIColor.black.cgColor
-//                        }
-//                    }
-//
-//                    UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 2/4) { [weak self] in
-//                        self?.buttonGradientView.alpha = 1
-//                        self?.buttonGradientView.animate()
-//                    }
-//
-//                    UIView.addKeyframe(withRelativeStartTime: 0.9, relativeDuration: 1/4) { [weak self] in
-//                        self?.buttonGradientView.alpha = 0
-//                        self?.buttonContainer.alpha = 0
-//                    }
-//                } completion: { (_) in
-//                    AuthSwitcher.loginAsHost()
-//                }
-
+                createEvent()
                 break
             case 5:
                 dismiss(animated: true)
@@ -435,24 +293,153 @@ final class HostLoginViewController: UIViewController {
         }
     }
     
+    private func createEvent() {
+        /// Validate the fields
+        /// The fields cannot be empty
+        guard isFieldValid(eventNameTextField, alertMsg: "Event name cannot be empty.") else {
+            return
+        }
+
+        guard isFieldValid(currencyNameTextField, alertMsg: "Currency name cannot be empty") else {
+            return
+        }
+
+        guard isFieldValid(passwordTextField, alertMsg: "Event password cannot be empty") else {
+            return
+        }
+
+        guard isNumber(passwordTextField, alertMsg: "The passcode has to be numerical") else {
+            return
+        }
+
+        guard isFieldValid(passwordConfirmTextField, alertMsg: "Event password cannot be empty") else {
+            return
+        }
+
+        guard isNumber(passwordConfirmTextField, alertMsg: "The passcode has to be numerical") else {
+            return
+        }
+
+        guard isFieldValid(descriptionTextView, alertMsg: "Description cannot be empty") else {
+            return
+        }
+
+        guard isFieldValid(personalPasswordTextField, alertMsg: "Your password cannot be empty") else {
+            return
+        }
+
+        guard isNumber(personalPasswordTextField, alertMsg: "The host passcode has to be numerical") else {
+            return
+        }
+
+        guard isFieldValid(personalPasswordConfirmTextField, alertMsg: "Your password cannot be empty") else {
+            return
+        }
+
+        guard isNumber(personalPasswordConfirmTextField, alertMsg: "The host passcode has to be numerical") else {
+            return
+        }
+        
+        /// Retain the info in order to delete off the fields
+        /// Otherwise, the dissolving animation leaves the texts intact
+        retainer = Retainer(eventName: eventNameTextField.text!, currency: currencyNameTextField.text!, description: descriptionTextView.text, eventPassword: passwordTextField.text!, personalPassword: personalPasswordTextField.text!)
+        eventNameTextField.text = nil
+        currencyNameTextField.text = nil
+        descriptionTextView.text = nil
+        passwordTextField.text = nil
+        passwordConfirmTextField.text = nil
+        
+        UIView.animate(withDuration: 2) { [weak self] in
+            guard let view = self?.view else { return }
+            for subview in view.allSubviews where subview.tag != 4 {
+                if let label = subview as? UILabel {
+                    label.alpha = 0
+                    label.textColor = .clear
+                }
+                
+                if let textView = subview as? UITextView {
+                    textView.alpha = 0
+                    textView.textColor = .clear
+                    textView.backgroundColor = UIColor.black
+                }
+                
+                subview.layer.borderColor = UIColor.black.cgColor
+            }
+            
+            self?.buttonGradientView.alpha = 1
+        }
+        
+        buttonGradientView.animate()
+        
+        startBlockchain() { [weak self] (_) in
+            self?.buttonGradientView.alpha = 0
+            self?.buttonContainer.alpha = 0
+            AuthSwitcher.loginAsHost()
+        }
+        
+        /// Fade out all the elements except for the button
+        //                UIView.animateKeyframes(withDuration: 3, delay: 0, options: .calculationModeCubic) {
+        //                    UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) { [weak self] in
+        //                        guard let view = self?.view else { return }
+        //                        for subview in view.allSubviews where subview.tag != 4 {
+        //                            if let label = subview as? UILabel {
+        //                                label.alpha = 0
+        //                            }
+        //
+        //                            if let textView = subview as? UITextView {
+        //                                textView.alpha = 0
+        //                                textView.backgroundColor = UIColor.black
+        //                            }
+        //
+        //                            subview.layer.borderColor = UIColor.black.cgColor
+        //                        }
+        //                    }
+        //
+        //                    UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 2/4) { [weak self] in
+        //                        self?.buttonGradientView.alpha = 1
+        //                        self?.buttonGradientView.animate()
+        //                    }
+        //
+        //                    UIView.addKeyframe(withRelativeStartTime: 0.9, relativeDuration: 1/4) { [weak self] in
+        //                        self?.buttonGradientView.alpha = 0
+        //                        self?.buttonContainer.alpha = 0
+        //                    }
+        //                } completion: { (_) in
+        //                    AuthSwitcher.loginAsHost()
+        //                }
+
+    }
+    
     /// Starts the server, creates a wallet, and creates a genesis block.
-    private func startBlockchain(password: String, chainID: String, completion: @escaping (Data) -> Void) {
+    private func startBlockchain(completion: @escaping (Data) -> Void) {
         /// start the server
         NetworkManager.shared.start()
         Node.shared.deleteAll()
         
         /// save the password and the chain ID for future transactions
-        UserDefaults.standard.set(password, forKey: UserDefaultKey.walletPassword)
-        UserDefaults.standard.set(chainID, forKey: UserDefaultKey.chainID)
+        UserDefaults.standard.set(retainer.personalPassword, forKey: UserDefaultKey.walletPassword)
+        UserDefaults.standard.set(retainer.eventPassword, forKey: UserDefaultKey.chainID)
         
         /// Event info to be included in the genesis block's extra data.
         /// This will be queried by the guests to choose the event from.
-        let eventInfo = EventInfo(eventName: eventNameTextField.text!, currencyName: currencyNameTextField.text!, description: descriptionTextView.text, image: imageData, chainID: chainID)
+        let eventInfo = EventInfo(
+            eventName: retainer.eventName,
+            currencyName: retainer.currency,
+            description: retainer.description,
+            image: imageData,
+            chainID: retainer.eventPassword
+        )
         
         do {
             let encodedExtraData = try JSONEncoder().encode(eventInfo)
             /// create a wallet
-            Node.shared.createWallet(password: password, chainID: chainID, isHost: true, extraData: encodedExtraData, completion: completion)
+            Node.shared.createWallet(
+                password: retainer.personalPassword,
+                chainID: retainer.eventPassword,
+                isHost: true,
+                extraData: encodedExtraData,
+                completion: completion
+            )
         } catch {
             alert.show(error, for: self)
         }
@@ -494,33 +481,6 @@ final class HostLoginViewController: UIViewController {
             return false
         }
     }
-    
-    func showAlert(alertMsg: String) {
-        passwordStatusLabel.isHidden = false
-        passwordStatusLabel.text = alertMsg
-        
-        /// Get the y coordinate distance of the password view and the screen so the animation could be toggled between those two coordinates
-        let yDelta = view.bounds.origin.y - passwordBlurView.frame.origin.y
-        
-        let animation = UIViewPropertyAnimator(duration: 4, timingParameters: UICubicTimingParameters())
-        animation.addAnimations {
-            UIView.animateKeyframes(withDuration: 0, delay: 0, animations: { [weak self] in
-                UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) {
-                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
-                }
-                
-                UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 1/2) {
-                    // pause
-                }
-                
-                UIView.addKeyframe(withRelativeStartTime: 2/3, relativeDuration: 1/4) {
-                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
-                }
-            })
-        }
-        
-        animation.startAnimation()
-    }
 }
 
 extension HostLoginViewController: UITextViewDelegate, UITextFieldDelegate {
@@ -548,14 +508,14 @@ extension HostLoginViewController: UITextViewDelegate, UITextFieldDelegate {
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-
+        createButton.isEnabled = false
         let yDelta = view.bounds.origin.y - passwordBlurView.frame.origin.y
         
         if (!(passwordTextField.text?.isEmpty ?? true) ||
             !(passwordConfirmTextField.text?.isEmpty ?? true)) &&
             passwordTextField.text != passwordConfirmTextField.text {
             passwordStatusLabel.isHidden = false
-            passwordStatusLabel.text = "Guest passwords don't match"
+            passwordStatusLabel.text = "Event passwords don't match"
             passwordTextField.textColor = UIColor.red
             passwordConfirmTextField.textColor = UIColor.red
             UIView.animate(withDuration: 0.5) { [weak self] in
@@ -565,7 +525,7 @@ extension HostLoginViewController: UITextViewDelegate, UITextFieldDelegate {
                    !(passwordConfirmTextField.text?.isEmpty ?? true)) &&
                     ((passwordTextField.text?.count)! < 3) {
             passwordStatusLabel.isHidden = false
-            passwordStatusLabel.text = "Guest password is too short"
+            passwordStatusLabel.text = "Event password is too short"
             passwordConfirmTextField.textColor = UIColor.red
             passwordTextField.textColor = UIColor.red
             UIView.animate(withDuration: 0.5) { [weak self] in
@@ -610,6 +570,8 @@ extension HostLoginViewController: UITextViewDelegate, UITextFieldDelegate {
                     self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
                 }
             }
+            
+            createButton.isEnabled = true
         }
         
         return true

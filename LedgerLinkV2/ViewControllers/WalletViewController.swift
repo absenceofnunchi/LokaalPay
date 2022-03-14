@@ -55,6 +55,9 @@ final class WalletViewController: UIViewController {
     
     final override func viewDidLoad() {
         super.viewDidLoad()
+        
+        applyBarTintColorToTheNavigationBar()
+        configureUI()
         configureHierarchy()
         configureDataSource()
     }
@@ -165,6 +168,11 @@ extension WalletViewController {
 }
 
 extension WalletViewController {
+    func configureUI() {
+        title = "Wallet"
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+    }
+    
     func configureHierarchy() {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: generateLayout())
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -250,15 +258,32 @@ extension WalletViewController: UICollectionViewDelegate {
         
         switch item.title {
             case "Send":
-                print("Send")
                 let sendVC = SendViewController()
-//                let flipDelegate = FlipTransitionDelegate(indexItem: indexPath.item)
-//                sendVC.transitioningDelegate = flipDelegate
-//                sendVC.modalPresentationStyle = .fullScreen
+                
+                if UIDevice.current.userInterfaceIdiom != .phone {
+                    sendVC.modalPresentationStyle = .fullScreen
+                }
+                
                 present(sendVC, animated: true)
+                break
+            case "Receive":
+                let vc = ReceiveViewController()
+                
+                if UIDevice.current.userInterfaceIdiom != .phone {
+                    vc.modalPresentationStyle = .fullScreen
+                }
+                
+                present(vc, animated: true)
                 break
             default:
                 break
         }
     }
+}
+
+enum UIUserInterfaceIdiom : Int {
+    case unspecified
+    
+    case phone // iPhone and iPod touch style UI
+    case pad   // iPad style UI (also includes macOS Catalyst)
 }

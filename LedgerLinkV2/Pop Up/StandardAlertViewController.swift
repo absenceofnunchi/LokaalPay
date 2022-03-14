@@ -191,8 +191,8 @@ extension StandardAlertViewController: UITextFieldDelegate {
         let cancelButtonInfo = ButtonInfo(
             title: "Cancel",
             tag: 2,
-            backgroundColor: .lightGray,
-            titleColor: UIColor(red: 25/255, green: 69/255, blue: 107/255, alpha: 1)
+            backgroundColor: .gray,
+            titleColor: .darkGray
         )
         cancelButton = createButton(buttonInfo: cancelButtonInfo)
         buttonPanel.addSubview(cancelButton)

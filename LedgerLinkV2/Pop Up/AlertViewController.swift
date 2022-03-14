@@ -82,12 +82,10 @@ extension AlertViewController: DataFetchDelegate {
         dataSource = self
         delegate = self
         
-        if contentArray.count > 1 {
-            let pageControl = UIPageControl.appearance()
-            pageControl.pageIndicatorTintColor = UIColor.gray.withAlphaComponent(0.6)
-            pageControl.currentPageIndicatorTintColor = .gray
-            pageControl.backgroundColor = .clear
-        }
+        let pageControl = UIPageControl.appearance()
+        pageControl.pageIndicatorTintColor = .clear
+        pageControl.currentPageIndicatorTintColor = .clear
+        pageControl.backgroundColor = .clear
     }
     
     /// Get text value of each text field or text view through textViewDidChange

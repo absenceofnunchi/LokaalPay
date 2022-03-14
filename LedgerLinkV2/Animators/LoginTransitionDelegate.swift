@@ -37,10 +37,8 @@ class IsolateAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         toView.alpha = 0
         let containerView = transitionContext.containerView
         containerView.addSubview(toView)
-//        containerView.insertSubview(toView, at: 0)
-//        containerView.insertSubview(fromView, at: 1)
         
-        UIView.animateKeyframes(withDuration: 2, delay: 0, options: .calculationModeCubic) {
+        UIView.animateKeyframes(withDuration: 1.9, delay: 0, options: .calculationModeCubic) {
             UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.3) { [weak self] in
                 for subview in fromView.allSubviews where subview.tag != self?.selectedTag {
                     if let label = subview as? UILabel {

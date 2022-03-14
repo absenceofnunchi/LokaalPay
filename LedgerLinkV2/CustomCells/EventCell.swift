@@ -68,12 +68,12 @@ final class EventCell: UICollectionViewCell {
         
         eventImageView.contentMode = .scaleAspectFill
         eventImageView.layer.cornerRadius = 0
-        eventImageView.clipsToBounds = true
+//        eventImageView.clipsToBounds = true
         eventImageView.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(eventImageView)
         
-        gradientView.layer.cornerRadius = 20
-        gradientView.clipsToBounds = true
+        gradientView.layer.cornerRadius = 0
+//        gradientView.clipsToBounds = true
         gradientView.translatesAutoresizingMaskIntoConstraints = false
         eventImageView.addSubview(gradientView)
         
@@ -124,17 +124,17 @@ final class EventCell: UICollectionViewCell {
             eventImageView.topAnchor.constraint(equalTo: containerView.topAnchor),
             eventImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 0),
             eventImageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: 0),
-            eventImageView.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.5),
+            eventImageView.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.45),
             
             gradientView.topAnchor.constraint(equalTo: containerView.topAnchor),
             gradientView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 0),
             gradientView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: 0),
-            gradientView.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.5),
+            gradientView.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.45),
 
             nameTitleLabel.topAnchor.constraint(equalTo: eventImageView.bottomAnchor, constant: 10),
             nameTitleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
             nameTitleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20),
-            nameTitleLabel.heightAnchor.constraint(equalToConstant: 30),
+            nameTitleLabel.heightAnchor.constraint(equalToConstant: 22),
             
             nameLabel.topAnchor.constraint(equalTo: nameTitleLabel.bottomAnchor, constant: 0),
             nameLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
@@ -144,7 +144,7 @@ final class EventCell: UICollectionViewCell {
             currencyTitleLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 10),
             currencyTitleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
             currencyTitleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20),
-            currencyTitleLabel.heightAnchor.constraint(equalToConstant: 30),
+            currencyTitleLabel.heightAnchor.constraint(equalToConstant: 22),
             
             currencyLabel.topAnchor.constraint(equalTo: currencyTitleLabel.bottomAnchor, constant: 0),
             currencyLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
@@ -154,7 +154,7 @@ final class EventCell: UICollectionViewCell {
             descTitleLabel.topAnchor.constraint(equalTo: currencyLabel.bottomAnchor, constant: 10),
             descTitleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
             descTitleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20),
-            descTitleLabel.heightAnchor.constraint(equalToConstant: 30),
+            descTitleLabel.heightAnchor.constraint(equalToConstant: 22),
             
             descTextView.topAnchor.constraint(equalTo: descTitleLabel.bottomAnchor, constant: 0),
             descTextView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
