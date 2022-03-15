@@ -9,10 +9,6 @@
 	</array>
 	<key>LSRequiresNativeExecution</key>
 	<true/>
-	<key>UIUserInterfaceStyle</key>
-	<string>Light</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Used for scanning QR&apos;s for addresses to send money to.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_ledgerlink._tcp</string>
@@ -35,8 +31,6 @@
 			</array>
 		</dict>
 	</dict>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photo gallery is needed to introduce events as a host to guests.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

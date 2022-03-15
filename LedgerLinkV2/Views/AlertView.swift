@@ -34,6 +34,47 @@ struct AlertView {
         }
     }
     
+    typealias Action = () -> Void
+    var action: Action? = { }
+    
+    func showDetail(
+        _ title: String,
+        with message: String?,
+        height: CGFloat = 350,
+        fieldViewHeight: CGFloat = 150,
+        index: Int = 0,
+        alignment: NSTextAlignment = .left,
+        for controller: UIViewController?,
+        alertStyle: AlertStyle = .oneButton,
+        buttonAction: Action? = nil,
+        completion: Action? = nil) {
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .willDismiss, object: nil, userInfo: nil)
+                controller?.hideSpinner {
+                    controller?.dismiss(animated: true, completion: {
+                        let content = [
+                            StandardAlertContent(
+                                index: index,
+                                titleString: title,
+                                body: ["": message ?? ""],
+                                fieldViewHeight: fieldViewHeight,
+                                messageTextAlignment: alignment,
+                                alertStyle: alertStyle,
+                                buttonAction: { (_) in
+                                    buttonAction?()
+                                    controller?.dismiss(animated: true, completion: nil)
+                                })
+                        ]
+                        let alertVC = AlertViewController(height: height, standardAlertContent: content)
+                        controller?.present(alertVC, animated: true, completion: {
+                            completion?()
+                        })
+                    })
+                }
+            }
+        }
+    
+    
     enum FadingLocation {
         case center, top
     }

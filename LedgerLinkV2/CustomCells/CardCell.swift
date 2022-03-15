@@ -60,7 +60,7 @@ extension CardCell {
         contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
         
         gradientView.clipsToBounds = true
-        gradientView.alpha = 0.7
+        gradientView.alpha = 0.9
         gradientView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(gradientView)
         gradientView.setFill()
@@ -75,15 +75,6 @@ extension CardCell {
         gradientView.addSubview(titleLabel)
         
         NSLayoutConstraint.activate([
-            //            imageView.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
-            //            imageView.centerYAnchor.constraint(equalTo: gradientView.centerYAnchor, constant: -20),
-            //            imageView.heightAnchor.constraint(equalToConstant:40),
-            //            imageView.widthAnchor.constraint(equalToConstant:40),
-            
-            //            titleLabel.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
-            //            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10),
-            //            titleLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor),
-            
             imageView.topAnchor.constraint(equalTo: gradientView.topAnchor, constant: 20),
             imageView.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
             imageView.heightAnchor.constraint(equalToConstant:40),
@@ -91,7 +82,111 @@ extension CardCell {
             
             titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
             titleLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
-            //            titleLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor),
         ])
+    }
+}
+
+final class BalanceCell: UICollectionViewCell {
+    let gradientView = GradientView()
+    var colors: [CGColor] = [] {
+        didSet {
+            gradientView.gradientColors = colors
+        }
+    }
+    let balanceLabel = UILabel()
+    let titleLabel = UILabel()
+    var radiusTopLeft: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
+    
+    var radiusTopRight: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
+    
+    var radiusBottomLeft: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
+    
+    var radiusBottomRight: CGFloat = 20 {
+        didSet {
+            contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        }
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        configure()
+        getBalance()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("Not implemented")
+    }
+}
+
+extension BalanceCell {
+    func configure() {
+        contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
+        
+        gradientView.clipsToBounds = true
+        gradientView.alpha = 0.9
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(gradientView)
+        gradientView.setFill()
+        
+        balanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        balanceLabel.adjustsFontForContentSizeCategory = true
+        balanceLabel.font = UIFont.rounded(ofSize: 25, weight: .bold)
+        balanceLabel.textAlignment = .left
+        balanceLabel.textColor = .white
+        gradientView.addSubview(balanceLabel)
+        
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.adjustsFontForContentSizeCategory = true
+        titleLabel.font = UIFont.rounded(ofSize: 13, weight: .bold)
+        titleLabel.textAlignment = .center
+        gradientView.addSubview(titleLabel)
+        
+        NSLayoutConstraint.activate([
+            balanceLabel.topAnchor.constraint(equalTo: gradientView.topAnchor, constant: 20),
+            balanceLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
+            balanceLabel.heightAnchor.constraint(equalToConstant:40),
+            balanceLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor, multiplier: 0.7),
+            
+            titleLabel.topAnchor.constraint(equalTo: balanceLabel.bottomAnchor, constant: 20),
+            titleLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
+        ])
+    }
+    
+    /// Get balance name
+    private func getBalance() {
+        Node.shared.getMyAccount { (acct: Account?, error: NodeError?) in
+            if let error = error {
+                print(error)
+                return
+            }
+            
+            if let acct = acct {
+                
+                Node.shared.localStorage.getBlock(Int32(0)) { [weak self] (block: FullBlock?, error: NodeError?) in
+                    if let _ = error {
+                        return
+                    }
+                    
+                    if let block = block,
+                       let extraData = block.extraData,
+                       let eventInfo = try? JSONDecoder().decode(EventInfo.self, from: extraData) {
+                    
+                        self?.balanceLabel.text = "\(acct.balance) \(eventInfo.currencyName)"
+                    }
+                }
+            }
+        }
     }
 }

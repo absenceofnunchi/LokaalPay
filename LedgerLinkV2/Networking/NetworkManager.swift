@@ -59,7 +59,7 @@ final class NetworkManager: NSObject {
     
     // MARK: - `MPCSession` public methods.
     func start(startAutoRelay: Bool = true) {
-        guard isServerRunning == false else { return }
+//        guard isServerRunning == false else { return }
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceAdvertiser?.startAdvertisingPeer()
@@ -233,7 +233,8 @@ extension NetworkManager: MCSessionDelegate {
         }
     }
 
-    func requestBlockchainFromAllPeers(upto peerNumber: Int? = nil, completion: @escaping(NodeError?) -> Void) {
+    /// Blockchain request when there is a discrepency in the blockchain. Doesn't trigger account creation.
+    func requestBlockchainFromAllPeers(upto peerNumber: Int? = nil, isInitialRequest: Bool = false, completion: @escaping(NodeError?) -> Void) {
         guard !session.connectedPeers.isEmpty else {
             completion(.generalError("No peers"))
             return
@@ -241,38 +242,30 @@ extension NetworkManager: MCSessionDelegate {
         
         if let peerNumber = peerNumber {
             let partialPeers = session.connectedPeers.prefix(peerNumber)
-            requestBlockchain(peerIDs: Array(partialPeers), completion: completion)
+            requestBlockchain(peerIDs: Array(partialPeers), isInitialRequest: isInitialRequest, completion: completion)
         } else {
-            requestBlockchain(peerIDs: session.connectedPeers, completion: completion)
+            requestBlockchain(peerIDs: session.connectedPeers, isInitialRequest: isInitialRequest, completion: completion)
         }
     }
     
     /// Download blockchain by requesting it from another peer
     /// Request blocks with a number that's later than the latest local block.
-    func requestBlockchain(peerIDs: [MCPeerID], completion: @escaping (NodeError?) -> Void) {
-//        Node.shared.localStorage.getLatestBlock { [weak self] (block: LightBlock?, error: NodeError?) in
-//            if let error = error {
-//                completion(error)
-//            }
-//            
-//            do {
-//                let blockNumber = block?.number ?? Int32(0)
-//                let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
-//                let data = try JSONEncoder().encode(contractMethod)
-//                print("request blockchain success", data)
-//                self?.sendData(data: data, peers: peerIDs, mode: .reliable)
-//            } catch {
-//                completion(.generalError("Request block error"))
-//            }
-//        }
-        
+    func requestBlockchain(peerIDs: [MCPeerID], isInitialRequest: Bool, completion: @escaping (NodeError?) -> Void) {
         do {
-            let block: LightBlock? = try Node.shared.localStorage.getLatestBlock()
-            /// local blockchain may or may not exists
-            let blockNumber = block?.number ?? Int32(0)
-            let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
-            let data = try JSONEncoder().encode(contractMethod)
-            self.sendData(data: data, peers: peerIDs, mode: .reliable)
+            
+            if isInitialRequest {
+                let contractMethod = ContractMethod.initialBlockchainRequest
+                let data = try JSONEncoder().encode(contractMethod)
+                self.sendData(data: data, peers: peerIDs, mode: .reliable)
+            } else {
+                let block: LightBlock? = try Node.shared.localStorage.getLatestBlock()
+                /// local blockchain may or may not exists
+                let blockNumber = block?.number ?? Int32(0)
+                let contractMethod = ContractMethod.blockchainDownloadRequest(blockNumber)
+                let data = try JSONEncoder().encode(contractMethod)
+                self.sendData(data: data, peers: peerIDs, mode: .reliable)
+            }
+
             completion(nil)
         } catch {
             print(error)
@@ -294,7 +287,9 @@ extension NetworkManager: MCSessionDelegate {
     }
     
     /// Send blockchain as a response to a peer's request. Only the blocks need to be sent because the relational transactions and accounts are created upon arrival.
-    func sendBlockchain(_ blockNumber: Int32, format: String, peerID: MCPeerID) {
+    /// The initial request is only for a guest at the time they choose an event.
+    /// Event selection -> Blockchain download -> Account Creation.
+    func sendBlockchain(_ blockNumber: Int32, format: String, peerID: MCPeerID, isInitialRequest: Bool = false) {
         Node.shared.localStorage.getBlocks(blockNumber, format: format) { (blocks: [LightBlock]?, error: NodeError?) in
             if let error = error {
                 print("sendBlockchain error", error)
@@ -305,7 +300,7 @@ extension NetworkManager: MCSessionDelegate {
                 /// Only blocks are sents since the accounts and the transactions are included in the block which will be saved in a relational way.
                 let packet = Packet(accounts: nil, transactions: nil, blocks: blocks)
                 do {
-                    let contractMethod = ContractMethod.blockchainDownloadResponse(packet)
+                    let contractMethod = isInitialRequest ? ContractMethod.initialBlockchainDownloadResponse(packet) : ContractMethod.blockchainDownloadResponse(packet)
                     let encodedMethod = try JSONEncoder().encode(contractMethod)
                     NetworkManager.shared.sendData(data: encodedMethod, peers: [peerID], mode: .reliable)
                 } catch {

@@ -24,7 +24,7 @@ extension Node {
     /// None validators verify the blocks that the validators have created
     /// This method is to be run at a regular interval
     func processBlock(completion: @escaping (LightBlock?) -> Void) {
-        verifyValidator { [weak self] isValidator in
+        verifyValidator { [weak self] (isValidator) in
             if isValidator {
                 self?.createBlock(completion: completion)
             } else {
@@ -38,59 +38,63 @@ extension Node {
     /// TODO: save the public signature in the genesis block instead of the address and compare it against the local machine's public signature
     func verifyValidator(completion: @escaping (Bool) -> Void) {
         /// Get the genesis block
+//        do {
+//            guard let genesisBlock: FullBlock = try localStorage.getBlock(Int32(0)) else {
+//                completion(false)
+//                return
+//            }
+//
+//            guard let account: Account = self.getMyAccount() else {
+//                completion(false)
+//                return
+//            }
+//
+//            print("account.address.address", account.address.address)
+//            print("genesisBlock.miner", genesisBlock.miner)
+//            print("account.address.address == genesisBlock.miner", account.address.address == genesisBlock.miner)
+//            if account.address.address == genesisBlock.miner {
+//                /// If my address matches the miner of the genesis block, it means I'm the host/validator.
+//                /// Proceed to mint a new block
+//                print("verfied that this is a validator")
+//                completion(true)
+//                return
+//            } else {
+//                print("verfied that this is a non validator")
+//                completion(false)
+//                return
+//            }
+//        } catch {
+//            print(error)
+//        }
+        
         localStorage.getBlock(Int32(0)) { [weak self] (genesisBlock, error) in
             if let error = error {
                 print(error as Any)
                 completion(false)
                 return
             }
-            
+
             guard let genesisBlock = genesisBlock else {
                 completion(false)
                 return
             }
-            
+
             guard let account: Account = self?.getMyAccount() else {
                 completion(false)
                 return
             }
-            
+
             if account.address.address == genesisBlock.miner {
                 /// If my address matches the miner of the genesis block, it means I'm the host/validator.
                 /// Proceed to mint a new block
-                
                 completion(true)
+                return
             } else {
                 completion(false)
+                return
             }
         }
-        
-//        localStorage.getBlocks(from: Int32(0), format: "number == %i") { [weak self] (blocks: [FullBlock]?, error: NodeError?) in
-//            if let error = error {
-//                print(error as Any)
-//                completion(false)
-//                return
-//            }
-//
-//            guard let blocks = blocks, let genesisBlock = blocks.first else {
-//                completion(false)
-//                return
-//            }
-//
-//            guard let account: Account = self?.getMyAccount() else {
-//                completion(false)
-//                return
-//            }
-//
-//            if account.address.address == genesisBlock.miner {
-//                /// If my address matches the miner of the genesis block, it means I'm the host/validator.
-//                /// Proceed to mint a new block
-//
-//                completion(true)
-//            } else {
-//                completion(false)
-//            }
-//        }
+
     }
     
     // MARK: - createBlock
@@ -196,8 +200,8 @@ extension Node {
     
     // MARK: - verifyBlock
     /// Received block to be verified by a non-validator and added to the local blockchain.
+    /// Whenever the block is out of sync, the discrepency blocks will be requested.
     func verifyBlock(completion: @escaping (LightBlock?) -> Void) {
-        
         /// Fetch the latest block to compare the hash against the parent hash of the current block as well as the block numbers
         guard let latestBlock: LightBlock = try? localStorage.getLatestBlock() else {
             /// If no blockchain exists locally, it means none was properly downloaded at the beginning.

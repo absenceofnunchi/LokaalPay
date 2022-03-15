@@ -421,16 +421,54 @@ final class NodeTests: XCTestCase {
     }
 
     func test_test111() {
-        let a = [1, 2, 3]
+        guard let genesisBlock = try? FullBlock(number: BigUInt(0), parentHash: binaryHashes[0], transactionsRoot: binaryHashes[0], stateRoot: binaryHashes[0], receiptsRoot: binaryHashes[0], miner: addresses[0].address, transactions: treeConfigurableTransactions, accounts: treeConfigurableAccounts) else { fatalError("blocks vector error") }
         
-        let result: [Int] = a.compactMap { num in
-            if num == 2 {
-                return 2
-            } else {
-                return nil
+        let hash = "0xfFbb73852d9DA0DF8a9ecEbB85e896fd1e7D51Ec"
+        guard let address = EthereumAddress(hash) else { return }
+        let account = Account(address: address, nonce: BigUInt(0))
+        
+        Node.shared.saveSync([genesisBlock]) { error in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            
+            Node.shared.saveSync([account]) { error in
+                if let error = error {
+                    fatalError(error.localizedDescription)
+                }
+                
+                self.verify(address: address) { isTrue in
+                    print("isTrue", isTrue)
+                }
             }
         }
-        
-        print(result)
+    }
+    
+    func verify(address: EthereumAddress, completion: @escaping (Bool) -> Void) {
+        do {
+            guard let genesisBlock: FullBlock = try Node.shared.localStorage.getBlock(Int32(0)) else {
+                completion(false)
+                return
+            }
+            
+            guard let account: Account = try Node.shared.localStorage.getAccount(address) else {
+                completion(false)
+                return
+            }
+            
+            if account.address.address == genesisBlock.miner {
+                /// If my address matches the miner of the genesis block, it means I'm the host/validator.
+                /// Proceed to mint a new block
+                print("verfied that this is a validator")
+                completion(true)
+                return
+            } else {
+                print("verfied that this is a non validator")
+                completion(false)
+                return
+            }
+        } catch {
+            fatalError(error.localizedDescription)
+        }
     }
 }

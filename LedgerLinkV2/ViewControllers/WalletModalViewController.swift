@@ -20,6 +20,7 @@ class WalletModalViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tapToDismissKeyboard()
         configureUI()
         setConstraints()
     }
@@ -50,7 +51,7 @@ class WalletModalViewController: UIViewController {
     
     func setConstraints() {
         NSLayoutConstraint.activate([
-            dismissButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
+            dismissButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
             dismissButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             dismissButton.widthAnchor.constraint(equalToConstant: 50),
             dismissButton.heightAnchor.constraint(equalToConstant: 50),

@@ -163,6 +163,5 @@ class CodableTests: XCTestCase {
         } catch {
             fatalError(error.localizedDescription)
         }
-
     }
 }

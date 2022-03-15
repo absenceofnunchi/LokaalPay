@@ -6,7 +6,8 @@
 //
 
 /*
- For a guest to join an event.
+ For a guest to join an event. Upon loading, the guest requests for the genesis blocks from peers. This is done by starting the server without the auto relay.
+ The genesis block a contains event information. When the guest selects an event, an account is created and the auto relay is started.
  */
 
 import UIKit
@@ -79,10 +80,9 @@ class EventsViewController: UIViewController, BlockChainDownloadDelegate {
         }
     }
     
-    
+    /// Gets triggered when the first peer becomes available and gets connected.
+    /// Requests for the genesis blocks which contains the event information.
     func peerConnectedHandler(_ peerID: MCPeerID) {
-        isPeerConnected = true
-
         do {
             let contractMethod = ContractMethod.eventsQueryRequest
             let encodedMethod = try JSONEncoder().encode(contractMethod)
@@ -327,17 +327,17 @@ extension EventsViewController: UICollectionViewDelegate {
                         return
                     }
                     
+                    /// Save it for creating a new account and transactions later
                     UserDefaults.standard.set(event.chainID, forKey: UserDefaultKey.chainID)
                     
                     self?.dismiss(animated: true, completion: {
                         self?.showSpinner()
-                        /// The network is set to only start the server without the auto relay.
-                        /// Following starts the auto realay
+                        /// The network was set to only start the server without the auto relay at viewDidLoad.
+                        /// Following now starts the auto relay
                         NetworkManager.shared.start()
                         /// Following allows the blockchain download request.
                         self?.createWalletMode = true
                         self?.isPeerConnected = true
-
                     })
                 }
             }
@@ -346,6 +346,8 @@ extension EventsViewController: UICollectionViewDelegate {
         }
     }
     
+    /// Gets triggered by the "initial blockchain download response" ContractMethod.
+    /// It's called after the blockchain arrives after the download request.
     func didReceiveBlockchain() {
         print("didReceiveBlockchain")
         guard let password = UserDefaults.standard.string(forKey: UserDefaultKey.walletPassword),
@@ -357,15 +359,14 @@ extension EventsViewController: UICollectionViewDelegate {
         Node.shared.createWallet(password: password, chainID: chainID, isHost: false) { [weak self] (data) in
             self?.hideSpinner()
             self?.createWalletMode = false
-//            let account = Node.shared.getMyAccount()
-//            self?.addressLabel.text = account?.address.address
+            /// Notify the peers of the creation of the user's account
             NetworkManager.shared.sendDataToAllPeers(data: data)
             AuthSwitcher.loginAsGuest()
         }
     }
     
     private func requestBlockchain() {
-        NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1) { [weak self](error) in
+        NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1, isInitialRequest: true) { [weak self](error) in
             if let error = error {
                 self?.dismiss(animated: true, completion: nil)
                 self?.alert.show(error, for: self)
@@ -380,22 +381,42 @@ extension EventsViewController: EventQueryDelegate {
     /// A list of genesis blocks from peers
     func didGetEvent(_ blocks: [LightBlock]?) {
         guard let blocks = blocks else { return }
-        blocks.forEach { [weak self] in
+        
+//        blocks.forEach { [weak self] in
+//            guard $0.number == Int32(0),
+//                  let fullBlock = $0.decode(),
+//                  let extraData = fullBlock.extraData,
+//                  let eventInfo = try? JSONDecoder().decode(EventInfo.self, from: extraData) else { return }
+//
+//
+//            DispatchQueue.main.async {
+//                var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
+//                Section.allCases.forEach { section in
+//                    snapshot.appendSections([section])
+//                    snapshot.appendItems([eventInfo])
+//                }
+//
+//                self?.dataSource.applySnapshotUsingReloadData(snapshot)
+//            }
+//        }
+        
+        let eventInfoArr: [EventInfo] = blocks.compactMap {
             guard $0.number == Int32(0),
                   let fullBlock = $0.decode(),
                   let extraData = fullBlock.extraData,
-                  let eventInfo = try? JSONDecoder().decode(EventInfo.self, from: extraData) else { return }
+                  let eventInfo = try? JSONDecoder().decode(EventInfo.self, from: extraData) else { return nil }
             
-            
-            DispatchQueue.main.async {
-                var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
-                Section.allCases.forEach { section in
-                    snapshot.appendSections([section])
-                    snapshot.appendItems([eventInfo])
-                }
-                
-                self?.dataSource.applySnapshotUsingReloadData(snapshot)
+            return eventInfo
+        }
+        
+        DispatchQueue.main.async {
+            var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
+            Section.allCases.forEach { section in
+                snapshot.appendSections([section])
+                snapshot.appendItems(eventInfoArr)
             }
+            
+            self.dataSource.applySnapshotUsingReloadData(snapshot)
         }
     }
 }

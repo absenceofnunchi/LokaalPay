@@ -135,9 +135,12 @@ extension StandardAlertViewController: UITextFieldDelegate {
                 messageTextView.font = UIFont.preferredFont(forTextStyle: .body)
             }
             
+            messageTextView.layer.borderWidth = 0.5
+            messageTextView.layer.borderColor = UIColor.lightGray.cgColor
             messageTextView.isEditable = isEditable
             messageTextView.delegate = self
             messageTextView.text = value
+            messageTextView.backgroundColor = .clear
             messageTextView.textColor = .lightGray
             messageTextView.textAlignment = messageTextAlignment
             messageTextView.contentInset = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)

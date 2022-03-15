@@ -465,7 +465,7 @@ final class BlockchainTests: XCTestCase {
         let tx = EthereumTransaction(gasPrice: BigUInt(10), gasLimit: BigUInt(10), to: address, value: BigUInt(10), data: Data())
         guard let treeConfigTx = try? TreeConfigurableTransaction(data: tx) else { return }
         
-        let eventInfo = EventInfo(eventName: "Event", currencyName: "Dollar", description: nil, image: nil)
+        let eventInfo = EventInfo(eventName: "Event", currencyName: "Dollar", description: nil, image: nil, chainID: "1111")
         guard let extraData = try? JSONEncoder().encode(eventInfo) else { return }
         
         print("ex", extraData)

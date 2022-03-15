@@ -5,6 +5,13 @@
 //  Created by J C on 2022-03-13.
 //
 
+/*
+ Abstract:
+ Create a password for the guest's personal account.
+ The password is saved in UserDefaults.
+ The account is not yet created until the guest selects an event from EventsVC.
+ */
+
 import UIKit
 
 final class GuestLoginViewController: UIViewController, TopWarningPanel {

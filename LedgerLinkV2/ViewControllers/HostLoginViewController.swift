@@ -501,9 +501,10 @@ extension HostLoginViewController: UITextViewDelegate, UITextFieldDelegate {
         }
     }
     
+    /// Repositions the scroll view so that text fields are visible right above the keyboard.
     func textFieldDidBeginEditing(_ textField: UITextField) {
         var point = textField.frame.origin
-        point.y += textField.bounds.size.height
+        point.y += textField.bounds.size.height + 50
         scrollView.setContentOffset(point, animated: true)
     }
     

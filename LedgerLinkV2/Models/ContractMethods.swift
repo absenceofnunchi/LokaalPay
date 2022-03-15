@@ -5,23 +5,34 @@
 //  Created by J C on 2022-02-16.
 //
 
+/*
+ Abstract:
+ Dictates what a transaction or a direct message to a peer should do.
+ The recipient's Node executes according to ContractMethod.
+ Has to be Codable since ContractMethod is sent along with the rest of the message to peers.
+ */
+
 import Foundation
 import web3swift
 
 enum ContractMethod: Codable {
-    case createAccount(Data)
-    case transferValue(Data)
+    case createAccount(Data) /// Transaction
+    case transferValue(Data) /// Transaction
+    case initialBlockchainRequest /// Only called during the initial account creation by a guest
+    case initialBlockchainDownloadResponse(Packet) /// Only called at the time of the account creation. The arrival of the blockchain triggers the account creation.
     case blockchainDownloadRequest(Int32)
-    case blockchainDownloadResponse(Packet)
-    case blockchainDownloadAllRequest
-    case blockchainDownloadAllResponse(Packet)
-    case sendBlock(Data)
-    case eventsQueryRequest
+    case blockchainDownloadResponse(Packet) /// Called when there is a discrepency in the blockchain. Doesn't trigger the account creation.
+    case blockchainDownloadAllRequest /// Deprecated
+    case blockchainDownloadAllResponse(Packet) /// Deprecated
+    case sendBlock(Data) /// Auto relay
+    case eventsQueryRequest /// Requested when a guest browses for events in the vicinity
     case eventsQueryResponse(Data)
     
     enum CodingKeys: String, CodingKey {
         case createAccount
         case transferValue
+        case initialBlockchainRequest
+        case initialBlockchainDownloadResponse
         case blockchainDownloadRequest
         case blockchainDownloadResponse
         case blockchainDownloadAllRequest
@@ -43,6 +54,12 @@ enum ContractMethod: Codable {
                 try container.encode(rlpEncoded, forKey: .createAccount)
             case .transferValue(let rlpEncoded):
                 try container.encode(rlpEncoded, forKey: .transferValue)
+            case .initialBlockchainRequest:
+                try container.encode("initialBlockchainRequest", forKey: .initialBlockchainRequest)
+            case .initialBlockchainDownloadResponse(let packet):
+                let encoded = try JSONEncoder().encode(packet)
+                guard let compressed = encoded.compressed else { return }
+                try container.encode(compressed, forKey: .initialBlockchainDownloadResponse)
             case .blockchainDownloadRequest(let blockNumber):
                 /// Block number is passed to let the recipient know from which point in the blockchain the sender needs to download
                 try container.encode(blockNumber, forKey: .blockchainDownloadRequest)
@@ -100,6 +117,16 @@ enum ContractMethod: Codable {
             case .transferValue:
                 let rlpEncoded = try container.decode(Data.self, forKey: .transferValue)
                 self = .transferValue(rlpEncoded)
+            case .initialBlockchainRequest:
+                guard let decoded = try? container.decode(String.self, forKey: .initialBlockchainRequest), decoded == "initialBlockchainRequest" else {
+                    throw NodeError.generalError("Unable to decode initialBlockchainRequest in ContractMethod")
+                }
+                self = .initialBlockchainRequest
+            case .initialBlockchainDownloadResponse:
+                let data = try container.decode(Data.self, forKey: .initialBlockchainDownloadResponse)
+                guard let decompressed = data.decompressed else { throw NodeError.generalError("Unable to decode inital blockchain download response in ContractMethod") }
+                let decoded = try JSONDecoder().decode(Packet.self, from: decompressed)
+                self = .initialBlockchainDownloadResponse(decoded)
             case .blockchainDownloadRequest:
                 let blockNumber = try container.decode(Int32.self, forKey: .blockchainDownloadRequest)
                 self = .blockchainDownloadRequest(blockNumber)

@@ -29,20 +29,30 @@ class AuthSwitcher {
         let isHost = userDefaults.bool(forKey: AuthUserDefaultsKey.isHost)
 //        let isEntered = userDefaults.bool(forKey: AuthUserDefaultsKey.isEntered)
         var rootViewController: UIViewController!
-        
+
         if isLoggedIn {
             rootViewController = loadMain(isHost: isHost)
         } else {
             rootViewController = IntroViewController()
         }
-        
+
         guard let scene = UIApplication.shared.connectedScenes.first,
               let sceneDelegate = scene.delegate as? SceneDelegate,
               let windowScene = scene as? UIWindowScene else { return }
-        
+
         sceneDelegate.window = UIWindow(windowScene: windowScene)
         sceneDelegate.window?.rootViewController = rootViewController
         sceneDelegate.window?.makeKeyAndVisible()
+        
+        
+//        guard let scene = UIApplication.shared.connectedScenes.first,
+//              let sceneDelegate = scene.delegate as? SceneDelegate,
+//              let windowScene = scene as? UIWindowScene else { return }
+//        
+//        let rootViewController = loadMain(isHost: false)
+//        sceneDelegate.window = UIWindow(windowScene: windowScene)
+//        sceneDelegate.window?.rootViewController = rootViewController
+//        sceneDelegate.window?.makeKeyAndVisible()
     }
     
     static func loadMain(isHost: Bool) -> UIViewController {

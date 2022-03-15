@@ -179,7 +179,6 @@ final class Node {
                 if let error = error {
                     print(error)
                 }
-                print("Save both accounts with the updated balances")
             })
         })
         .store(in: &storage)
@@ -194,7 +193,6 @@ final class Node {
                     completion(nil , error)
                 }
 
-                print("check my balance", accounts as Any)
                 if let accounts = accounts, let account = accounts.first {
                     completion(account, nil)
                 }
@@ -408,6 +406,11 @@ final class Node {
                 case .createAccount(let rlpData):
                     NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
                     validateTransaction(rlpData) { [weak self] (result, error) in
+                        if let error = error {
+                            print(error)
+                            return
+                        }
+                        
                         if let transaction = result.0,
                            let extraData = result.1 {
                             let createAccount = CreateAccount(extraData: extraData)
@@ -436,6 +439,18 @@ final class Node {
                             guard let treeConfigTx = try? TreeConfigurableTransaction(data: transaction) else { return }
                             self?.addValidatedTransaction(treeConfigTx)
                         }
+                    }
+                    break
+                case .initialBlockchainRequest:
+                    /// Initial blockchain request by a guest. The ContractMethod is initialBlockchainDownloadResponse, which ultimately triggers Account Creation in EventsVC.
+                    NetworkManager.shared.sendBlockchain(Int32(0), format: "number >= %i", peerID: peerID, isInitialRequest: true)
+                    break
+                case .initialBlockchainDownloadResponse(let packet):
+                    guard let blocks = packet.blocks else { return }
+                    if isBlockchainValid(blocks) {
+                        parsePacket(packet, createAccount: true)
+                    } else {
+                        print("invalid blockchain")
                     }
                     break
                 case .blockchainDownloadRequest(let blockNumber):
@@ -504,6 +519,18 @@ final class Node {
                     break
                 case .transferValue(_):
                     NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
+                    break
+                case .initialBlockchainRequest:
+                    /// Initial blockchain request by a guest. The ContractMethod is initialBlockchainDownloadResponse, which ultimately triggers Account Creation in EventsVC.
+                    NetworkManager.shared.sendBlockchain(Int32(0), format: "number >= %i", peerID: peerID, isInitialRequest: true)
+                    break
+                case .initialBlockchainDownloadResponse(let packet):
+                    guard let blocks = packet.blocks else { return }
+                    if isBlockchainValid(blocks) {
+                        parsePacket(packet, createAccount: true)
+                    } else {
+                        print("invalid blockchain")
+                    }
                     break
                 case .blockchainDownloadRequest(let blockNumber):
                     /// Blockchain request by the sender. Therefore, send the requested blockchain.
@@ -584,6 +611,9 @@ final class Node {
               }
         
         let chainID = UserDefaults.standard.integer(forKey: "chainID")
+        
+        print("decodedExtraData.chainID == BigUInt(chainID)", decodedExtraData.chainID == BigUInt(chainID))
+        print("type decodedExtraData.chainID", type(of: decodedExtraData.chainID))
         guard decodedExtraData.chainID == BigUInt(chainID) else {
             completion((nil, nil), .generalError("Incorrect chain ID"))
             return
@@ -615,9 +645,11 @@ final class Node {
         }
     }
 
-    /// Parses Packet which consists of an array of Blocks (which includes TreeConfigAccouts and TreeConfigTransactions)
-    /// The packets are sent as a response to a request for a portion of or a full blockchain by peers
-    private func parsePacket(_ packet: Packet) {
+    /// Parses Packet  consists of an array of Blocks (which includes TreeConfigAccouts and TreeConfigTransactions)
+    /// The packets are sent as a response to a request for a portion of or a full blockchain by peers.
+    /// didReceiveBlockchain triggers an account creation which means it's only to be triggered during the guest's first registration.
+    /// The ContractMethod of initialBlockchainDownloadResponse should be the only one that triggers didReceiveBlockchain
+    private func parsePacket(_ packet: Packet, createAccount: Bool = false) {
         /// Calculate the blocks that don't exist locally and save them.
         /// If the device only receives one block, that most likely referrs to the genesis block, which the local Core Data should already have
         guard let blocks = packet.blocks, blocks.count > 1 else {
@@ -638,7 +670,10 @@ final class Node {
                             }
                         }
                     }
-                    self.downloadDelegate?.didReceiveBlockchain()
+                    
+                    if createAccount {
+                        self.downloadDelegate?.didReceiveBlockchain()
+                    }
                 }
             } else {
                 /// no local blockchain exists yet because it's a brand new account
@@ -652,7 +687,10 @@ final class Node {
                         }
                     }
                 }
-                self.downloadDelegate?.didReceiveBlockchain()
+                
+                if createAccount {
+                    self.downloadDelegate?.didReceiveBlockchain()
+                }
             }
         } catch {
             print("parse packet error", error)
