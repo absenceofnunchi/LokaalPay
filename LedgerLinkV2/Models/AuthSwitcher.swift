@@ -25,34 +25,34 @@ class AuthSwitcher {
     }
     
     static func updateRootVC() {
-        let isLoggedIn = userDefaults.bool(forKey: AuthUserDefaultsKey.isloggedIn)
-        let isHost = userDefaults.bool(forKey: AuthUserDefaultsKey.isHost)
-//        let isEntered = userDefaults.bool(forKey: AuthUserDefaultsKey.isEntered)
-        var rootViewController: UIViewController!
-
-        if isLoggedIn {
-            rootViewController = loadMain(isHost: isHost)
-        } else {
-            rootViewController = IntroViewController()
-        }
-
-        guard let scene = UIApplication.shared.connectedScenes.first,
-              let sceneDelegate = scene.delegate as? SceneDelegate,
-              let windowScene = scene as? UIWindowScene else { return }
-
-        sceneDelegate.window = UIWindow(windowScene: windowScene)
-        sceneDelegate.window?.rootViewController = rootViewController
-        sceneDelegate.window?.makeKeyAndVisible()
-        
-        
+//        let isLoggedIn = userDefaults.bool(forKey: AuthUserDefaultsKey.isloggedIn)
+//        let isHost = userDefaults.bool(forKey: AuthUserDefaultsKey.isHost)
+////        let isEntered = userDefaults.bool(forKey: AuthUserDefaultsKey.isEntered)
+//        var rootViewController: UIViewController!
+//
+//        if isLoggedIn {
+//            rootViewController = loadMain(isHost: isHost)
+//        } else {
+//            rootViewController = IntroViewController()
+//        }
+//
 //        guard let scene = UIApplication.shared.connectedScenes.first,
 //              let sceneDelegate = scene.delegate as? SceneDelegate,
 //              let windowScene = scene as? UIWindowScene else { return }
-//        
-//        let rootViewController = loadMain(isHost: false)
+//
 //        sceneDelegate.window = UIWindow(windowScene: windowScene)
 //        sceneDelegate.window?.rootViewController = rootViewController
 //        sceneDelegate.window?.makeKeyAndVisible()
+        
+        
+        guard let scene = UIApplication.shared.connectedScenes.first,
+              let sceneDelegate = scene.delegate as? SceneDelegate,
+              let windowScene = scene as? UIWindowScene else { return }
+        
+        let rootViewController = loadMain(isHost: false)
+        sceneDelegate.window = UIWindow(windowScene: windowScene)
+        sceneDelegate.window?.rootViewController = rootViewController
+        sceneDelegate.window?.makeKeyAndVisible()
     }
     
     static func loadMain(isHost: Bool) -> UIViewController {
@@ -60,9 +60,6 @@ class AuthSwitcher {
         let walletVC = WalletViewController()
         let walletNav = UINavigationController(rootViewController: walletVC)
         walletNav.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
-        
-        let signupVC = SignupViewController()
-        signupVC.tabBarItem = UITabBarItem(title: "Signup", image: UIImage(named: "lock"), selectedImage: UIImage(named: "lock"))
         
         let mainVC = MainViewController()
         let mainNav = UINavigationController(rootViewController: mainVC)
@@ -72,8 +69,12 @@ class AuthSwitcher {
         let explorerNav = UINavigationController(rootViewController: explorerVC)
         explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
         
+        let explorerVC1 = ExplorerViewController1()
+        let explorerNav1 = UINavigationController(rootViewController: explorerVC1)
+        explorerNav1.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
+        
         let tabBar = CustomTabBarController()
-        tabBar.setViewControllers([walletNav, signupVC, mainNav, explorerNav], animated: true)
+        tabBar.setViewControllers([walletNav, mainNav, explorerNav, explorerNav1], animated: true)
         return tabBar
     }
     

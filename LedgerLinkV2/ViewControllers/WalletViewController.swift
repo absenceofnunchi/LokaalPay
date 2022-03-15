@@ -7,32 +7,33 @@
 
 import UIKit
 
-final class WalletViewController: UIViewController {
-    enum Section: Int, CaseIterable {
-        case horizontal, vertical
-        
-        var columnCount: Int {
-            switch self {
-                case .horizontal:
-                    return 1
-                    
-                case .vertical:
-                    return 3
-            }
-        }
-    }
+enum Section: Int, CaseIterable {
+    case horizontal, vertical
     
-    struct MenuData: Hashable {
-        let section: Section
-        let colors: [CGColor]
-        let title: String
-        var subtitle: String? = nil
-        let image: UIImage
-        let identifier = UUID()
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(identifier)
+    var columnCount: Int {
+        switch self {
+            case .horizontal:
+                return 1
+                
+            case .vertical:
+                return 3
         }
     }
+}
+
+struct MenuData: Hashable {
+    let section: Section
+    let colors: [CGColor]
+    let title: String
+    var subtitle: String? = nil
+    let image: UIImage
+    let identifier = UUID()
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identifier)
+    }
+}
+
+final class WalletViewController: UIViewController {
     
     private var menuDataArray: [MenuData] = [
         MenuData(section: .horizontal, colors: [UIColor(red: 251/255, green: 255/255, blue: 163/255, alpha: 1).cgColor, UIColor(red: 102/255, green: 211/255, blue: 126/255, alpha: 1).cgColor, UIColor(red: 255/255, green: 187/255, blue: 145/255, alpha: 1).cgColor], title: "Balance", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
@@ -288,6 +289,10 @@ extension WalletViewController: UICollectionViewDelegate {
                 resetPassword()
             case "Private Key":
                 showPrivateKey()
+            case "Transaction History":
+                showTransactionHistory()
+            case "Delete":
+                deleteAccount()
             default:
                 break
         }
@@ -339,7 +344,7 @@ extension WalletViewController: UICollectionViewDelegate {
         // show private key
         let content = [
             StandardAlertContent(
-                titleString: "",
+                titleString: "Private Key Retrieval",
                 body: [AlertModalDictionary.passwordSubtitle: ""],
                 isEditable: true,
                 fieldViewHeight: 40,
@@ -366,6 +371,67 @@ extension WalletViewController: UICollectionViewDelegate {
             }
         }
         present(alertVC, animated: true, completion: nil)
+    }
+    
+    private func showTransactionHistory() {
+        Node.shared.fetch { [weak self](results: [TreeConfigurableTransaction]?, error: NodeError?) in
+            if let error = error {
+                print(error)
+            }
+            
+            if let results = results {
+                DispatchQueue.main.async {
+                    let detailVC = DetailTableViewController<TreeConfigurableTransaction>()
+                    detailVC.data = results
+                    self?.navigationController?.pushViewController(detailVC, animated: true)
+                }
+            } else {
+                self?.alert.show("No data", for: self)
+            }
+        }
+    }
+    
+    private func deleteAccount() {
+        // delete
+        let content = [
+            StandardAlertContent(
+                titleString: "Delete Wallet",
+                body: ["": "Are you sure you want to delete your wallet from your local storage?"],
+                messageTextAlignment: .left,
+                alertStyle: .withCancelButton,
+                buttonAction: { [weak self](_) in
+                    self?.dismiss(animated: true, completion: nil)
+                    Node.shared.localStorage.deleteWallet { (error) in
+                        if let error = error {
+                            self?.alert.showDetail("Sorry", with: error.localizedDescription, for: self)
+                            return
+                        }
+                    }
+                },
+                borderColor: UIColor.clear.cgColor
+            )
+            
+        ]
+        let alertVC = AlertViewController(height: 350, standardAlertContent: content)
+        alertVC.action = { [weak self] (modal, mainVC) in
+            mainVC.buttonAction = { _ in
+                guard let password = modal.dataDict[AlertModalDictionary.passwordSubtitle],
+                      !password.isEmpty else {
+                          self?.alert.fading(text: "Password cannot be empty!", controller: mainVC, toBePasted: nil, width: 250)
+                          return
+                      }
+                
+                self?.dismiss(animated: true, completion: {
+                    
+                    Node.shared.deleteAll()
+                    UserDefaults.standard.removeObject(forKey: UserDefaultKey.walletPassword)
+                    UserDefaults.standard.removeObject(forKey: UserDefaultKey.chainID)
+                    NetworkManager.shared.disconnect()
+                    AuthSwitcher.logout()
+                })
+            }
+        }
+        self.present(alertVC, animated: true, completion: nil)
     }
 }
 

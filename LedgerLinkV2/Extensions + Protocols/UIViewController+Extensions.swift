@@ -228,6 +228,42 @@ extension UIViewController {
         navigationBarAppearance.tintColor = titleTextColor
         navigationBarAppearance.sizeToFit()
     }
+    
+    func applyTransparentBackgroundToTheNavigationBar(opacity: CGFloat, titleTextColor: UIColor) {
+        var transparentBackground: UIImage
+        
+        /** The background of a navigation bar switches from being translucent to transparent when a background image is applied.
+         The intensity of the background image's alpha channel is inversely related to the transparency of the bar.
+         That is, a smaller alpha channel intensity results in a more transparent bar and vise-versa.
+         Below, a background image is dynamically generated with the desired opacity.
+         */
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: 1, height: 1),
+                                               false,
+                                               navigationController!.navigationBar.layer.contentsScale)
+        let context = UIGraphicsGetCurrentContext()!
+        context.setFillColor(red: 1, green: 1, blue: 1, alpha: opacity)
+        UIRectFill(CGRect(x: 0, y: 0, width: 1, height: 1))
+        transparentBackground = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        
+        /** Use the appearance proxy to customize the appearance of UIKit elements.
+         However changes made to an element's appearance proxy do not affect any existing instances of that element currently
+         in the view hierarchy. Normally this is not an issue because you will likely be performing your appearance customizations in
+         -application:didFinishLaunchingWithOptions:. However, this example allows you to toggle between appearances at runtime
+         which necessitates applying appearance customizations directly to the navigation bar.
+         */
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: titleTextColor, NSAttributedString.Key.font: UIFont.rounded(ofSize: 30, weight: .bold)]
+        appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: titleTextColor]
+        
+        let navigationBarAppearance = self.navigationController!.navigationBar
+        navigationBarAppearance.setBackgroundImage(transparentBackground, for: .default)
+        navigationBarAppearance.prefersLargeTitles = true
+        navigationBarAppearance.standardAppearance = appearance
+        navigationBarAppearance.sizeToFit()
+    }
+    
 }
 
 

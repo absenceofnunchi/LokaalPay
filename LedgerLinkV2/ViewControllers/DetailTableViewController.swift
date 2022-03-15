@@ -12,6 +12,9 @@ class DetailTableViewController<T>: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        view.backgroundColor = .black
+        tableView.backgroundColor = .black
+        
         if data is [FullBlock] {
             tableView.register(BlockDetailCell.self, forCellReuseIdentifier: BlockDetailCell.reuseIdentifier)
 //            tableView.estimatedRowHeight = 250
@@ -38,23 +41,25 @@ class DetailTableViewController<T>: UITableViewController {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: BlockDetailCell.reuseIdentifier, for: indexPath) as? BlockDetailCell else {
                 fatalError()
             }
-            
             cell.set(block: block)
             return cell
             
         } else if let account = data[indexPath.row] as? TreeConfigurableAccount {
             let cell = tableView.dequeueReusableCell(withIdentifier: "reuse-identifier", for: indexPath)
             cell.textLabel?.text = account.id
+            cell.textLabel?.textColor = .white
             return cell
           
         } else if let transaction = data[indexPath.row] as? TreeConfigurableTransaction {
             let cell = tableView.dequeueReusableCell(withIdentifier: "reuse-identifier", for: indexPath)
             cell.textLabel?.text = transaction.id
+            cell.textLabel?.textColor = .white
             return cell
               
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "reuse-identifier", for: indexPath)
             cell.textLabel?.text = "Default"
+            cell.textLabel?.textColor = .white
             return cell
         }
     }
@@ -102,24 +107,33 @@ class BlockDetailCell: UITableViewCell {
     }
     
     func configure() {
+        self.backgroundColor = .black
+        
+        numberTextLabel.textColor = .white
         numberTextLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(numberTextLabel)
         
+        hashTextLabel.textColor = .white
         hashTextLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(hashTextLabel)
         
+        parentHashLabel.textColor = .white
         parentHashLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(parentHashLabel)
         
+        transactionHashLabel.textColor = .white
         transactionHashLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(transactionHashLabel)
         
+        stateRootLabel.textColor = .white
         stateRootLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(stateRootLabel)
         
+        sizeLabel.textColor = .white
         sizeLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(sizeLabel)
         
+        timestampLabel.textColor = .white
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(timestampLabel)
     }

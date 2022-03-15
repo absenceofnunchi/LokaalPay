@@ -40,6 +40,7 @@ struct StandardAlertContent {
     var messageTextAlignment: NSTextAlignment = .center
     var alertStyle: AlertStyle = .oneButton
     var buttonAction: ((StandardAlertViewController)->Void)?
+    var borderColor: CGColor? = UIColor.lightGray.cgColor
 }
 
 class StandardAlertViewController: UIViewController {
@@ -64,6 +65,7 @@ class StandardAlertViewController: UIViewController {
     private var bodyArrangedSubviews: [UIView]!
     weak var delegate: DataFetchDelegate?
     private var customNavView: BackgroundView!
+    private var borderColor: CGColor?
 
     init(content: StandardAlertContent) {
         super.init(nibName: nil, bundle: nil)
@@ -79,6 +81,7 @@ class StandardAlertViewController: UIViewController {
         self.titleAlignment = content.titleAlignment
         self.messageTextAlignment = content.messageTextAlignment
         self.buttonAction = content.buttonAction
+        self.borderColor = content.borderColor
     }
     
     required init?(coder: NSCoder) {
@@ -136,7 +139,7 @@ extension StandardAlertViewController: UITextFieldDelegate {
             }
             
             messageTextView.layer.borderWidth = 0.5
-            messageTextView.layer.borderColor = UIColor.lightGray.cgColor
+            messageTextView.layer.borderColor = borderColor
             messageTextView.isEditable = isEditable
             messageTextView.delegate = self
             messageTextView.text = value
@@ -290,13 +293,9 @@ extension StandardAlertViewController: UITextFieldDelegate {
                     titleLabel.heightAnchor.constraint(equalToConstant: 50),
                     
                     bodyStackView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
-                    bodyStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-                    bodyStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+                    bodyStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+                    bodyStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
                     bodyStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
-                    
-                    //                    bodyStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-                    //                    bodyStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-                    //                    bodyStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
                     
                     buttonPanel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -5),
                     buttonPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),

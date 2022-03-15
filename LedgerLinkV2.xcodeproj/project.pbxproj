@@ -41,6 +41,7 @@
 		49631C4427C44AEC00E5F0EA /* WalletCoreData+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C3A27C44AEC00E5F0EA /* WalletCoreData+CoreDataClass.swift */; };
 		49631C4527C44AEC00E5F0EA /* WalletCoreData+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C3B27C44AEC00E5F0EA /* WalletCoreData+CoreDataProperties.swift */; };
 		49631C4E27C44E7900E5F0EA /* CoreDataServices+Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */; };
+		4965765327E0BFD100FA38B8 /* ExplorerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4965765227E0BFD100FA38B8 /* ExplorerViewController.swift */; };
 		49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49657A7C27ACF45600A19EC3 /* 1.mp3 */; };
 		49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49689F7327B1EBB20062C093 /* Array+Extensions.swift */; };
 		496A9CB927C7FC110089AE84 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CB827C7FC110089AE84 /* AsyncOperation.swift */; };
@@ -94,7 +95,7 @@
 		49F030BB27BF525100DBEFDA /* Blockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BA27BF525100DBEFDA /* Blockchain.swift */; };
 		49F030BD27BF53FB00DBEFDA /* BlockchainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */; };
 		49F6E12C27C6850900790A75 /* CoreDataServices+Generic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F6E12B27C6850900790A75 /* CoreDataServices+Generic.swift */; };
-		49F6E12E27C729AA00790A75 /* ExplorerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F6E12D27C729AA00790A75 /* ExplorerViewController.swift */; };
+		49F6E12E27C729AA00790A75 /* Explorer1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F6E12D27C729AA00790A75 /* Explorer1ViewController.swift */; };
 		49F6E13027C72ADD00790A75 /* DetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F6E12F27C72ADD00790A75 /* DetailTableViewController.swift */; };
 		49FBF5C527D9149A00B21EED /* TestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FBF5C427D9149A00B21EED /* TestVC.swift */; };
 		49FBF5C727D96D1200B21EED /* SendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FBF5C627D96D1200B21EED /* SendViewController.swift */; };
@@ -188,6 +189,7 @@
 		49631C3A27C44AEC00E5F0EA /* WalletCoreData+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalletCoreData+CoreDataClass.swift"; sourceTree = "<group>"; };
 		49631C3B27C44AEC00E5F0EA /* WalletCoreData+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalletCoreData+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataServices+Block.swift"; sourceTree = "<group>"; };
+		4965765227E0BFD100FA38B8 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
 		49657A7C27ACF45600A19EC3 /* 1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 1.mp3; sourceTree = "<group>"; };
 		49689F7327B1EBB20062C093 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		496A9CB827C7FC110089AE84 /* AsyncOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
@@ -241,7 +243,7 @@
 		49F030BA27BF525100DBEFDA /* Blockchain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchain.swift; sourceTree = "<group>"; };
 		49F030BC27BF53FB00DBEFDA /* BlockchainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainTests.swift; sourceTree = "<group>"; };
 		49F6E12B27C6850900790A75 /* CoreDataServices+Generic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataServices+Generic.swift"; sourceTree = "<group>"; };
-		49F6E12D27C729AA00790A75 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
+		49F6E12D27C729AA00790A75 /* Explorer1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Explorer1ViewController.swift; sourceTree = "<group>"; };
 		49F6E12F27C72ADD00790A75 /* DetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTableViewController.swift; sourceTree = "<group>"; };
 		49FBF5C427D9149A00B21EED /* TestVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestVC.swift; sourceTree = "<group>"; };
 		49FBF5C627D96D1200B21EED /* SendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendViewController.swift; sourceTree = "<group>"; };
@@ -521,7 +523,8 @@
 				49C3E76E27AB3FAE00D989E8 /* PasscodeViewController.swift */,
 				499AF11527AE1A1700CAF0EA /* CustomTabBarController.swift */,
 				490367CB27BC5FA900DFDE2B /* QRCodeViewController.swift */,
-				49F6E12D27C729AA00790A75 /* ExplorerViewController.swift */,
+				49F6E12D27C729AA00790A75 /* Explorer1ViewController.swift */,
+				4965765227E0BFD100FA38B8 /* ExplorerViewController.swift */,
 				49F6E12F27C72ADD00790A75 /* DetailTableViewController.swift */,
 				494456FD27D6B74000C9B743 /* ActionSheetViewController.swift */,
 				49FBF5C627D96D1200B21EED /* SendViewController.swift */,
@@ -859,6 +862,7 @@
 				49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */,
 				49631C4427C44AEC00E5F0EA /* WalletCoreData+CoreDataClass.swift in Sources */,
 				49C4492227BFF98D00970B8E /* String+Extension.swift in Sources */,
+				4965765327E0BFD100FA38B8 /* ExplorerViewController.swift in Sources */,
 				49FBF5E527DEA11300B21EED /* GuestLoginViewController.swift in Sources */,
 				4909287527D64D4200D1597E /* Gradient+Extensions.swift in Sources */,
 				49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */,
@@ -892,7 +896,7 @@
 				49FBF5CD27D9B80600B21EED /* UserDefaultKey.swift in Sources */,
 				490367C827BB612400DFDE2B /* ScannerViewController.swift in Sources */,
 				4944570127D6B84200C9B743 /* PartialPresentationController.swift in Sources */,
-				49F6E12E27C729AA00790A75 /* ExplorerViewController.swift in Sources */,
+				49F6E12E27C729AA00790A75 /* Explorer1ViewController.swift in Sources */,
 				492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */,
 				4976EB5227CFD15100C10DBD /* BlockCoreData+CoreDataClass.swift in Sources */,
 				49FC14F527B323A800D215B6 /* Account.swift in Sources */,
