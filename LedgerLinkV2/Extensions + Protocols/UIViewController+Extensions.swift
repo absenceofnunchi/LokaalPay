@@ -72,7 +72,7 @@ extension UIViewController {
         }
     }
     
-    func tapToDismissKeyboard() {
+    @objc func tapToDismissKeyboard() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(tappedToDismiss))
         tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
@@ -229,7 +229,7 @@ extension UIViewController {
         navigationBarAppearance.sizeToFit()
     }
     
-    func applyTransparentBackgroundToTheNavigationBar(opacity: CGFloat, titleTextColor: UIColor) {
+    func applyTransparentBackgroundToTheNavigationBar(opacity: CGFloat, titleTextColor: UIColor, tintColor: UIColor) {
         var transparentBackground: UIImage
         
         /** The background of a navigation bar switches from being translucent to transparent when a background image is applied.
@@ -262,8 +262,104 @@ extension UIViewController {
         navigationBarAppearance.prefersLargeTitles = true
         navigationBarAppearance.standardAppearance = appearance
         navigationBarAppearance.sizeToFit()
+        navigationBarAppearance.tintColor = tintColor
     }
     
+    func applyGradientToTheNavigationBar(titleTextColor: UIColor = .white) {
+        let gradientLayer = CAGradientLayer()
+        var updatedFrame = self.navigationController!.navigationBar.bounds
+        updatedFrame.size.height += view.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
+        gradientLayer.frame = updatedFrame
+//        gradientLayer.colors = [UIColor(red: 255/255, green: 159/255, blue: 159/255, alpha: 1).cgColor, UIColor(red: 139/255, green: 2/255, blue: 2/255, alpha: 1).cgColor]
+        gradientLayer.colors = [UIColor.black.cgColor, UIColor.black.cgColor]
+        gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 1.0, y: 1.0)
+        UIGraphicsBeginImageContext(gradientLayer.bounds.size)
+        gradientLayer.render(in: UIGraphicsGetCurrentContext()!)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        self.navigationController!.navigationBar.setBackgroundImage(image, for: UIBarMetrics.default)
+        
+        let appearance = navigationController!.navigationBar.standardAppearance.copy()
+        appearance.backgroundImage = image
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: titleTextColor, NSAttributedString.Key.font: UIFont.rounded(ofSize: 30, weight: .bold)]
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    }
+    
+    /// Configures the navigation bar to use an image as its background.
+    func applyImageBackgroundToTheNavigationBar() {
+        
+        guard let bounds = navigationController?.navigationBar.bounds else { return }
+        
+        var backImageForDefaultBarMetrics =
+        UIImage.gradientImage(bounds: bounds,
+                              colors: [UIColor.systemBlue.cgColor, UIColor.systemFill.cgColor])
+        var backImageForLandscapePhoneBarMetrics =
+        UIImage.gradientImage(bounds: bounds,
+                              colors: [UIColor.systemTeal.cgColor, UIColor.systemFill.cgColor])
+        
+        /** Both of the above images are smaller than the navigation bar's size.
+         To enable the images to resize gracefully while keeping their content pinned to the bottom right corner of the bar, the images are
+         converted into resizable images width edge insets extending from the bottom up to the second row of pixels from the top, and from the
+         right over to the second column of pixels from the left. This results in the topmost and leftmost pixels being stretched when the images
+         are resized. Not coincidentally, the pixels in these rows/columns are empty.
+         */
+        backImageForDefaultBarMetrics =
+        backImageForDefaultBarMetrics.resizableImage(
+            withCapInsets: UIEdgeInsets(top: 0,
+                                        left: 0,
+                                        bottom: backImageForDefaultBarMetrics.size.height - 1,
+                                        right: backImageForDefaultBarMetrics.size.width - 1))
+        backImageForLandscapePhoneBarMetrics =
+        backImageForLandscapePhoneBarMetrics.resizableImage(
+            withCapInsets: UIEdgeInsets(top: 0,
+                                        left: 0,
+                                        bottom: backImageForLandscapePhoneBarMetrics.size.height - 1,
+                                        right: backImageForLandscapePhoneBarMetrics.size.width - 1))
+        
+        /** Use the appearance proxy to customize the appearance of UIKit elements. However changes made to an element's appearance
+         proxy do not affect any existing instances of that element currently in the view hierarchy. Normally this is not an issue because you
+         will likely be performing your appearance customizations in -application:didFinishLaunchingWithOptions:.
+         However, this example allows you to toggle between appearances at runtime which necessitates applying appearance customizations
+         directly to the navigation bar.
+         */
+        
+        // Uncomment this line to use the appearance proxy to customize the appearance of UIKit elements.
+        // let navigationBarAppearance =
+        //      UINavigationBar.appearance(whenContainedInInstancesOf: [UINavigationController.self])
+        /** The bar metrics associated with a background image determine when it is used.
+         Use the background image associated with the Default bar metrics when a more suitable background image can't be found.
+         
+         The shorter variant of the navigation bar, that is used on iPhone when in landscape, uses the background image associated
+         with the LandscapePhone bar metrics.
+         */
+        
+        let navigationBarAppearance = self.navigationController!.navigationBar
+        navigationBarAppearance.setBackgroundImage(backImageForDefaultBarMetrics, for: .default)
+        navigationBarAppearance.setBackgroundImage(backImageForLandscapePhoneBarMetrics, for: .compact)
+        navigationBarAppearance.setBackgroundImage(backImageForDefaultBarMetrics, for: .any, barMetrics: .default)
+        navigationBarAppearance.largeContentImage = backImageForDefaultBarMetrics
+        navigationBarAppearance.scalesLargeContentImage = true
+    }
+    
+}
+
+extension UIImage {
+    static func gradientImage(bounds: CGRect, colors: [CGColor]) -> UIImage {
+        let gradient = CAGradientLayer()
+        gradient.frame = bounds
+        gradient.colors = colors
+        
+        UIGraphicsBeginImageContext(gradient.bounds.size)
+        gradient.render(in: UIGraphicsGetCurrentContext()!)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return image!
+    }
 }
 
 

@@ -16,14 +16,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        
-        UINavigationBar.appearance().backgroundColor = .black // backgorund color with gradient
+      
+        UINavigationBar.appearance().barTintColor = .black
+        UINavigationBar.appearance().prefersLargeTitles = true
+        UINavigationBar.appearance().tintColor = .white
         UINavigationBar.appearance().largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        UINavigationBar.appearance().isTranslucent = false
         
-        UIBarButtonItem.appearance().tintColor = .white
-        UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor : UIColor.white]
-        UITabBar.appearance().barTintColor = .black
+        let tabBarApperance = UITabBarAppearance()
+        tabBarApperance.configureWithOpaqueBackground()
+        tabBarApperance.backgroundColor = UIColor.black
+        UITabBar.appearance().scrollEdgeAppearance = tabBarApperance
+        UITabBar.appearance().standardAppearance = tabBarApperance
         
         AuthSwitcher.updateRootVC()
     }

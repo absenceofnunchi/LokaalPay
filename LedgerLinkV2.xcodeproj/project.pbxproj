@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4900A94927E2880400E0D234 /* IndividualDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */; };
 		490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367BC27BB25FF00DFDE2B /* Mine.swift */; };
 		490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */; };
 		490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */; };
@@ -151,6 +152,7 @@
 		17DCCCBFE8E3E24C8C56548C /* Pods-LedgerLinkV2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.debug.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.debug.xcconfig"; sourceTree = "<group>"; };
 		30FBEB60BD774BAE1AA4DB38 /* Pods_LedgerLinkV2Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LedgerLinkV2Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		33367FC6DE6351BAD09798A8 /* Pods-LedgerLinkV2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.release.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.release.xcconfig"; sourceTree = "<group>"; };
+		4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndividualDetailViewController.swift; sourceTree = "<group>"; };
 		490367BC27BB25FF00DFDE2B /* Mine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mine.swift; sourceTree = "<group>"; };
 		490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BIP39Language+Extensions.swift"; sourceTree = "<group>"; };
 		490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Digest+Extensions.swift"; sourceTree = "<group>"; };
@@ -531,6 +533,7 @@
 				498F894A27DEE8B3008949D6 /* WalletModalViewController.swift */,
 				49FBF5CA27D98EF400B21EED /* ReceiveViewController.swift */,
 				498F894E27E035F4008949D6 /* PasswordResetViewController.swift */,
+				4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -896,6 +899,7 @@
 				49FBF5CD27D9B80600B21EED /* UserDefaultKey.swift in Sources */,
 				490367C827BB612400DFDE2B /* ScannerViewController.swift in Sources */,
 				4944570127D6B84200C9B743 /* PartialPresentationController.swift in Sources */,
+				4900A94927E2880400E0D234 /* IndividualDetailViewController.swift in Sources */,
 				49F6E12E27C729AA00790A75 /* Explorer1ViewController.swift in Sources */,
 				492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */,
 				4976EB5227CFD15100C10DBD /* BlockCoreData+CoreDataClass.swift in Sources */,

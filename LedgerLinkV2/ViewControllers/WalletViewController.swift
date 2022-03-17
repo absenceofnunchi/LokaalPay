@@ -61,7 +61,8 @@ final class WalletViewController: UIViewController {
     final override func viewDidLoad() {
         super.viewDidLoad()
         
-        applyBarTintColorToTheNavigationBar()
+//        applyBarTintColorToTheNavigationBar()
+//        applyTransparentBackgroundToTheNavigationBar(opacity: 0, titleTextColor: .black, tintColor: .black)
         configureUI()
         configureHierarchy()
         configureDataSource()
@@ -175,7 +176,6 @@ extension WalletViewController {
 extension WalletViewController {
     func configureUI() {
         title = "Wallet"
-        self.navigationController?.navigationBar.prefersLargeTitles = true
     }
     
     func configureHierarchy() {
@@ -412,6 +412,7 @@ extension WalletViewController: UICollectionViewDelegate {
             )
             
         ]
+        
         let alertVC = AlertViewController(height: 350, standardAlertContent: content)
         alertVC.action = { [weak self] (modal, mainVC) in
             mainVC.buttonAction = { _ in

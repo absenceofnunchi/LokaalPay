@@ -129,21 +129,21 @@ class ExplorerViewController1: UIViewController {
                 }
                 break
             case 3:
-                Node.shared.fetch { [weak self](blocks: [FullBlock]?, error: NodeError?) in
-                    if let error = error {
-                        print(error)
-                    }
-                        
-                    if let blocks = blocks {
-                        DispatchQueue.main.async {
-                            let detailVC = DetailTableViewController<FullBlock>()
-                            detailVC.data = blocks
-                            self?.navigationController?.pushViewController(detailVC, animated: true)
-                        }
-                    } else {
-                        self?.alert.show("No data", for: self)
-                    }
-                }
+//                Node.shared.fetch { [weak self](blocks: [FullBlock]?, error: NodeError?) in
+//                    if let error = error {
+//                        print(error)
+//                    }
+//                        
+//                    if let blocks = blocks {
+//                        DispatchQueue.main.async {
+//                            let detailVC = DetailTableViewController<FullBlock>()
+//                            detailVC.data = blocks
+//                            self?.navigationController?.pushViewController(detailVC, animated: true)
+//                        }
+//                    } else {
+//                        self?.alert.show("No data", for: self)
+//                    }
+//                }
                 break
             default:
                 break

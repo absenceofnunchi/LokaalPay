@@ -59,19 +59,19 @@ class AuthSwitcher {
         
         let walletVC = WalletViewController()
         let walletNav = UINavigationController(rootViewController: walletVC)
-        walletNav.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(named: "folder"), selectedImage: UIImage(named: "folder"))
+        walletNav.tabBarItem = UITabBarItem(title: "Wallet", image: UIImage(systemName: "folder"), selectedImage: UIImage(systemName: "folder"))
         
         let mainVC = MainViewController()
         let mainNav = UINavigationController(rootViewController: mainVC)
-        mainNav.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(named: "network"), selectedImage: UIImage(named: "network"))
+        mainNav.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(systemName: "network"), selectedImage: UIImage(systemName: "network"))
         
         let explorerVC = ExplorerViewController()
         let explorerNav = UINavigationController(rootViewController: explorerVC)
-        explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
+        explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(systemName: "magnifyingglass"), selectedImage: UIImage(systemName: "magnifyingglass"))
         
         let explorerVC1 = ExplorerViewController1()
         let explorerNav1 = UINavigationController(rootViewController: explorerVC1)
-        explorerNav1.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(named: "magnifyingglass"), selectedImage: UIImage(named: "magnifyingglass"))
+        explorerNav1.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(systemName: "magnifyingglass"), selectedImage: UIImage(systemName: "magnifyingglass"))
         
         let tabBar = CustomTabBarController()
         tabBar.setViewControllers([walletNav, mainNav, explorerNav, explorerNav1], animated: true)
