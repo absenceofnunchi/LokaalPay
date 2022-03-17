@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4900A94927E2880400E0D234 /* IndividualDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */; };
+		4900A94B27E3D6A600E0D234 /* ServerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4900A94A27E3D6A600E0D234 /* ServerViewController.swift */; };
 		490367BD27BB25FF00DFDE2B /* Mine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367BC27BB25FF00DFDE2B /* Mine.swift */; };
 		490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */; };
 		490367C427BB3F3100DFDE2B /* Digest+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */; };
@@ -153,6 +154,7 @@
 		30FBEB60BD774BAE1AA4DB38 /* Pods_LedgerLinkV2Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LedgerLinkV2Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		33367FC6DE6351BAD09798A8 /* Pods-LedgerLinkV2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LedgerLinkV2.release.xcconfig"; path = "Target Support Files/Pods-LedgerLinkV2/Pods-LedgerLinkV2.release.xcconfig"; sourceTree = "<group>"; };
 		4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndividualDetailViewController.swift; sourceTree = "<group>"; };
+		4900A94A27E3D6A600E0D234 /* ServerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerViewController.swift; sourceTree = "<group>"; };
 		490367BC27BB25FF00DFDE2B /* Mine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mine.swift; sourceTree = "<group>"; };
 		490367C127BB3EFD00DFDE2B /* BIP39Language+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BIP39Language+Extensions.swift"; sourceTree = "<group>"; };
 		490367C327BB3F3100DFDE2B /* Digest+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Digest+Extensions.swift"; sourceTree = "<group>"; };
@@ -534,6 +536,7 @@
 				49FBF5CA27D98EF400B21EED /* ReceiveViewController.swift */,
 				498F894E27E035F4008949D6 /* PasswordResetViewController.swift */,
 				4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */,
+				4900A94A27E3D6A600E0D234 /* ServerViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -843,6 +846,7 @@
 				49631C4E27C44E7900E5F0EA /* CoreDataServices+Block.swift in Sources */,
 				499C31E627D5825000680C4A /* EventsViewController.swift in Sources */,
 				49C3E76F27AB3FAE00D989E8 /* PasscodeViewController.swift in Sources */,
+				4900A94B27E3D6A600E0D234 /* ServerViewController.swift in Sources */,
 				49FBF5E727DEAAB900B21EED /* TopWarningPanel.swift in Sources */,
 				4976EB4C27CFD15100C10DBD /* ReceiptCoreData+CoreDataClass.swift in Sources */,
 				49A7C32A27B74E1C00AC7EB0 /* TreeConfigurable+Protocols.swift in Sources */,

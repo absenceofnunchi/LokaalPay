@@ -260,6 +260,40 @@ extension LocalStorage {
         }
     }
     
+    func getLatestBlocks(fetchLimit: Int, completion: @escaping ([FullBlock]?, NodeError?) -> Void) {
+        let fetchRequest = NSFetchRequest<BlockCoreData>(entityName: EntityName.blockCoreData.rawValue)
+        fetchRequest.fetchLimit = fetchLimit
+        let sortDescriptor = NSSortDescriptor(key: "number", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        // Initialize Asynchronous Fetch Request
+        let asynchronousFetchRequest = NSAsynchronousFetchRequest<BlockCoreData>(fetchRequest: fetchRequest) { (asynchronousFetchResult) -> Void in
+            guard let results = asynchronousFetchResult.finalResult else { return }
+            let blocks: [FullBlock] = results.compactMap { (element: BlockCoreData) in
+                return LightBlock.fromCoreData(crModel: element)
+            }
+            
+            if blocks.count == 0 {
+                completion(nil, nil)
+            } else {
+                completion(blocks, nil)
+            }
+        }
+        
+        do {
+            // Execute Asynchronous Fetch Request
+            let asynchronousFetchResult = try context.execute(asynchronousFetchRequest) as? NSPersistentStoreAsynchronousResult
+            
+            if let asynchronousFetchProgress = asynchronousFetchResult?.progress {
+                asynchronousFetchProgress.addObserver(self, forKeyPath: "completedUnitCount", options: NSKeyValueObservingOptions.new, context: nil)
+            }
+        } catch {
+            let fetchError = error as NSError
+            print("\(fetchError), \(fetchError.userInfo)")
+            completion(nil, NodeError.generalError("Unable to fetch data"))
+        }
+    }
+    
     /// Fetch all blocks in a full block form
     func getAllBlocks() throws -> [FullBlock] {
         let requestBlock: NSFetchRequest<BlockCoreData> = BlockCoreData.fetchRequest()

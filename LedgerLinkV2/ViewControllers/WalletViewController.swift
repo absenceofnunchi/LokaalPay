@@ -107,11 +107,6 @@ extension WalletViewController {
         )
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 1)
-        //        group.contentInsets = NSDirectionalEdgeInsets(
-        //            top: 50,
-        //            leading: 50,
-        //            bottom: 5,
-        //            trailing: 5)
         
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 30

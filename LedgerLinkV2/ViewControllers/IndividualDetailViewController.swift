@@ -105,6 +105,7 @@ class IndividualDetailViewController: UITableViewController {
                             SearchResultContent(title: "Balance", detail: account.balance.description),
                             SearchResultContent(title: "Storage Root", detail: account.storageRoot),
                             SearchResultContent(title: "Code Hash", detail: account.codeHash),
+                            SearchResultContent(title: "Transaction History", detail: "Show More Detail"),
                         ]
                         
                         vc.dataSource = dataSource
