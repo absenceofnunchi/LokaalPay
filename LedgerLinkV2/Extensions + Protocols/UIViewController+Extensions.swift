@@ -82,24 +82,29 @@ extension UIViewController {
         view.endEditing(true)
     }
     
-    func createAttributedString(imageString: String, imageColor: UIColor, text: String) -> NSMutableAttributedString {
-        /// Create an attributed strings using a symbol and a text
-        let imageAttahment = NSTextAttachment()
-        imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
-        let imageOffsetY: CGFloat = -5.0
-        imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
-        let imageString = NSAttributedString(attachment: imageAttahment)
-        let textString = NSAttributedString(string: text)
-        
+    /// Create an attributed strings using a symbol and a text
+    func createAttributedString(imageString: String?, imageColor: UIColor?, text: String, textColor: UIColor? = UIColor.gray) -> NSMutableAttributedString {
         /// Add them to a mutable attributed string
         let mas = NSMutableAttributedString(string: "")
-        mas.append(imageString)
+        
+        /// Optional image attachment
+        if let imageString = imageString, let imageColor = imageColor {
+            let imageAttahment = NSTextAttachment()
+            imageAttahment.image = UIImage(systemName: imageString)?.withTintColor(imageColor, renderingMode: .alwaysOriginal)
+            let imageOffsetY: CGFloat = -5.0
+            imageAttahment.bounds = CGRect(x: 0, y: imageOffsetY, width: imageAttahment.image!.size.width, height: imageAttahment.image!.size.height)
+            let imageString = NSAttributedString(attachment: imageAttahment)
+            mas.append(imageString)
+        }
+        
+        let textString = NSAttributedString(string: text)
         mas.append(textString)
+
         
         /// Add attributes
         let rangeText = (mas.string as NSString).range(of: mas.string)
         mas.addAttributes([
-            NSAttributedString.Key.foregroundColor: UIColor.gray,
+            NSAttributedString.Key.foregroundColor: textColor,
             .font: UIFont.rounded(ofSize: 14, weight: .bold)
         ], range: rangeText)
         

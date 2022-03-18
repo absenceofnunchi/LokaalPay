@@ -65,16 +65,16 @@ class AuthSwitcher {
         let mainNav = UINavigationController(rootViewController: mainVC)
         mainNav.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(systemName: "network"), selectedImage: UIImage(systemName: "network"))
         
+        let serverVC = ServerViewController()
+        let serverNav = UINavigationController(rootViewController: serverVC)
+        serverNav.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(systemName: "network"), selectedImage: UIImage(systemName: "network"))
+        
         let explorerVC = ExplorerViewController()
         let explorerNav = UINavigationController(rootViewController: explorerVC)
         explorerNav.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(systemName: "magnifyingglass"), selectedImage: UIImage(systemName: "magnifyingglass"))
         
-        let explorerVC1 = ExplorerViewController1()
-        let explorerNav1 = UINavigationController(rootViewController: explorerVC1)
-        explorerNav1.tabBarItem = UITabBarItem(title: "Explorer", image: UIImage(systemName: "magnifyingglass"), selectedImage: UIImage(systemName: "magnifyingglass"))
-        
         let tabBar = CustomTabBarController()
-        tabBar.setViewControllers([walletNav, mainNav, explorerNav, explorerNav1], animated: true)
+        tabBar.setViewControllers([walletNav, mainNav, serverNav, explorerNav], animated: true)
         return tabBar
     }
     

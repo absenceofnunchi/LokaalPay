@@ -60,121 +60,27 @@ final class WalletViewController: UIViewController {
     
     final override func viewDidLoad() {
         super.viewDidLoad()
-        
-//        applyBarTintColorToTheNavigationBar()
-//        applyTransparentBackgroundToTheNavigationBar(opacity: 0, titleTextColor: .black, tintColor: .black)
-        configureUI()
+
         configureHierarchy()
         configureDataSource()
     }
-}
-
-extension WalletViewController {
-    /// - Tag: PerSection
-    private func generateLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewCompositionalLayout { (sectionIndex: Int,
-                                                            layoutEnvironment: NSCollectionLayoutEnvironment)
-            -> NSCollectionLayoutSection? in
-            let isWideView = layoutEnvironment.container.effectiveContentSize.width > 500
-            
-            let sectionLayoutKind = Section.allCases[sectionIndex]
-            switch (sectionLayoutKind) {
-                case .horizontal: return self.generateHorizontalLayout(
-                    isWide: isWideView)
-                case .vertical: return self.generateVerticalLayout(isWide: isWideView)
-            }
-        }
-        return layout
-    }
     
-    private func generateHorizontalLayout(isWide: Bool) -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalHeight(1.0)
-        )
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(
-            top: 50,
-            leading: 10,
-            bottom: 50,
-            trailing: 5)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
-        let groupFractionalWidth: CGFloat = isWide ? 0.425 : 0.6
-        let groupFractionalHeight: CGFloat = isWide ? 1/5 : 1/4
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(groupFractionalWidth),
-            heightDimension: .fractionalHeight(groupFractionalHeight)
-        )
-        
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 1)
-        
-        let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = 30
-        section.orthogonalScrollingBehavior = .groupPagingCentered
-        section.visibleItemsInvalidationHandler = { items, offset, environment in
-            let visibleFrame = CGRect(origin: offset, size: environment.container.contentSize)
-            let cells = items.filter { $0.representedElementCategory == .cell }
-            for item in cells {
-                let distanceFromCenter = abs(visibleFrame.midX - item.center.x)
-                let scaleZone = CGFloat(70)
-                let scaleFactor = distanceFromCenter / scaleZone
-                if distanceFromCenter < scaleZone {
-                    let scale = 1 + 0.5 * (1 - abs(scaleFactor))
-                    let transform = CGAffineTransform(scaleX: scale, y: scale)
-                    item.transform = transform
-                }
-            }
-        }
-        
-        return section
-    }
-    
-    private func generateVerticalLayout(isWide: Bool) -> NSCollectionLayoutSection {
-        /// Item
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalHeight(1.0)
-        )
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(
-            top: 15,
-            leading: 15,
-            bottom: 15,
-            trailing: 15)
-        
-        /// Group
-        let groupFractionalWidth: CGFloat = 0.5
-        let groupFractionalHeight: CGFloat = isWide ? 4/5 : 2/4
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(groupFractionalWidth),
-            heightDimension: .fractionalHeight(groupFractionalHeight)
-        )
-        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitem: item, count: 2)
-        
-        /// Section
-        let headerSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(44))
-        let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: headerSize,
-            elementKind: "Menu",
-            alignment: .top)
-        
-        let section = NSCollectionLayoutSection(group: group)
-        section.boundarySupplementaryItems = [sectionHeader]
-        section.orthogonalScrollingBehavior = .groupPaging
-        
-        return section
+        configureUI()
     }
 }
 
 extension WalletViewController {
     func configureUI() {
-        title = "Wallet"
+//        title = "Wallet"
+        navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
     func configureHierarchy() {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: generateLayout())
+        collectionView.contentInset = UIEdgeInsets(top: 10, left: 0, bottom: 0, right: 0)
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.backgroundColor = .black
         view.addSubview(collectionView)
@@ -194,10 +100,10 @@ extension WalletViewController {
             // Populate the cell with our item description.
             cell.titleLabel.text = menuData.title
             cell.titleLabel.textColor = .white
-            cell.colors = menuData.colors
+            cell.colors = [UIColor(red: 16/255, green: 16/255, blue: 16/255, alpha: 1).cgColor, UIColor(red: 16/255, green: 16/255, blue: 16/255, alpha: 1).cgColor, UIColor(red: 16/255, green: 16/255, blue: 16/255, alpha: 1).cgColor]
             cell.imageView.image = menuData.image
             cell.contentView.layer.cornerRadius = Section(rawValue: indexPath.section)! == .vertical ? 15 : 5
-            cell.radiusTopRight = 40
+//            cell.radiusTopRight = 40
         }
         
         let BalanceCellRegistration = UICollectionView.CellRegistration<BalanceCell, MenuData> { (cell, indexPath, menuData) in
@@ -225,11 +131,10 @@ extension WalletViewController {
         }
         
         let headerRegistration = UICollectionView.SupplementaryRegistration
-        <TextCell>(elementKind: "Menu") {
-            (supplementaryView, string, indexPath) in
-            supplementaryView.label.text = "Wallet Menu"
-            supplementaryView.label.textColor = .darkGray
-            supplementaryView.label.font = UIFont.rounded(ofSize: 15, weight: .bold)
+        <TextCell>(elementKind: "Menu") { [weak self] (supplementaryView, string, indexPath) in
+//            supplementaryView.label.text = "Wallet Menu"
+            supplementaryView.label.attributedText = self?.createAttributedString(imageString: "rectangle.grid.2x2", imageColor: UIColor.gray, text: "  Wallet Menu")
+//            supplementaryView.label.font = UIFont.rounded(ofSize: 15, weight: .bold)
         }
         
         dataSource.supplementaryViewProvider = { (view, kind, index) in
@@ -248,6 +153,110 @@ extension WalletViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
+
+extension WalletViewController {
+    /// - Tag: PerSection
+    private func generateLayout() -> UICollectionViewLayout {
+        let layout = UICollectionViewCompositionalLayout { (sectionIndex: Int,
+                                                            layoutEnvironment: NSCollectionLayoutEnvironment)
+            -> NSCollectionLayoutSection? in
+            let isWideView = layoutEnvironment.container.effectiveContentSize.width > 500
+            
+            let sectionLayoutKind = Section.allCases[sectionIndex]
+            switch (sectionLayoutKind) {
+                case .horizontal: return self.generateHorizontalLayout(
+                    isWide: isWideView)
+                case .vertical: return self.generateVerticalLayout(isWide: isWideView)
+            }
+        }
+        
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.interSectionSpacing = 50
+        layout.configuration = config
+        return layout
+    }
+    
+    private func generateHorizontalLayout(isWide: Bool) -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .fractionalHeight(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = NSDirectionalEdgeInsets(
+            top: 50,
+            leading: 10,
+            bottom: 50,
+            trailing: 5)
+        
+        let groupFractionalWidth: CGFloat = isWide ? 0.425 : 0.6
+        let groupFractionalHeight: CGFloat = isWide ? 1/2 : 3.5/7
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(groupFractionalWidth),
+            heightDimension: .fractionalHeight(groupFractionalHeight)
+        )
+        
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 1)
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 30
+        section.orthogonalScrollingBehavior = .groupPagingCentered
+        section.visibleItemsInvalidationHandler = { items, offset, environment in
+            let visibleFrame = CGRect(origin: offset, size: environment.container.contentSize)
+            let cells = items.filter { $0.representedElementCategory == .cell }
+            for item in cells {
+                let distanceFromCenter = abs(visibleFrame.midX - item.center.x)
+                let scaleZone = CGFloat(70)
+                let scaleFactor = distanceFromCenter / scaleZone
+                if distanceFromCenter < scaleZone {
+                    let scale = 1 + 0.2 * (1 - abs(scaleFactor))
+                    let transform = CGAffineTransform(scaleX: scale, y: scale)
+                    item.transform = transform
+                }
+            }
+        }
+        
+        return section
+    }
+    
+    private func generateVerticalLayout(isWide: Bool) -> NSCollectionLayoutSection {
+        /// Item
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .fractionalHeight(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = NSDirectionalEdgeInsets(
+            top: 15,
+            leading: 15,
+            bottom: 15,
+            trailing: 15)
+        
+        /// Group
+        let groupFractionalWidth: CGFloat = 0.5
+        let groupFractionalHeight: CGFloat = isWide ? 1/2 : 3/7
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(groupFractionalWidth),
+            heightDimension: .fractionalHeight(groupFractionalHeight)
+        )
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitem: item, count: 2)
+        
+        /// Section
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(0.9),
+            heightDimension: .estimated(40))
+        let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: "Menu",
+            alignment: .top)
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.boundarySupplementaryItems = [sectionHeader]
+        section.orthogonalScrollingBehavior = .groupPaging
+        
+        return section
+    }
+}
+
 
 extension WalletViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -378,6 +387,7 @@ extension WalletViewController: UICollectionViewDelegate {
                 DispatchQueue.main.async {
                     let detailVC = DetailTableViewController<TreeConfigurableTransaction>()
                     detailVC.data = results
+                    detailVC.title = "Transaction History"
                     self?.navigationController?.pushViewController(detailVC, animated: true)
                 }
             } else {

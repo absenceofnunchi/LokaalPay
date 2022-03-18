@@ -208,7 +208,6 @@ final class SendViewController: WalletModalViewController {
 
     /// Send value to a peer
     private func send(completion: @escaping (NodeError?) -> Void) {
-        showSpinner()
         view.endEditing(true)
         
         guard let address = destinationTextField.text,
@@ -231,6 +230,7 @@ final class SendViewController: WalletModalViewController {
             return
         }
         
+        showSpinner()
         transactionService.prepareTransaction(.transferValue, to: toAddress, value: value, password: password) { [weak self] (data, error) in
             if let error = error {
                 completion(error)

@@ -253,35 +253,7 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
         
         switch sender.tag {
             case 1:
-                /// Prompt user for camera or gallery to upload an image
-                let buttonInfoArr = [
-                    ButtonInfo(title: "Camera", tag: 2, backgroundColor: .black),
-                    ButtonInfo(title: "Gallery", tag: 3, backgroundColor: .black)
-                ]
-                
-                let alertVC = ActionSheetViewController(content: .button(buttonInfoArr))
-                alertVC.buttonAction = { [weak self] tag in
-                    self?.dismiss(animated: true, completion: {
-                        switch tag {
-                            case 2:
-                                let pickerVC = UIImagePickerController()
-                                pickerVC.sourceType = .camera
-                                pickerVC.allowsEditing = true
-                                pickerVC.delegate = self
-                                self?.present(pickerVC, animated: true)
-                                break
-                            case 3:
-                                let pickerVC = UIImagePickerController()
-                                pickerVC.sourceType = .photoLibrary
-                                pickerVC.allowsEditing = true
-                                pickerVC.delegate = self
-                                self?.present(pickerVC, animated: true)
-                            default:
-                                break
-                        }
-                    })
-                }
-                present(alertVC, animated: true)
+                getImage()
             case 4:
                 createEvent()
                 break
@@ -291,6 +263,38 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
             default:
                 break
         }
+    }
+    
+    private func getImage() {
+        /// Prompt user for camera or gallery to upload an image
+        let buttonInfoArr = [
+            ButtonInfo(title: "Camera", tag: 2, backgroundColor: .black),
+            ButtonInfo(title: "Gallery", tag: 3, backgroundColor: .black)
+        ]
+        
+        let alertVC = ActionSheetViewController(content: .button(buttonInfoArr))
+        alertVC.buttonAction = { [weak self] tag in
+            self?.dismiss(animated: true, completion: {
+                switch tag {
+                    case 2:
+                        let pickerVC = UIImagePickerController()
+                        pickerVC.sourceType = .camera
+                        pickerVC.allowsEditing = true
+                        pickerVC.delegate = self
+                        self?.present(pickerVC, animated: true)
+                        break
+                    case 3:
+                        let pickerVC = UIImagePickerController()
+                        pickerVC.sourceType = .photoLibrary
+                        pickerVC.allowsEditing = true
+                        pickerVC.delegate = self
+                        self?.present(pickerVC, animated: true)
+                    default:
+                        break
+                }
+            })
+        }
+        present(alertVC, animated: true)
     }
     
     private func createEvent() {

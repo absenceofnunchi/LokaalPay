@@ -16,6 +16,11 @@ class DetailTableViewController<T>: UITableViewController {
         configure()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: false)
+    }
+    
     func configure() {
         view.backgroundColor = .black
         tableView.backgroundColor = .black
