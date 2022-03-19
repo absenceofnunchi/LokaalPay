@@ -21,6 +21,16 @@ final class CardCell: UICollectionViewCell {
     }
     let titleLabel = UILabel()
     let imageView = UIImageView()
+    var section: Section! {
+        didSet {
+            if section == .horizontal {
+                setHorizontalConstraints()
+            } else {
+                setVerticalConstraints()
+            }
+        }
+    }
+    
     var radiusTopLeft: CGFloat = 20 {
         didSet {
             contentView.roundCorners(topLeft: radiusTopLeft, topRight: radiusTopRight, bottomLeft: radiusBottomLeft, bottomRight: radiusBottomRight)
@@ -70,9 +80,26 @@ extension CardCell {
         
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.font = UIFont.rounded(ofSize: 13, weight: .bold)
         titleLabel.textAlignment = .center
         gradientView.addSubview(titleLabel)
+    }
+    
+    private func setHorizontalConstraints() {
+        titleLabel.font = UIFont.rounded(ofSize: 15, weight: .bold)
+        
+        NSLayoutConstraint.activate([
+            imageView.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
+            imageView.centerYAnchor.constraint(equalTo: gradientView.centerYAnchor),
+            imageView.heightAnchor.constraint(equalToConstant:40),
+            imageView.widthAnchor.constraint(equalToConstant:40),
+            
+            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
+            titleLabel.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
+        ])
+    }
+    
+    private func setVerticalConstraints() {
+        titleLabel.font = UIFont.rounded(ofSize: 12, weight: .bold)
         
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: gradientView.topAnchor, constant: 20),
@@ -142,33 +169,34 @@ extension BalanceCell {
         
         balanceLabel.translatesAutoresizingMaskIntoConstraints = false
         balanceLabel.adjustsFontForContentSizeCategory = true
-        balanceLabel.font = UIFont.rounded(ofSize: 25, weight: .bold)
-        balanceLabel.textAlignment = .left
+        balanceLabel.font = UIFont.rounded(ofSize: 22, weight: .bold)
+        balanceLabel.textAlignment = .center
         balanceLabel.textColor = .white
         gradientView.addSubview(balanceLabel)
         
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.font = UIFont.rounded(ofSize: 13, weight: .bold)
+        titleLabel.font = UIFont.rounded(ofSize: 15, weight: .bold)
         titleLabel.textAlignment = .center
         gradientView.addSubview(titleLabel)
         
         NSLayoutConstraint.activate([
-            balanceLabel.topAnchor.constraint(equalTo: gradientView.topAnchor, constant: 20),
-            balanceLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
+//            balanceLabel.topAnchor.constraint(equalTo: gradientView.topAnchor, constant: 20),
+//            balanceLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
+            balanceLabel.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
+            balanceLabel.centerYAnchor.constraint(equalTo: gradientView.centerYAnchor),
             balanceLabel.heightAnchor.constraint(equalToConstant:40),
             balanceLabel.widthAnchor.constraint(equalTo: gradientView.widthAnchor, multiplier: 0.7),
             
-            titleLabel.topAnchor.constraint(equalTo: balanceLabel.bottomAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 20),
+            titleLabel.topAnchor.constraint(equalTo: balanceLabel.bottomAnchor),
+            titleLabel.centerXAnchor.constraint(equalTo: gradientView.centerXAnchor),
         ])
     }
     
-    /// Get balance name
-    private func getBalance() {
+    /// Get balance and the currency name
+    func getBalance() {
         Node.shared.getMyAccount { (acct: Account?, error: NodeError?) in
-            if let error = error {
-                print(error)
+            if let _ = error {
                 return
             }
             
@@ -182,7 +210,6 @@ extension BalanceCell {
                     if let block = block,
                        let extraData = block.extraData,
                        let eventInfo = try? JSONDecoder().decode(EventInfo.self, from: extraData) {
-                    
                         self?.balanceLabel.text = "\(acct.balance) \(eventInfo.currencyName)"
                     }
                 }

@@ -42,8 +42,6 @@ final class IntroViewController: UIViewController {
         
         containerView = UIView()
         containerView.backgroundColor = .black
-//        containerView.layer.cornerRadius = 40
-//        containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         containerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(containerView)
         

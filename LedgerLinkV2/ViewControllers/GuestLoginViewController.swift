@@ -23,6 +23,7 @@ final class GuestLoginViewController: UIViewController, TopWarningPanel {
     private var passwordConfirmTextField: UITextField!
     private var buttonContainer: UIView!
     private var createButton: ButtonWithShadow!
+    private var importButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,6 +67,13 @@ final class GuestLoginViewController: UIViewController, TopWarningPanel {
         createButton.titleLabel?.font = UIFont.rounded(ofSize: 18, weight: .bold)
         buttonContainer.addSubview(createButton)
         createButton.setFill()
+        
+        importButton = UIButton()
+        importButton.tag = 2
+        let attTitle = createAttributedString(imageString: nil, imageColor: nil, text: "Already have an account")
+        importButton.setAttributedTitle(attTitle, for: .normal)
+        importButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(importButton)
     }
     
     func setConstraints() {
@@ -84,6 +92,11 @@ final class GuestLoginViewController: UIViewController, TopWarningPanel {
             buttonContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             buttonContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             buttonContainer.heightAnchor.constraint(equalToConstant: 50),
+            
+            importButton.topAnchor.constraint(equalTo: buttonContainer.bottomAnchor, constant: 15),
+            importButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+            importButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            importButton.heightAnchor.constraint(equalToConstant: 50),
         ])
     }
     
@@ -97,6 +110,8 @@ final class GuestLoginViewController: UIViewController, TopWarningPanel {
                 dismiss(animated: true, completion: nil)
             case 1:
                 createAccount()
+            case 2:
+                importWallet()
             default:
                 break
         }
@@ -131,6 +146,10 @@ final class GuestLoginViewController: UIViewController, TopWarningPanel {
         vc.transitioningDelegate = self
         vc.modalPresentationStyle = .fullScreen
         self.present(vc, animated: true, completion: nil)
+    }
+    
+    private func importWallet() {
+        
     }
     
     /// The warning display for the inaccurate or incomplete info the in the form fields.

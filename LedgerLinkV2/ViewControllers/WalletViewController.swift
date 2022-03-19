@@ -36,8 +36,8 @@ struct MenuData: Hashable {
 final class WalletViewController: UIViewController {
     
     private var menuDataArray: [MenuData] = [
-        MenuData(section: .horizontal, colors: [UIColor(red: 251/255, green: 255/255, blue: 163/255, alpha: 1).cgColor, UIColor(red: 102/255, green: 211/255, blue: 126/255, alpha: 1).cgColor, UIColor(red: 255/255, green: 187/255, blue: 145/255, alpha: 1).cgColor], title: "Balance", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
-        MenuData(section: .horizontal, colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+        MenuData(section: .horizontal, colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Balance", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
+        MenuData(section: .horizontal, colors: [UIColor(red: 251/255, green: 255/255, blue: 163/255, alpha: 1).cgColor, UIColor(red: 102/255, green: 211/255, blue: 126/255, alpha: 1).cgColor, UIColor(red: 255/255, green: 187/255, blue: 145/255, alpha: 1).cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
         MenuData(section: .horizontal, colors: [UIColor.purple.cgColor, UIColor.orange.cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
 //        MenuData(section: .horizontal, colors: [UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
 //        MenuData(section: .horizontal, colors: [UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
@@ -54,7 +54,7 @@ final class WalletViewController: UIViewController {
     ]
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, MenuData>! = nil
-    private var collectionView: UICollectionView! = nil
+    var collectionView: UICollectionView! = nil
     private let alert = AlertView()
     private let keysService = KeysService()
     
@@ -74,8 +74,8 @@ final class WalletViewController: UIViewController {
 
 extension WalletViewController {
     func configureUI() {
-//        title = "Wallet"
         navigationController?.setNavigationBarHidden(true, animated: false)
+        reloadBalance()
     }
     
     func configureHierarchy() {
@@ -91,6 +91,7 @@ extension WalletViewController {
         
         let CardCellRegistration = UICollectionView.CellRegistration<CardCell, MenuData> { (cell, indexPath, menuData) in
             // Populate the cell with our item description.
+            cell.section = menuData.section /// Provide section to the cell since CardCell is used for both horizontal and vertical. The hortizontal style is has to be distinct from the vertical style.
             cell.titleLabel.text = menuData.title
             cell.colors = menuData.colors
             cell.imageView.image = menuData.image
@@ -98,12 +99,12 @@ extension WalletViewController {
         
         let textCellRegistration = UICollectionView.CellRegistration<CardCell, MenuData> { (cell, indexPath, menuData) in
             // Populate the cell with our item description.
+            cell.section = menuData.section /// Provide section to the cell since CardCell is used for both horizontal and vertical. The hortizontal style is has to be distinct from the vertical style.
             cell.titleLabel.text = menuData.title
             cell.titleLabel.textColor = .white
             cell.colors = [UIColor(red: 16/255, green: 16/255, blue: 16/255, alpha: 1).cgColor, UIColor(red: 16/255, green: 16/255, blue: 16/255, alpha: 1).cgColor, UIColor(red: 16/255, green: 16/255, blue: 16/255, alpha: 1).cgColor]
             cell.imageView.image = menuData.image
             cell.contentView.layer.cornerRadius = Section(rawValue: indexPath.section)! == .vertical ? 15 : 5
-//            cell.radiusTopRight = 40
         }
         
         let BalanceCellRegistration = UICollectionView.CellRegistration<BalanceCell, MenuData> { (cell, indexPath, menuData) in
@@ -114,11 +115,9 @@ extension WalletViewController {
         
         dataSource = UICollectionViewDiffableDataSource<Section, MenuData>(collectionView: collectionView) {
             (collectionView: UICollectionView, indexPath: IndexPath, identifier: MenuData) -> UICollectionViewCell? in
-            
-//            return Section(rawValue: indexPath.section)! == .horizontal ?
-//            collectionView.dequeueConfiguredReusableCell(using: CardCellRegistration, for: indexPath, item: identifier) :
-//            collectionView.dequeueConfiguredReusableCell(using: textCellRegistration, for: indexPath, item: identifier)
-            
+
+            /// Use difference custom cells depending on the section.
+            /// Within the horizontal section, use BalanceCell for the first cell only.
             if  Section(rawValue: indexPath.section)! == .horizontal {
                 if indexPath == IndexPath(item: 0, section: 0) {
                     return collectionView.dequeueConfiguredReusableCell(using: BalanceCellRegistration, for: indexPath, item: identifier)
@@ -260,7 +259,6 @@ extension WalletViewController {
 
 extension WalletViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        collectionView.deselectItem(at: indexPath, animated: true)
         
         let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
         feedbackGenerator.impactOccurred()
@@ -272,8 +270,32 @@ extension WalletViewController: UICollectionViewDelegate {
                 
         switch selectedItem.title {
             case "Balance":
-//                Node.shared.sendNotification()
-                Node.shared.sendNotification(notificationType: "yelllow")
+                reloadBalance()
+                
+                Node.shared.getMyAccount { [weak self] (account: Account?, error: NodeError?) in
+                    if let error = error {
+                        print(error)
+                        return
+                    }
+                    
+                    if let account = account {
+                        
+                        let vc = IndividualDetailViewController()
+                        
+                        let dataSource = [
+                            SearchResultContent(title: "Address", detail: account.address.address),
+                            SearchResultContent(title: "Nonce", detail: account.nonce.description),
+                            SearchResultContent(title: "Balance", detail: account.balance.description),
+                            SearchResultContent(title: "Storage Root", detail: account.storageRoot),
+                            SearchResultContent(title: "Code Hash", detail: account.codeHash),
+                        ]
+                        
+                        vc.dataSource = dataSource
+                        vc.title = "Account"
+                        self?.present(vc, animated: true)
+                    }
+                }
+                break
             case "Send":
                 let vc = SendViewController()
                 
@@ -303,6 +325,13 @@ extension WalletViewController: UICollectionViewDelegate {
             default:
                 break
         }
+    }
+    
+    /// Reload balance triggered along with the local notification when the node parses received transactions and if the "To" of the transaction matches the local address.
+    func reloadBalance() {
+        let indexPath = IndexPath(item: 0, section: 0)
+        guard let cell = collectionView.cellForItem(at: indexPath) as? BalanceCell else { return }
+        cell.getBalance()
     }
     
     private func resetPassword() {
@@ -410,8 +439,8 @@ extension WalletViewController: UICollectionViewDelegate {
                 buttonAction: { [weak self](_) in
                     self?.dismiss(animated: true, completion: nil)
                     Node.shared.localStorage.deleteWallet { (error) in
-                        if let error = error {
-                            self?.alert.showDetail("Sorry", with: error.localizedDescription, for: self)
+                        if case .generalError(let error) = error {
+                            self?.alert.showDetail("Sorry", with: error, for: self)
                             return
                         }
                     }

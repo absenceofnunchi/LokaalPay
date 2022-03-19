@@ -53,9 +53,6 @@ final class Node {
     weak var downloadDelegate: BlockChainDownloadDelegate?
     weak var eventQueryDelegate: EventQueryDelegate? /// A delegate for GuestLoginVC to fetch the requested events
     var userNotificationCenter: UNUserNotificationCenter!
-    var myAccount: Account? {
-        return getMyAccount()
-    }
     
     init() {
         guard let scene = UIApplication.shared.connectedScenes.first,
@@ -149,6 +146,29 @@ final class Node {
                 guard var recipient: Account = try? self?.localStorage.getAccount(transaction.to.address) else {
                     promise(.failure(.generalError("Unable to find the recipient's account")))
                     return
+                }
+                
+                /// If the recipient is the current node, send a local notification as well as updating the Balance card interface.
+                if let wallet = try? self?.localStorage.getWallet(),
+                   transaction.to.address == wallet.address,
+                   let value = transaction.value,
+                   value != 0 {
+                    
+                    self?.sendNotification(notificationType: "You received \(value.description) fund")
+                    
+                    guard let scene = UIApplication.shared.connectedScenes.first,
+                          let windowScene = scene as? UIWindowScene,
+                          let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                          let rootViewController = sceneDelegate.window?.rootViewController as? UITabBarController,
+                          let viewControllers = rootViewController.viewControllers else { return }
+                    
+                    for case let navCon as UINavigationController in viewControllers {
+                        guard let vc = navCon.viewControllers[0] as? WalletViewController else { return }
+                        
+                        DispatchQueue.main.async {
+                            vc.reloadBalance()
+                        }
+                    }
                 }
                 
                 /// If the account exists, update the amount. If not, create a new one.
@@ -817,19 +837,16 @@ final class Node {
 extension Node {
     func requestAuthorization(completion: @escaping  (Bool) -> Void) {
         userNotificationCenter
-            .requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, _  in
-                self?.fetchNotificationSettings()
+            .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _  in
+//                self?.fetchNotificationSettings()
                 completion(granted)
             }        
     }
     
     func fetchNotificationSettings() {
-        // 1
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            // 2
-            DispatchQueue.main.async {
-                print("settings", settings)
-            }
+        UNUserNotificationCenter.current().getNotificationSettings { _ in
+            /// Can fetch settings to fine grain control the settings
+            /// <UNNotificationSettings: 0x283419200; authorizationStatus: Authorized, notificationCenterSetting: Enabled, soundSetting: Enabled, badgeSetting: Enabled, lockScreenSetting: Enabled, carPlaySetting: NotSupported, announcementSetting: Disabled, criticalAlertSetting: NotSupported, timeSensitiveSetting: NotSupported, alertSetting: Enabled, scheduledDeliverySetting: Disabled, directMessagesSetting: NotSupported, alertStyle: Banner, groupingSetting: Default providesAppNotificationSettings: No>
         }
     }
     
@@ -839,7 +856,7 @@ extension Node {
         let content = UNMutableNotificationContent()
         let categoryIdentifire = "Delete Notification Type"
         content.sound = UNNotificationSound.default
-        content.body = "This is example how to send " + notificationType
+        content.body = notificationType
         content.badge = 1
         content.categoryIdentifier = categoryIdentifire
         

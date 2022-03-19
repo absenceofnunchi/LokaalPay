@@ -35,6 +35,7 @@ extension LocalStorage {
         guard let address = EthereumAddress(addressString) else {
             throw NodeError.generalError("Unable to parse the address")
         }
+        
         return try getAccount(address)
     }
     

@@ -185,8 +185,8 @@ final class SendViewController: WalletModalViewController {
             case 1:
                 /// Get max balance
                 Node.shared.getMyAccount { [weak self] (acct, error) in
-                    if let error = error {
-                        self?.alert.show(error, for: self)
+                    if case .generalError(let error) = error {
+                        self?.alert.showDetail("Sorry", with: error, for: self)
                         return
                     }
                     
@@ -196,8 +196,8 @@ final class SendViewController: WalletModalViewController {
                 }
             case 2:
                 send { [weak self] (error) in
-                    if let error = error {
-                        self?.alert.show(error, for: self)
+                    if case .generalError(let error) = error {
+                        self?.alert.showDetail("Sorry", with: error, for: self)
                         return
                     }
                 }
@@ -246,7 +246,7 @@ final class SendViewController: WalletModalViewController {
                 DispatchQueue.main.async {
                     self?.amountTextField.text = nil
                     self?.hideSpinner()
-                    self?.dismiss(animated: true)
+                    self?.presentingViewController?.dismiss(animated: true)
                 }
             }
         }

@@ -13,9 +13,9 @@
    B. To synchronize the state across the devices.
  */
 
-import Foundation
 import Combine
 import BigInt
+import UIKit
 
 extension Node {
     
@@ -258,13 +258,30 @@ extension Node {
             /// If a tranaction's To address matches the node's own addresss, then trigger a local notification to notify the arrival of the fund.
             if let transactions = block.transactions, transactions.count > 0 {
                 block.transactions?.forEach { [weak self] in
-                    print("myAccount?.address", myAccount?.address)
                     guard let transaction = $0.decode(),
-                          transaction.to == myAccount?.address,
+                          let wallet = try? localStorage.getWallet(),
+                          transaction.to.address == wallet.address,
                           let value = transaction.value,
                           value != 0 else { return }
                     
                     self?.sendNotification(notificationType: "You received \(value.description) fund")
+
+                    guard let scene = UIApplication.shared.connectedScenes.first,
+                          let windowScene = scene as? UIWindowScene,
+                          let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                          let rootViewController = sceneDelegate.window?.rootViewController as? UITabBarController,
+                          let viewControllers = rootViewController.viewControllers else { return }
+                    
+                    print("viewControllers", viewControllers)
+                    for case let navCon as UINavigationController in viewControllers {
+                        print("navCon.viewControllers", navCon.viewControllers)
+                        guard let vc = navCon.viewControllers[0] as? WalletViewController else { return }
+                        print("vc", vc)
+                        
+                        DispatchQueue.main.async {
+                            vc.reloadBalance()
+                        }
+                    }
                 }
             }
             

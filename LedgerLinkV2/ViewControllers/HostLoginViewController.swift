@@ -416,6 +416,9 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
     
     /// Starts the server, creates a wallet, and creates a genesis block.
     private func startBlockchain(completion: @escaping (Data) -> Void) {
+        /// Clear existing data
+        
+        
         /// start the server
         NetworkManager.shared.start()
         Node.shared.deleteAll()

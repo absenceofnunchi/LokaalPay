@@ -55,7 +55,6 @@ final class ExplorerViewController: UIViewController {
         configureSearchBar()
         configureUI()
         configureDataSource()
-        setConstraints()
         tapToDismissKeyboard()
         configureOptionsBar()
         configureRefreshData()
@@ -77,22 +76,12 @@ final class ExplorerViewController: UIViewController {
         
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: generateLayout())
         collectionView.contentInset = UIEdgeInsets(top: 20, left: 0, bottom: 0, right: 0)
-//        collectionView.translatesAutoresizingMaskIntoConstraints = false0
         collectionView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         collectionView.backgroundColor = .black
         collectionView.delegate = self
         view.addSubview(collectionView)
     }
-
-    private func setConstraints() {
-        NSLayoutConstraint.activate([
-//            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
-//            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
-    }
-    
+ 
     private func configureSearchController() {
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self

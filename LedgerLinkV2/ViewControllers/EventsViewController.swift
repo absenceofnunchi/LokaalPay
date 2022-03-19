@@ -1,5 +1,5 @@
 //
-//  GuestLoginViewController.swift
+//  EventsViewController.swift
 //  LedgerLinkV2
 //
 //  Created by J C on 2022-03-06.
@@ -202,6 +202,7 @@ extension EventsViewController {
         collectionView.backgroundColor = .black
         collectionView.delegate = self
         collectionView.contentInset = UIEdgeInsets(top: 100, left: 0, bottom: 0, right: 0)
+        collectionView.keyboardDismissMode = .onDrag
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
         

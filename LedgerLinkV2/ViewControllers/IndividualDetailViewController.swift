@@ -91,8 +91,8 @@ class IndividualDetailViewController: UITableViewController {
             case "Recipient Address", "Sender Address", "Validator":
                 guard let addressString = data.detail else { return }
                 Node.shared.fetch(.addressString(addressString)) { [weak self] (accts: [Account]?, error: NodeError?) in
-                    if let error = error {
-                        self?.alert.showDetail("Fetch error", with: error.localizedDescription, for: self)
+                    if case .generalError(let error) = error {
+                        self?.alert.showDetail("Sorry", with: error, for: self)
                         return
                     }
                     
@@ -117,8 +117,8 @@ class IndividualDetailViewController: UITableViewController {
                 guard let number = data.detail, let blockNumber = Int32(number) else { return }
                 
                 Node.shared.localStorage.getBlock(blockNumber) { [weak self] (block: FullBlock?, error: NodeError?) in
-                    if let error = error {
-                        self?.alert.showDetail("Fetch error", with: error.localizedDescription, for: self)
+                    if case .generalError(let error) = error {
+                        self?.alert.showDetail("Sorry", with: error, for: self)
                         return
                     }
                     
@@ -146,8 +146,8 @@ class IndividualDetailViewController: UITableViewController {
                 /// Transaction history is only under Account so the "Address" category should exist
                 /// Fetch all transactions and filter them by either a matching "sender" or "to" because they represent any transactions related to the Account.
                 Node.shared.fetch { [weak self] (transactions: [EthereumTransaction]?, error: NodeError?) in
-                    if let error = error {
-                        self?.alert.showDetail("Fetch error", with: error.localizedDescription, for: self)
+                    if case .generalError(let error) = error {
+                        self?.alert.showDetail("Sorry", with: error, for: self)
                         return
                     }
                     
