@@ -104,7 +104,7 @@ extension UIViewController {
         /// Add attributes
         let rangeText = (mas.string as NSString).range(of: mas.string)
         mas.addAttributes([
-            NSAttributedString.Key.foregroundColor: textColor,
+            NSAttributedString.Key.foregroundColor: textColor ?? UIColor.gray,
             .font: UIFont.rounded(ofSize: 14, weight: .bold)
         ], range: rangeText)
         

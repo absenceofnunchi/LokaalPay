@@ -23,16 +23,8 @@ class EventsViewController: UIViewController, BlockChainDownloadDelegate {
     private var collectionView: UICollectionView! = nil
     private var titleLabel: UILabel!
     private var alert = AlertView()
-    
-    private let data = [
-        EventInfo(eventName: "Wedding0", currencyName: "Deniro", description: "Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! ", image: nil, chainID: "1234"),
-        EventInfo(eventName: "Wedding1", currencyName: "Deniro", description: "Hello!", image: nil, chainID: "1234"),
-        EventInfo(eventName: "Wedding2", currencyName: "Deniro", description: "Hello!", image: nil, chainID: "1234"),
-        EventInfo(eventName: "Wedding3", currencyName: "Deniro", description: "Hello!", image: nil, chainID: "1234"),
-        EventInfo(eventName: "Wedding4", currencyName: "Deniro", description: "Hello!", image: nil, chainID: "1234"),
-    ]
-    
     private var dataArray = [EventInfo]()
+    private var refresher:UIRefreshControl!
     private var createWalletMode: Bool = false
     private var isPeerConnected: Bool = false {
         didSet {
@@ -61,6 +53,7 @@ class EventsViewController: UIViewController, BlockChainDownloadDelegate {
         super.viewDidLoad()
         configureHierarchy()
         configureDataSource()
+        configureRefresher()
         
         /// set up the server and node
         Node.shared.deleteAll()
@@ -68,16 +61,6 @@ class EventsViewController: UIViewController, BlockChainDownloadDelegate {
         Node.shared.downloadDelegate = self /// Download delegate let's the GuestLoginVC know when the blockchain has been downloadeded by calling didReceiveBlockchain
         NetworkManager.shared.start(startAutoRelay: false)
         NetworkManager.shared.peerConnectedHandler = peerConnectedHandler
-        
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
-            Section.allCases.forEach { section in
-                snapshot.appendSections([section])
-                snapshot.appendItems(self.data)
-            }
-            
-            self.dataSource.applySnapshotUsingReloadData(snapshot)
-        }
     }
     
     /// Gets triggered when the first peer becomes available and gets connected.
@@ -100,9 +83,24 @@ class EventsViewController: UIViewController, BlockChainDownloadDelegate {
             case 0:
                 dismiss(animated: true)
                 break
+            case 1:
+                collectionView.refreshControl?.beginRefreshing()
+                NetworkManager.shared.start(startAutoRelay: false)
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                    self?.collectionView.refreshControl?.endRefreshing()
+                }
             default:
                 break
         }
+    }
+    
+    private func configureRefresher() {
+        refresher = UIRefreshControl()
+        refresher.tintColor = UIColor.gray
+        refresher.addTarget(self, action: #selector(buttonPressed), for: .valueChanged)
+        refresher.tag = 1
+        collectionView.refreshControl = refresher
     }
 }
 

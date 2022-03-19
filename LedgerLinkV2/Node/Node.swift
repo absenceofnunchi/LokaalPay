@@ -41,7 +41,6 @@ struct TimestampedOperation {
     let operation: AsyncOperation
 }
 
-@available(iOS 15.0.0, *)
 final class Node {
     static let shared = Node()
     let localStorage = LocalStorage()
@@ -53,7 +52,29 @@ final class Node {
     let queue = OperationQueue() /// Queue executes transactions in timestamped order sequentially
     weak var downloadDelegate: BlockChainDownloadDelegate?
     weak var eventQueryDelegate: EventQueryDelegate? /// A delegate for GuestLoginVC to fetch the requested events
+    var userNotificationCenter: UNUserNotificationCenter!
+    var myAccount: Account? {
+        return getMyAccount()
+    }
+    
+    init() {
+        guard let scene = UIApplication.shared.connectedScenes.first,
+              let windowScene = scene as? UIWindowScene,
+              let sceneDelegate = windowScene.delegate as? SceneDelegate,
+              let rootViewController = sceneDelegate.window?.rootViewController else { return }
+        
+        self.userNotificationCenter = sceneDelegate.userNotificationCenter
 
+        requestAuthorization { (granted) in
+            if !granted {
+                DispatchQueue.main.async {
+                    let alert = AlertView()
+                    alert.showDetail("Notification", with: "You will not be able to receive the payment notification. You can always change your settings in your iPhone's notification settings.", for: rootViewController)
+                }
+            }
+        }        
+    }
+    
     func save<T: LightConfigurable>(_ element: T, completion: @escaping (NodeError?) -> Void) async {
         await localStorage.save(element, completion: completion)
     }
@@ -404,7 +425,11 @@ final class Node {
             let decoded = try JSONDecoder().decode(ContractMethod.self, from: data)
             switch decoded {
                 case .createAccount(let rlpData):
-                    NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
+                    /// Contract method for creating a new account when a guest first logs in.
+                    /// Relay the transaction if there is to be more than one validator
+                    /// First validate the transaction by recovering the public key.
+                    /// Then add the transaction to the Operation to be executed in sequence according to the timestamp of when they were created.
+//                    NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
                     validateTransaction(rlpData) { [weak self] (result, error) in
                         if let error = error {
                             print(error)
@@ -425,7 +450,7 @@ final class Node {
                     }
                     break
                 case .transferValue(let rlpData):
-                    NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
+//                    NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
                     validateTransaction(rlpData) { [weak self] (result, error) in
                         if let transaction = result.0,
                            let extraData = result.1 {
@@ -515,6 +540,7 @@ final class Node {
             let decoded = try JSONDecoder().decode(ContractMethod.self, from: data)
             switch decoded {
                 case .createAccount(_):
+                    /// Since the node belongs to a none validator, the message is relayed right away instead of being used to create a new block
                     NetworkManager.shared.relayTransaction(data: data, peerID: peerID)
                     break
                 case .transferValue(_):
@@ -554,7 +580,7 @@ final class Node {
                     }
                     break
                 case .sendBlock(let data):
-                    /// Light blocks sent from peers on a regular interval
+                    /// Light blocks relayed from peers on a regular interval
                     NetworkManager.shared.relayBlock(data)
                     let decoded = try JSONDecoder().decode(LightBlock.self, from: data)
                     parseBlock(decoded)
@@ -611,9 +637,6 @@ final class Node {
               }
         
         let chainID = UserDefaults.standard.integer(forKey: "chainID")
-        
-        print("decodedExtraData.chainID == BigUInt(chainID)", decodedExtraData.chainID == BigUInt(chainID))
-        print("type decodedExtraData.chainID", type(of: decodedExtraData.chainID))
         guard decodedExtraData.chainID == BigUInt(chainID) else {
             completion((nil, nil), .generalError("Incorrect chain ID"))
             return
@@ -791,6 +814,96 @@ final class Node {
     }
 }
 
+extension Node {
+    func requestAuthorization(completion: @escaping  (Bool) -> Void) {
+        userNotificationCenter
+            .requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, _  in
+                self?.fetchNotificationSettings()
+                completion(granted)
+            }        
+    }
+    
+    func fetchNotificationSettings() {
+        // 1
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            // 2
+            DispatchQueue.main.async {
+                print("settings", settings)
+            }
+        }
+    }
+    
+    func sendNotification(notificationType: String) {
+        
+        //Compose New Notificaion
+        let content = UNMutableNotificationContent()
+        let categoryIdentifire = "Delete Notification Type"
+        content.sound = UNNotificationSound.default
+        content.body = "This is example how to send " + notificationType
+        content.badge = 1
+        content.categoryIdentifier = categoryIdentifire
+        
+        //Add attachment for Notification with more content
+        if (notificationType == "Local Notification with Content") {
+            let imageName = "1"
+            guard let imageURL = Bundle.main.url(forResource: imageName, withExtension: "jpeg") else { return }
+            let attachment = try! UNNotificationAttachment(identifier: imageName, url: imageURL, options: .none)
+            content.attachments = [attachment]
+        }
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+        let identifier = "Local Notification"
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        
+        userNotificationCenter.add(request) { (error) in
+            if let error = error {
+                print("Error \(error.localizedDescription)")
+            }
+        }
+        
+        //Add Action button the Notification
+        if (notificationType == "Local Notification with Action") {
+            let snoozeAction = UNNotificationAction(identifier: "Snooze", title: "Snooze", options: [])
+            let deleteAction = UNNotificationAction(identifier: "DeleteAction", title: "Delete", options: [.destructive])
+            let category = UNNotificationCategory(identifier: categoryIdentifire,
+                                                  actions: [snoozeAction, deleteAction],
+                                                  intentIdentifiers: [],
+                                                  options: [])
+            userNotificationCenter.setNotificationCategories([category])
+        }
+    }
+    
+    func sendNotification1() {
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.title = "Test"
+        notificationContent.body = "Test body"
+        notificationContent.badge = NSNumber(value: 3)
+        
+        //        if let url = Bundle.main.url(forResource: "dune",
+        //                                     withExtension: "png") {
+        //            if let attachment = try? UNNotificationAttachment(identifier: "dune",
+        //                                                              url: url,
+        //                                                              options: nil) {
+        //                notificationContent.attachments = [attachment]
+        //            }
+        //        }
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5,
+                                                        repeats: false)
+        let request = UNNotificationRequest(identifier: "testNotification",
+                                            content: notificationContent,
+                                            trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request) { (error) in
+            if let error = error {
+                print("Notification Error: ", error)
+            }
+        }
+    }
+}
+
+
+
 #if DEBUG
 extension Node {
     func exposeValidateTransaction(_ rlpData: Data, completion: @escaping ((EthereumTransaction?, TransactionExtraData?), NodeError?) -> Void) {
@@ -798,3 +911,4 @@ extension Node {
     }
 }
 #endif
+

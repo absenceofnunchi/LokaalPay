@@ -128,9 +128,13 @@ class DetailTableViewController<T>: UITableViewController {
             let vc = IndividualDetailViewController()
             
             var dataSource = [
+                SearchResultContent(title: "Hash", detail: tx.hash?.toHexString() ?? "Ox"),
                 SearchResultContent(title: "Recipient Address", detail: tx.to.address),
                 SearchResultContent(title: "Nonce", detail: tx.nonce.description),
                 SearchResultContent(title: "Amount", detail: tx.value != nil ? tx.value?.description : "0"),
+                SearchResultContent(title: "V", detail: tx.v.description),
+                SearchResultContent(title: "R", detail: tx.r.description),
+                SearchResultContent(title: "S", detail: tx.s.description),
             ]
             
             if let extraData = extraData {

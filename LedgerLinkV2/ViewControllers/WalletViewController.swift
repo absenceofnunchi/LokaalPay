@@ -271,6 +271,9 @@ extension WalletViewController: UICollectionViewDelegate {
         }
                 
         switch selectedItem.title {
+            case "Balance":
+//                Node.shared.sendNotification()
+                Node.shared.sendNotification(notificationType: "yelllow")
             case "Send":
                 let vc = SendViewController()
                 
@@ -421,11 +424,6 @@ extension WalletViewController: UICollectionViewDelegate {
         let alertVC = AlertViewController(height: 350, standardAlertContent: content)
         alertVC.action = { [weak self] (modal, mainVC) in
             mainVC.buttonAction = { _ in
-                guard let password = modal.dataDict[AlertModalDictionary.passwordSubtitle],
-                      !password.isEmpty else {
-                          self?.alert.fading(text: "Password cannot be empty!", controller: mainVC, toBePasted: nil, width: 250)
-                          return
-                      }
                 
                 self?.dismiss(animated: true, completion: {
                     

@@ -59,12 +59,12 @@ final class NetworkManager: NSObject {
     
     // MARK: - `MPCSession` public methods.
     func start(startAutoRelay: Bool = true) {
+        self.isServerRunning = true
 //        guard isServerRunning == false else { return }
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceAdvertiser?.startAdvertisingPeer()
         self.nearbyBrowser.startBrowsingForPeers()
-        self.isServerRunning = true
 
         /// Start the pinging only at every 0 or 30 second so that all the devices could be synchronized.
         /// Auto relay is for a validate to send blocks or for guests to execute and clear validated transactions.
@@ -89,10 +89,10 @@ final class NetworkManager: NSObject {
     
     func disconnect() {
         suspend()
+        isServerRunning = false
         player = nil
         playerLooper = nil
         timer?.invalidate()
-        isServerRunning = false
         session.disconnect()
     }
     
@@ -108,16 +108,14 @@ final class NetworkManager: NSObject {
         guard isServerRunning else { return }
         
         if session.connectedPeers.count == 0 {
-            guard isServerRunning == true else { return }
             suspend()
-            self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
-            self.nearbyServiceAdvertiser.delegate = self
             self.nearbyServiceAdvertiser?.startAdvertisingPeer()
             self.nearbyBrowser.startBrowsingForPeers()
         }
 
         /// Validator: dispatches newly created blocks on a regular interval
         /// Non validator: refreshes the pools of transactions accounts, operations, and the relay history on a regular interval
+        /// The blocks are processed at a set internval instead of as they arrive to 1) synchronize all devices and 2) to account for the delays in the arrival of the blocks and minimize the blocks being out of the time order
         Node.shared.processBlock { [weak self] (block) in
             if let block = block {
                 do {
@@ -147,20 +145,21 @@ final class NetworkManager: NSObject {
                 handler(peerID)
             }
         }
+        
         if session.connectedPeers.count == maxNumPeers {
             self.suspend()
         }
     }
     
     private func peerDisconnected(peerID: MCPeerID) {
-        if let handler = peerDisconnectedHandler {
-            DispatchQueue.main.async {
-                handler(peerID)
-            }
+        if (session.connectedPeers.count < maxNumPeers) && isServerRunning {
+            suspend()
+            self.nearbyServiceAdvertiser?.startAdvertisingPeer()
+            self.nearbyBrowser.startBrowsingForPeers()
         }
         
-        if session.connectedPeers.count < maxNumPeers {
-            self.start()
+        if let handler = peerDisconnectedHandler {
+            handler(peerID)
         }
     }
     

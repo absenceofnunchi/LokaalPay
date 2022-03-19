@@ -33,10 +33,6 @@ final class IntroViewController: UIViewController {
     private func configureUI() {
         view.backgroundColor = .black
         
-//        dialViewContainer = UIView(frame: CGRect(origin: view.center, size: CGSize(width: 100, height: 100)))
-//        dialViewContainer.translatesAutoresizingMaskIntoConstraints = false
-//        view.addSubview(dialViewContainer)
-        
         let bgImage = UIImage(named: "3")
         imageView = UIImageView(image: bgImage)
         imageView.contentMode = .scaleToFill

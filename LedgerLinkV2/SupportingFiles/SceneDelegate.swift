@@ -7,10 +7,12 @@
 
 import UIKit
 import BackgroundTasks
+import UserNotifications
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    let userNotificationCenter = UNUserNotificationCenter.current()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -31,6 +33,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         UITabBar.appearance().standardAppearance = tabBarApperance
         
         AuthSwitcher.updateRootVC()
+        
+        userNotificationCenter.delegate = self
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -44,6 +48,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
         NetworkManager.shared.toggleBackgroundMode(false)
+        
+        /// Dismisses the badge on the app icon when the app is loaded
+        UIApplication.shared.applicationIconBadgeNumber = 0
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
@@ -162,4 +169,20 @@ extension SceneDelegate {
     }
 }
 
-
+extension SceneDelegate: UNUserNotificationCenterDelegate {
+    //Handle Notification Center Delegate methods
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.badge, .sound, .banner, .list])
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.identifier == "Local Notification" {
+            print("Handling notifications with the Local Notification Identifier")
+        }
+        completionHandler()
+    }
+}

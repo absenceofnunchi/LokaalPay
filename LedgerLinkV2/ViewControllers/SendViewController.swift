@@ -242,8 +242,12 @@ final class SendViewController: WalletModalViewController {
                 /// For validators only to include the validated transactions in a block
                 /// For non validators, the pool of validated transactions will be cleared after the auto relay
                 Node.shared.addValidatedTransaction(data)
-                self?.amountTextField.text = nil
-                self?.hideSpinner()
+ 
+                DispatchQueue.main.async {
+                    self?.amountTextField.text = nil
+                    self?.hideSpinner()
+                    self?.dismiss(animated: true)
+                }
             }
         }
     }

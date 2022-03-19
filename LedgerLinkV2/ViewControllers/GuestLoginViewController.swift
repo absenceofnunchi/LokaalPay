@@ -59,7 +59,7 @@ final class GuestLoginViewController: UIViewController, TopWarningPanel {
         view.addSubview(buttonContainer)
         
         createButton = ButtonWithShadow()
-        createButton.setTitle("Create Event", for: .normal)
+        createButton.setTitle("Create Account", for: .normal)
         createButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         createButton.tag = 1
         createButton.backgroundColor = .darkGray

@@ -487,9 +487,13 @@ extension ExplorerViewController: UICollectionViewDelegate {
                     let vc = IndividualDetailViewController()
                     
                     var dataSource = [
+                        SearchResultContent(title: "Hash", detail: transaction.hash?.toHexString() ?? "Ox"),
                         SearchResultContent(title: "Recipient Address", detail: transaction.to.address),
                         SearchResultContent(title: "Nonce", detail: transaction.nonce.description),
                         SearchResultContent(title: "Amount", detail: transaction.value != nil ? transaction.value?.description : "0"),
+                        SearchResultContent(title: "V", detail: transaction.v.description),
+                        SearchResultContent(title: "R", detail: transaction.r.description),
+                        SearchResultContent(title: "S", detail: transaction.s.description),
                     ]
 
                     let data = try? JSONDecoder().decode(TransactionExtraData.self, from: transaction.data)

@@ -5,7 +5,14 @@
 //  Created by J C on 2022-03-17.
 //
 
+/*
+ Abstract:
+ Shows the status of whether the advertiser and the browser in the network manager are running and how many peers are connected.
+ It also privdes the ability to start, suspend, and disconnect the server.
+ */
+
 import UIKit
+import MultipeerConnectivity
 
 class ServerViewController: UIViewController {
     var statusButton: PulsatingButton!
@@ -15,28 +22,40 @@ class ServerViewController: UIViewController {
     var peerLabel: UILabel!
     var underLineView: UIView!
     var logButton: UIButton!
+    var isServerOn: Bool = false {
+        didSet {
+            let attTitle = self.createAttributedString(imageString: "circlebadge.fill", imageColor: isServerOn ? UIColor.green : UIColor.red, text: isServerOn ? " Server is on" : " Server is off", textColor: .lightGray)
+            self.statusButton.setAttributedTitle(attTitle, for: .normal)
+        }
+    } /// Shows the status of the server according to isServerOn. It's toggled at the time of the loading of VC or when the toggle button is tapped.
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         configureUI()
         setConstraints()
+        NetworkManager.shared.peerConnectedHandler = peerConnectedHandler
+        NetworkManager.shared.peerDisconnectedHandler = peerDisconnectedHandler
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        /// Provides the initial status of how many peers are connected upon loading
+        let number = NetworkManager.shared.getConnectedPeerNumbers()
+        peerLabel.text = "\(number) \(number == 1 ? "peer" : "peers")"
+        
         /// Delay until the initial circle animation is finished
+        /// Only start pulsing if the server is on
+        guard self.isServerOn else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
             self?.statusButton.pulse()
         }
-        
-        let number = NetworkManager.shared.getConnectedPeerNumbers()
-        peerLabel.text = "\(number) \(number == 1 ? "peer" : "peers")"
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        /// Stops the pulsating animation when away from the VC
         self.statusButton.stopAnimation()
     }
     
@@ -50,19 +69,9 @@ class ServerViewController: UIViewController {
         statusButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         statusButton.tag = 0
         view.addSubview(statusButton)
-
-        let yDelta = view.center.y - 200
-        UIView.animate(withDuration: 0.8, delay: 2, options: .curveEaseIn) { [weak self] in
-            self?.statusButton.transform = CGAffineTransform(translationX: 0, y: -yDelta)
-        } completion: { [weak self] _ in
-            
-//            let isServerOn = NetworkManager.shared.getServerStatus()
-            let isServerOn = true
-            let attTitle = self?.createAttributedString(imageString: "circlebadge.fill", imageColor: isServerOn ? UIColor.green : UIColor.red, text: isServerOn ? " Server is on" : " Server is off", textColor: .lightGray)
-            self?.statusButton.setAttributedTitle(attTitle, for: .normal)
-        }
         
         peerContainerView = UIView()
+        peerContainerView.alpha = 0
         peerContainerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(peerContainerView)
         
@@ -83,7 +92,42 @@ class ServerViewController: UIViewController {
         underLineView.layer.borderColor = UIColor.gray.cgColor
         underLineView.translatesAutoresizingMaskIntoConstraints = false
         peerContainerView.addSubview(underLineView)
+        
+        /// Translating animation upwards upon loading
+        let yDelta = view.center.y - 200
+        UIView.animate(withDuration: 0.8, delay: 2, options: .curveEaseIn) { [weak self] in
+            self?.statusButton.transform = CGAffineTransform(translationX: 0, y: -yDelta)
+        } completion: { [weak self] _ in
+            ///  Display the server status after the completion of the animation
+            self?.isServerOn = NetworkManager.shared.getServerStatus()
+        }
+        
+        UIView.animate(withDuration: 1, delay: 3) { [weak self] in
+            self?.peerContainerView.alpha = 1
+        }
+        
+//        loadingAnimation()
+    }
+    
+    private func loadingAnimation() {
+        let totalCount = 2
+        let duration = 1.0 / Double(totalCount) + 0.1
+        let yDelta = view.center.y - 200
+
+        let animation = UIViewPropertyAnimator(duration: 2, timingParameters: UICubicTimingParameters())
+        animation.addAnimations {
+            UIView.animateKeyframes(withDuration: 0, delay: 2, animations: { [weak self] in
+                UIView.addKeyframe(withRelativeStartTime: 0 / Double(totalCount), relativeDuration: duration) {
+                    self?.statusButton.transform = CGAffineTransform(translationX: 0, y: -yDelta)
+                }
                 
+                UIView.addKeyframe(withRelativeStartTime: 1 / Double(totalCount), relativeDuration: duration) {
+                    self?.peerContainerView.alpha = 1
+                }
+            })
+        }
+        
+        animation.startAnimation()
     }
     
     private func setConstraints() {
@@ -119,6 +163,8 @@ class ServerViewController: UIViewController {
         }
     }
     
+    /// Toggles the server on and off (adveriser, browser , and the player in the network manager). Turning off has two options: suspension and stop.
+    /// Also toggles the title display of the statusButton
     private func toggleServer() {
         let isServerOn = NetworkManager.shared.getServerStatus()
         if isServerOn {
@@ -129,39 +175,62 @@ class ServerViewController: UIViewController {
     }
     
     private func startServer() {
+        isServerOn = true
         NetworkManager.shared.start()
+        statusButton.pulse()
     }
     
     private func stopServer() {
-        /// Prompt user for camera or gallery to upload an image
-        let buttonInfoArr = [
-            ButtonInfo(title: "Camera", tag: 2, backgroundColor: .black),
-            ButtonInfo(title: "Gallery", tag: 3, backgroundColor: .black)
-        ]
         
+        /// Prompt user for suspension or diconnection of the server
+        let buttonInfoArr = [
+            ButtonInfo(title: "Refresh Server", tag: 2, backgroundColor: .black),
+            ButtonInfo(title: "Stop Server", tag: 3, backgroundColor: .black)
+        ]
+
         let alertVC = ActionSheetViewController(content: .button(buttonInfoArr))
         alertVC.buttonAction = { [weak self] tag in
             self?.dismiss(animated: true, completion: {
                 switch tag {
                     case 2:
-                        let pickerVC = UIImagePickerController()
-                        pickerVC.sourceType = .camera
-                        pickerVC.allowsEditing = true
-                        pickerVC.delegate = self
-                        self?.present(pickerVC, animated: true)
+                        let attTitle = self?.createAttributedString(imageString: "circlebadge.fill", imageColor: UIColor.green, text: " Refreshed", textColor: .lightGray)
+                        self?.statusButton.setAttributedTitle(attTitle, for: .normal)
+                        
+                        self?.statusButton.refreshAnimation()
+                        
+                        NetworkManager.shared.suspend()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            guard let self = self else { return }
+                            let attTitle = self.createAttributedString(imageString: "circlebadge.fill", imageColor: self.isServerOn ? UIColor.green : UIColor.red, text: self.isServerOn ? " Server is on" : " Server is off", textColor: .lightGray)
+                            self.statusButton.setAttributedTitle(attTitle, for: .normal)
+                            NetworkManager.shared.start()
+                        }
                         break
                     case 3:
-                        let pickerVC = UIImagePickerController()
-                        pickerVC.sourceType = .photoLibrary
-                        pickerVC.allowsEditing = true
-                        pickerVC.delegate = self
-                        self?.present(pickerVC, animated: true)
+                        NetworkManager.shared.disconnect()
+                        self?.isServerOn = false
+                        self?.statusButton.stopAnimation()
                     default:
                         break
                 }
             })
         }
         present(alertVC, animated: true)
+    }
+    
+    /// Called whenever a new peer is connected
+    func peerConnectedHandler(_ peerID: MCPeerID) {
+        let number = NetworkManager.shared.getConnectedPeerNumbers()
+        peerLabel.text = "\(number) \(number == 1 ? "peer" : "peers")"
+    }
+    
+    /// Called whenever a peer is disconnected. This method and peerConnectedHandler provides a real time status of how many peers are connnected without having to create a constant listener.
+    func peerDisconnectedHandler(_ peerID: MCPeerID) {
+        let number = NetworkManager.shared.getConnectedPeerNumbers()
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.peerLabel.text = "\(number) \(number == 1 ? "peer" : "peers")"
+        }
     }
 }
 
@@ -175,7 +244,7 @@ class PulsatingButton: UIButton {
         shape.opacity = 0
         return shape
     }()
-    
+    var gradient: CAGradientLayer!
     var backgroundLayer: CAShapeLayer!
     
     init() {
@@ -212,9 +281,8 @@ class PulsatingButton: UIButton {
         backgroundLayer.fillColor = UIColor.clear.cgColor
         backgroundLayer.strokeColor = UIColor.black.cgColor
         backgroundLayer.lineCap = .round
-//        backgroundLayer.strokeEnd = 0
         
-        let gradient = CAGradientLayer()
+        gradient = CAGradientLayer()
         gradient.frame =  self.bounds
         gradient.colors = [UIColor.blue.cgColor, UIColor.red.cgColor]
         gradient.mask = backgroundLayer
@@ -245,7 +313,7 @@ class PulsatingButton: UIButton {
         pulseLayer.add(animationGroup, forKey: "pulse")
     }
     
-    private func animateCircle(duration: TimeInterval) {
+    func animateCircle(duration: TimeInterval) {
         // We want to animate the strokeEnd property of the circleLayer
         let animation = CABasicAnimation(keyPath: "strokeEnd")
         
@@ -265,6 +333,30 @@ class PulsatingButton: UIButton {
         
         // Do the actual animation
         backgroundLayer.add(animation, forKey: "animateCircle")
+    }
+
+    func refreshAnimation() {
+        let scaleAnimation = CABasicAnimation(keyPath: "transform.scale")
+        scaleAnimation.toValue = 1.5
+        scaleAnimation.duration = 1.0
+        scaleAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        scaleAnimation.autoreverses = false
+        scaleAnimation.isAdditive = false
+        
+        let opacityAnimation = CABasicAnimation(keyPath: "opacity")
+        opacityAnimation.fromValue = 1
+        opacityAnimation.autoreverses = false
+        opacityAnimation.toValue = 0
+        opacityAnimation.duration = 1
+        opacityAnimation.isAdditive = false
+        
+        let animationGroup = CAAnimationGroup()
+        animationGroup.duration = 5
+        animationGroup.repeatCount = 1
+        animationGroup.isRemovedOnCompletion = true
+        animationGroup.animations = [scaleAnimation, opacityAnimation]
+        
+        pulseLayer.add(animationGroup, forKey: "pulse")
     }
     
     func stopAnimation() {

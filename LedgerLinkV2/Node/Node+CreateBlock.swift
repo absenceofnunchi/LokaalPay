@@ -236,7 +236,6 @@ extension Node {
         /// 2. The parent hash of the block has to match the previous block's block hash.
         /// 3. The block's number has to be one higher than the last block.
         /// 4. The recreated block hash has to match the purported hash in the block.
-
         let verifiedBlocks: [FullBlock] = allBlocks.compactMap { block in
             guard (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == latestBlock.id) && (block.number == (latestBlock.number + 1)) else {
                 return nil
@@ -251,9 +250,23 @@ extension Node {
                 return nil
             }
             
-            /// The existing accounts need to be deleted since the most updated accounts are the only source of truth.
-            block.accounts?.forEach { self.delete($0) }
-            block.accounts?.forEach { print("accounts in the block", $0.id) }
+            ///  The existing accounts need to be deleted from Core Data since the most updated accounts are the only source of truth.
+            block.accounts?.forEach { [weak self] in
+                self?.delete($0)
+            }
+            
+            /// If a tranaction's To address matches the node's own addresss, then trigger a local notification to notify the arrival of the fund.
+            if let transactions = block.transactions, transactions.count > 0 {
+                block.transactions?.forEach { [weak self] in
+                    print("myAccount?.address", myAccount?.address)
+                    guard let transaction = $0.decode(),
+                          transaction.to == myAccount?.address,
+                          let value = transaction.value,
+                          value != 0 else { return }
+                    
+                    self?.sendNotification(notificationType: "You received \(value.description) fund")
+                }
+            }
             
             /// Save the verified block. It's now effectively part of the blockchain.
             self.localStorage.saveRelationalBlock(block: block, completion: { error in
