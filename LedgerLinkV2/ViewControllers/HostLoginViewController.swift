@@ -45,6 +45,7 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
     private var alert: AlertView!
     private var imageData: Data!
     private var retainer: Retainer! /// Retains the text content of the fields before manually deleting them since the dissolving animation keeps the text intact
+    private let spinner = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
     
     struct Retainer {
         let eventName: String
@@ -75,6 +76,16 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
         configureUI()
         configureTopWarningPanel()
         setConstraints()
+        
+        
+//        let spinner = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+//        //                spinner.autoresizingMask = [.flexibleHeight, .flexibleWidth]
+//        spinner.translatesAutoresizingMaskIntoConstraints = false
+//        spinner.startAnimating()
+//        spinner.color = .white
+////        self.createButton.addSubview(spinner)
+//        self.buttonContainer.insertSubview(spinner, aboveSubview: createButton)
+//        spinner.setFill()
     }
     
     override func viewDidLayoutSubviews() {
@@ -180,16 +191,23 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
         buttonGradientView.alpha = 0
 
         createButton = ButtonWithShadow()
-        createButton.setTitle("Create Event", for: .normal)
+        let attTitle = createAttributedString(imageString: nil, imageColor: nil, text: "Create Event", textColor: .white)
+        createButton.setAttributedTitle(attTitle, for: .normal)
         createButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         createButton.tag = 4
         createButton.backgroundColor = .darkGray
         createButton.addSubview(buttonGradientView)
         createButton.sendSubviewToBack(buttonGradientView)
-        createButton.titleLabel?.font = UIFont.rounded(ofSize: 18, weight: .bold)
         buttonContainer.addSubview(createButton)
         buttonGradientView.setFill()
         createButton.setFill()
+    
+        /// Add a hidden spinner to the button.
+        /// To be animated when the form is completed and the createButton is pressed
+        spinner.color = .white
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        buttonContainer.addSubview(spinner)
+        spinner.setFill()
     }
     
     final func setConstraints() {
@@ -347,26 +365,19 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
         /// Retain the info in order to delete off the fields
         /// Otherwise, the dissolving animation leaves the texts intact
         retainer = Retainer(eventName: eventNameTextField.text!, currency: currencyNameTextField.text!, description: descriptionTextView.text, eventPassword: passwordTextField.text!, personalPassword: personalPasswordTextField.text!)
-        imageButton.alpha = 0
-        eventNameTextField.alpha = 0
-        currencyNameTextField.alpha = 0
-        descriptionTextView.alpha = 0
-        passwordTextField.alpha = 0
-        passwordConfirmTextField.alpha = 0
-        personalPasswordTextField.alpha = 0
-        personalPasswordConfirmTextField.alpha = 0
         
+        createButton.isEnabled = false
         fadeoutAnimation()
     }
     
     /// Fade out, start blockchain, and login
     func fadeoutAnimation() {
-        buttonGradientView.animate()
+//        buttonGradientView.animate()
         
         /// Fade out all the elements except for the button
         UIView.animateKeyframes(withDuration: 3, delay: 0, options: .calculationModeCubic) {
             UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) { [weak self] in
-                
+                self?.backButton.alpha = 0
                 self?.imageButton.alpha = 0
                 self?.eventNameTextField.alpha = 0
                 self?.currencyNameTextField.alpha = 0
@@ -397,20 +408,16 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
             
             UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 2/4) { [weak self] in
                 guard let self = self else { return }
-                
                 self.scrollView.contentSize = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.size.height)
                 
                 let yDelta = self.view.center.y - self.buttonContainer.center.y
-                self.buttonContainer.transform = CGAffineTransform(translationX: 0, y: yDelta).scaledBy(x: 1, y: 3)
-                
+                self.buttonContainer.transform = CGAffineTransform(translationX: 0, y: yDelta)
             }
             
-            UIView.addKeyframe(withRelativeStartTime: 0., relativeDuration: 1/4) { [weak self] in
-                let spinner = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
-                
-                self?.buttonGradientView.
-//                self?.buttonContainer.alpha = 0
+            UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 1/4) { [weak self] in
+                self?.spinner.startAnimating()
             }
+            
         } completion: { [weak self] (_) in
             self?.startBlockchain() { (_) in
                 self?.buttonGradientView.alpha = 0

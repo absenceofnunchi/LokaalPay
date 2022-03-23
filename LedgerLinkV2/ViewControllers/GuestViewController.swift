@@ -5,19 +5,26 @@
 //  Created by J C on 2022-03-19.
 //
 
+/*
+ ParentVC for GuestLoginVC and GuestImportVC
+ 
+ */
+
 import UIKit
 
-class GuestViewController: UIViewController, TopWarningPanel {
+class GuestViewController: UIViewController, TopWarningPanel, UITextFieldDelegate {
     private var backButton: UIButton!
     var passwordBlurView: BlurEffectContainerView!
     var passwordStatusLabel: UILabel!
-    private var infoBoxView: UIView!
-    private var passwordTextField: UITextField!
-    private var passwordConfirmTextField: UITextField!
-    private var buttonContainer: UIView!
-    private var createButton: ButtonWithShadow!
-    private var importButton: UIButton!
-    
+    var infoBoxView: UIView!
+    var passwordTextField: UITextField!
+    var passwordConfirmTextField: UITextField!
+    var buttonContainer: UIView!
+    var createButton: ButtonWithShadow!
+    var importButton: UIButton!
+    let dissolveAnimator = DissolveTransitionAnimator()
+    private var presentingController: UIViewController?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -25,6 +32,11 @@ class GuestViewController: UIViewController, TopWarningPanel {
         configureUI()
         configureTopWarningPanel()
         setConstraints()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.presentingController = presentingViewController
     }
     
     func configureUI() {
@@ -43,7 +55,7 @@ class GuestViewController: UIViewController, TopWarningPanel {
         passwordConfirmTextField = createTextField(placeHolderText: " Confirm Passcode", placeHolderImageString: "lock", isPassword: true, delegate: self)
         passwordConfirmTextField.keyboardType = .decimalPad
         
-        infoBoxView = createInfoBoxView(title: "Account Information", subTitle: "Create 4 digit password for your wallet", arrangedSubviews: [passwordTextField, passwordConfirmTextField])
+        infoBoxView = createInfoBoxView(title: "Account Information", subTitle: "4 digit password required", arrangedSubviews: [passwordTextField, passwordConfirmTextField])
         infoBoxView.backgroundColor = .black
         view.addSubview(infoBoxView)
         
@@ -63,8 +75,10 @@ class GuestViewController: UIViewController, TopWarningPanel {
         
         importButton = UIButton()
         importButton.tag = 2
+        importButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         let attTitle = createAttributedString(imageString: nil, imageColor: nil, text: "Already have an account")
         importButton.setAttributedTitle(attTitle, for: .normal)
+        importButton.titleLabel?.textAlignment = .right
         importButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(importButton)
     }
@@ -87,67 +101,28 @@ class GuestViewController: UIViewController, TopWarningPanel {
             buttonContainer.heightAnchor.constraint(equalToConstant: 50),
             
             importButton.topAnchor.constraint(equalTo: buttonContainer.bottomAnchor, constant: 15),
-            importButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+            buttonContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             importButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            importButton.heightAnchor.constraint(equalToConstant: 50),
+            importButton.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
     
     
-    @objc final func buttonPressed(_ sender: UIButton) {
-        let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
-        feedbackGenerator.impactOccurred()
-        
-        switch sender.tag {
-            case 0:
-                dismiss(animated: true, completion: nil)
-            case 1:
-                createAccount()
-            case 2:
-                importWallet()
-            default:
-                break
-        }
+    @objc func buttonPressed(_ sender: UIButton) {
+
     }
     
-    private func createAccount() {
-        guard isFieldValid(passwordTextField, alertMsg: "Event password cannot be empty") else {
-            return
-        }
-        
-        guard isNumber(passwordTextField, alertMsg: "The passcode has to be numerical") else {
-            return
-        }
-        
-        guard isFieldValid(passwordConfirmTextField, alertMsg: "Event password cannot be empty") else {
-            return
-        }
-        
-        guard isNumber(passwordConfirmTextField, alertMsg: "The passcode has to be numerical") else {
-            return
-        }
-        
-        guard let password = passwordTextField.text else {
-            return
-        }
-        
-        UserDefaults.standard.set(password, forKey: UserDefaultKey.walletPassword)
-        passwordTextField.text = nil
-        passwordConfirmTextField.text = nil
-        
-        let vc = EventsViewController()
-        vc.transitioningDelegate = self
+    func goToImportAccount() {
+        let vc = GuestImportViewController()
+        // this allows the custom transition animator's fromView and fromVC to be the current one and not UITabBarVC
+        vc.transitioningDelegate = dissolveAnimator
         vc.modalPresentationStyle = .fullScreen
         self.present(vc, animated: true, completion: nil)
     }
     
-    private func importWallet() {
-        
-    }
-    
     /// The warning display for the inaccurate or incomplete info the in the form fields.
     /// Validates two form components: text field and text view
-    private func isFieldValid(_ inputField: UIView, alertMsg: String, width: CGFloat = 250) -> Bool {
+    func isFieldValid(_ inputField: UIView, alertMsg: String, width: CGFloat = 250) -> Bool {
         if let textField = (inputField as? UITextField), let text = textField.text {
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             /// Certain fields cannot be empty
@@ -176,47 +151,6 @@ class GuestViewController: UIViewController, TopWarningPanel {
             showAlert(alertMsg: alertMsg)
             return false
         }
-    }
-}
-
-extension GuestViewController: UITextFieldDelegate {
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        createButton.isEnabled = false
-        
-        let yDelta = view.bounds.origin.y - passwordBlurView.frame.origin.y
-        
-        if (!(passwordTextField.text?.isEmpty ?? true) ||
-            !(passwordConfirmTextField.text?.isEmpty ?? true)) &&
-            passwordTextField.text != passwordConfirmTextField.text {
-            passwordStatusLabel.isHidden = false
-            passwordStatusLabel.text = "Passwords don't match"
-            passwordTextField.textColor = UIColor.red
-            passwordConfirmTextField.textColor = UIColor.red
-            UIView.animate(withDuration: 0.5) { [weak self] in
-                self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
-            }
-        } else if (!(passwordTextField.text?.isEmpty ?? true) ||
-                   !(passwordConfirmTextField.text?.isEmpty ?? true)) &&
-                    ((passwordTextField.text?.count)! != 4) {
-            passwordStatusLabel.isHidden = false
-            passwordStatusLabel.text = "Password has to be 4 digits"
-            passwordConfirmTextField.textColor = UIColor.red
-            passwordTextField.textColor = UIColor.red
-            UIView.animate(withDuration: 0.5) { [weak self] in
-                self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
-            }
-        } else {
-            passwordTextField.textColor = UIColor.lightGray
-            passwordConfirmTextField.textColor = UIColor.lightGray
-            
-            UIView.animate(withDuration: 0.5) { [weak self] in
-                self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
-            }
-            
-            createButton.isEnabled = true
-        }
-        
-        return true
     }
 }
 
