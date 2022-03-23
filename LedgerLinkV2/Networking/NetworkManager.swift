@@ -33,7 +33,15 @@ final class NetworkManager: NSObject {
     private let maxNumPeers: Int = 10
     private var player: AVQueuePlayer!
     private var playerLooper: AVPlayerLooper!
-    private var isServerRunning = false
+    private var isServerRunning = false {
+        didSet {
+            if isServerRunning {
+                setNotificationForServerReminder()
+            } else {
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            }
+        }
+    }
     private var timer: Timer!
     private let transactionService = TransactionService()
     var blockchainReceiveHandler: ((String) -> Void)?
@@ -80,6 +88,8 @@ final class NetworkManager: NSObject {
             self.timer = Timer(fireAt: roundedDate, interval: 20, target: self, selector: #selector(self.autoRelay), userInfo: nil, repeats: true)
             RunLoop.main.add(self.timer, forMode: .common)
         }
+        
+        setNotificationForServerReminder()
     }
     
     func suspend() {
@@ -175,6 +185,50 @@ final class NetworkManager: NSObject {
         } catch let error {
             NSLog("Error sending data: \(error)")
         }
+    }
+    
+    /// Since the server is running in the background, ask the user if they want to continue the server after certain period
+    private func setNotificationForServerReminder() {
+        guard let referenceDate = Calendar.current.date(byAdding: .hour, value: 12, to: Date()) else { return }
+        var dateComponents = DateComponents(calendar: Calendar.current)
+//        dateComponents.second = 5
+        dateComponents.hour = 12
+        
+        guard let nextTriggerDate = dateComponents.calendar?.date(byAdding: dateComponents, to: referenceDate),
+              let nextTriggerDateComponents = dateComponents.calendar?.dateComponents([.hour], from: nextTriggerDate) else {
+            return
+        }
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: nextTriggerDateComponents, repeats: true)
+        
+        // Define the custom actions.
+        let continueAction = UNNotificationAction(identifier: "CONTINUE_ACTION",
+                                                title: "Continue",
+                                                options: [])
+        let stopAction = UNNotificationAction(identifier: "STOP_ACTION",
+                                                 title: "Stop",
+                                                 options: [])
+        // Define the notification type
+        let serverStatusCategory =
+        UNNotificationCategory(identifier: "SERVER_STATUS",
+                               actions: [continueAction, stopAction],
+                               intentIdentifiers: [],
+                               hiddenPreviewsBodyPlaceholder: "",
+                               options: .customDismissAction)
+        
+        // Register the notification type.
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.setNotificationCategories([serverStatusCategory])
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Server Status"
+        content.body = "Would you like to continue running the server or stop?"
+        content.categoryIdentifier = "SERVER_STATUS"
+        
+        let request = UNNotificationRequest(identifier: "SERVER_STATUS", content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().add(request)
     }
 }
 
@@ -526,6 +580,9 @@ extension NetworkManager {
                        selector: #selector(handleRouteChange),
                        name: AVAudioSession.routeChangeNotification,
                        object: nil)
+        
+        
+        
     }
     
     @objc private func handleInterruption(notification: Notification) {

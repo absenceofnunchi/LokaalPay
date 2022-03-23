@@ -260,28 +260,16 @@ extension Node {
                 block.transactions?.forEach { [weak self] in
                     guard let transaction = $0.decode(),
                           let wallet = try? localStorage.getWallet(),
-                          transaction.to.address == wallet.address,
                           let value = transaction.value,
                           value != 0 else { return }
                     
-                    self?.sendNotification(notificationType: "You received \(value.description) fund")
-
-                    guard let scene = UIApplication.shared.connectedScenes.first,
-                          let windowScene = scene as? UIWindowScene,
-                          let sceneDelegate = windowScene.delegate as? SceneDelegate,
-                          let rootViewController = sceneDelegate.window?.rootViewController as? UITabBarController,
-                          let viewControllers = rootViewController.viewControllers else { return }
-                    
-                    print("viewControllers", viewControllers)
-                    for case let navCon as UINavigationController in viewControllers {
-                        print("navCon.viewControllers", navCon.viewControllers)
-                        guard let vc = navCon.viewControllers[0] as? WalletViewController else { return }
-                        print("vc", vc)
-                        
-                        DispatchQueue.main.async {
-                            vc.reloadBalance()
-                        }
+                    if transaction.to.address == wallet.address {
+                        self?.sendNotification(notificationType: "You received \(value.description) fund")
+                    } else if transaction.sender?.address == wallet.address {
+                        self?.sendNotification(notificationType: "Your fund of \(value.description) was received by the recipient")
                     }
+
+                    self?.updateBalanceUI()
                 }
             }
             

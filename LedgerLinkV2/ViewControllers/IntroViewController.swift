@@ -23,6 +23,7 @@ final class IntroViewController: UIViewController {
 
         configureUI()
         setConstraints()
+        
     }
     
 //    override private func viewDidAppear(_ animated: Bool) {

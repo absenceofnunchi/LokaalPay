@@ -348,12 +348,11 @@ extension EventsViewController: UICollectionViewDelegate {
     /// Gets triggered by the "initial blockchain download response" ContractMethod.
     /// It's called after the blockchain arrives after the download request.
     func didReceiveBlockchain() {
-        print("didReceiveBlockchain")
         guard let password = UserDefaults.standard.string(forKey: UserDefaultKey.walletPassword),
               let chainID = UserDefaults.standard.string(forKey: UserDefaultKey.chainID) else {
-                  alert.show("Requires Password and the Chain ID", for: self)
-                  return
-              }
+            self.alert.showDetail("Error", with: "Requires Password and the Chain ID", for: self)
+            return
+        }
         
         Node.shared.createWallet(password: password, chainID: chainID, isHost: false) { [weak self] (data) in
             self?.hideSpinner()
@@ -366,9 +365,9 @@ extension EventsViewController: UICollectionViewDelegate {
     
     private func requestBlockchain() {
         NetworkManager.shared.requestBlockchainFromAllPeers(upto: 1, isInitialRequest: true) { [weak self](error) in
-            if let error = error {
+            if case .generalError(let error) = error {
                 self?.dismiss(animated: true, completion: nil)
-                self?.alert.show(error, for: self)
+                self?.alert.showDetail("Error", with: error, for: self)
                 return
             }
         }
@@ -380,25 +379,7 @@ extension EventsViewController: EventQueryDelegate {
     /// A list of genesis blocks from peers
     func didGetEvent(_ blocks: [LightBlock]?) {
         guard let blocks = blocks else { return }
-        
-//        blocks.forEach { [weak self] in
-//            guard $0.number == Int32(0),
-//                  let fullBlock = $0.decode(),
-//                  let extraData = fullBlock.extraData,
-//                  let eventInfo = try? JSONDecoder().decode(EventInfo.self, from: extraData) else { return }
-//
-//
-//            DispatchQueue.main.async {
-//                var snapshot = NSDiffableDataSourceSnapshot<Section, EventInfo>()
-//                Section.allCases.forEach { section in
-//                    snapshot.appendSections([section])
-//                    snapshot.appendItems([eventInfo])
-//                }
-//
-//                self?.dataSource.applySnapshotUsingReloadData(snapshot)
-//            }
-//        }
-        
+
         let eventInfoArr: [EventInfo] = blocks.compactMap {
             guard $0.number == Int32(0),
                   let fullBlock = $0.decode(),

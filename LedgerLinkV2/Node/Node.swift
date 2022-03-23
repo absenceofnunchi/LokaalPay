@@ -55,21 +55,23 @@ final class Node {
     var userNotificationCenter: UNUserNotificationCenter!
     
     init() {
-        guard let scene = UIApplication.shared.connectedScenes.first,
-              let windowScene = scene as? UIWindowScene,
-              let sceneDelegate = windowScene.delegate as? SceneDelegate,
-              let rootViewController = sceneDelegate.window?.rootViewController else { return }
-        
-        self.userNotificationCenter = sceneDelegate.userNotificationCenter
-
-        requestAuthorization { (granted) in
-            if !granted {
-                DispatchQueue.main.async {
-                    let alert = AlertView()
-                    alert.showDetail("Notification", with: "You will not be able to receive the payment notification. You can always change your settings in your iPhone's notification settings.", for: rootViewController)
+        DispatchQueue.main.async { [weak self] in
+            guard let scene = UIApplication.shared.connectedScenes.first,
+                  let windowScene = scene as? UIWindowScene,
+                  let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                  let rootViewController = sceneDelegate.window?.rootViewController else { return }
+            
+            self?.userNotificationCenter = sceneDelegate.userNotificationCenter
+            
+            self?.requestAuthorization { (granted) in
+                if !granted {
+                    DispatchQueue.main.async {
+                        let alert = AlertView()
+                        alert.showDetail("Notification", with: "You will not be able to receive the payment notification. You can always change your settings in your iPhone's notification settings.", for: rootViewController)
+                    }
                 }
             }
-        }        
+        }
     }
     
     func save<T: LightConfigurable>(_ element: T, completion: @escaping (NodeError?) -> Void) async {
@@ -136,6 +138,21 @@ final class Node {
                 
                 senderAccount.balance -= value
                 senderAccount.updateStorageRoot(with: value)
+                
+                /// If the recipient or the sender of the transaction is the current node, send a local notification as well as updating the Balance card interface.
+                if let wallet = try? self?.localStorage.getWallet(),
+                   let value = transaction.value,
+                   value != 0 {
+                    
+                    if transaction.sender?.address == wallet.address {
+                        self?.sendNotification(notificationType: "Your fund of \(value.description) has been received by the recipient")
+                    } else if transaction.to.address == wallet.address {
+                        self?.sendNotification(notificationType: "You received the fund of \(value.description)")
+                    }
+
+                    self?.updateBalanceUI()
+                }
+                
                 promise(.success(senderAccount))
             }
             .eraseToAnyPublisher()
@@ -146,29 +163,6 @@ final class Node {
                 guard var recipient: Account = try? self?.localStorage.getAccount(transaction.to.address) else {
                     promise(.failure(.generalError("Unable to find the recipient's account")))
                     return
-                }
-                
-                /// If the recipient is the current node, send a local notification as well as updating the Balance card interface.
-                if let wallet = try? self?.localStorage.getWallet(),
-                   transaction.to.address == wallet.address,
-                   let value = transaction.value,
-                   value != 0 {
-                    
-                    self?.sendNotification(notificationType: "You received \(value.description) fund")
-                    
-                    guard let scene = UIApplication.shared.connectedScenes.first,
-                          let windowScene = scene as? UIWindowScene,
-                          let sceneDelegate = windowScene.delegate as? SceneDelegate,
-                          let rootViewController = sceneDelegate.window?.rootViewController as? UITabBarController,
-                          let viewControllers = rootViewController.viewControllers else { return }
-                    
-                    for case let navCon as UINavigationController in viewControllers {
-                        guard let vc = navCon.viewControllers[0] as? WalletViewController else { return }
-                        
-                        DispatchQueue.main.async {
-                            vc.reloadBalance()
-                        }
-                    }
                 }
                 
                 /// If the account exists, update the amount. If not, create a new one.
@@ -223,6 +217,22 @@ final class Node {
             })
         })
         .store(in: &storage)
+    }
+    
+    /// Updates the display on BalanceCell in WalletVC to reflect the balance change
+    func updateBalanceUI() {
+        DispatchQueue.main.async {
+            guard let scene = UIApplication.shared.connectedScenes.first,
+                  let windowScene = scene as? UIWindowScene,
+                  let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                  let rootViewController = sceneDelegate.window?.rootViewController as? UITabBarController,
+                  let viewControllers = rootViewController.viewControllers else { return }
+            
+            for case let navCon as UINavigationController in viewControllers {
+                guard let vc = navCon.viewControllers[0] as? WalletViewController else { return }
+                vc.reloadBalance()
+            }
+        }
     }
     
     func getMyAccount(completion: @escaping (Account?, NodeError?) -> Void) {
@@ -286,7 +296,6 @@ final class Node {
                             return
                         }
                         
-                        print("stage 2.5")
                         promise(.success(true))
                     })
                 }
@@ -347,10 +356,8 @@ final class Node {
     /// Create a second block and add it to the unvalidated pool of blocks.
     /// The genesis block and the second block will be compared by the node and proceed to creating another block.
     func mintGenesisBlock(transactionData: Data, extraData: Data, promise: @escaping (Result<Data, NodeError>) -> Void) {
-        print("mintGenesisBlock----------------")
         
         guard let account = getMyAccount() else {
-            print("unable to get my account")
             return
         }
         
@@ -887,34 +894,6 @@ extension Node {
                                                   intentIdentifiers: [],
                                                   options: [])
             userNotificationCenter.setNotificationCategories([category])
-        }
-    }
-    
-    func sendNotification1() {
-        let notificationContent = UNMutableNotificationContent()
-        notificationContent.title = "Test"
-        notificationContent.body = "Test body"
-        notificationContent.badge = NSNumber(value: 3)
-        
-        //        if let url = Bundle.main.url(forResource: "dune",
-        //                                     withExtension: "png") {
-        //            if let attachment = try? UNNotificationAttachment(identifier: "dune",
-        //                                                              url: url,
-        //                                                              options: nil) {
-        //                notificationContent.attachments = [attachment]
-        //            }
-        //        }
-        
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5,
-                                                        repeats: false)
-        let request = UNNotificationRequest(identifier: "testNotification",
-                                            content: notificationContent,
-                                            trigger: trigger)
-        
-        UNUserNotificationCenter.current().add(request) { (error) in
-            if let error = error {
-                print("Notification Error: ", error)
-            }
         }
     }
 }

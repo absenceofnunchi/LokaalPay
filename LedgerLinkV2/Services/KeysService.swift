@@ -51,27 +51,27 @@ class KeysService: IKeysService {
     func addNewWalletWithPrivateKey(key: String, password: String, completion: @escaping (KeyWalletModel?, NodeError?) -> Void) {
         let text = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let data = Data.fromHex(text) else {
-            completion(nil, NodeError.hexConversionError)
+            completion(nil, NodeError.generalError("Unable to convert the key to hex"))
             return
         }
         
         guard let newWallet = try? EthereumKeystoreV3(privateKey: data, password: password) else {
-            completion(nil, NodeError.walletCreateError)
+            completion(nil, NodeError.generalError("Unable to generate a wallet using the password"))
             return
         }
         
         guard newWallet.addresses?.count == 1 else {
-            completion(nil, NodeError.walletCountError)
+            completion(nil, NodeError.generalError("Inaccurate number of wallet addresses"))
             return
         }
         
         guard let keyData = try? JSONEncoder().encode(newWallet.keystoreParams) else {
-            completion(nil, NodeError.walletEncodeError)
+            completion(nil, NodeError.generalError("Error in attempting to encode the wallet"))
             return
         }
         
         guard let address = newWallet.addresses?.first?.address else {
-            completion(nil, NodeError.walletAddressFetchError)
+            completion(nil, NodeError.generalError("Unable to fetch wallet address"))
             return
         }
         

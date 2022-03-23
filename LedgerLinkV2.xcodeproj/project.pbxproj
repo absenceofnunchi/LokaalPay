@@ -88,6 +88,8 @@
 		49CD35FA27E67255001D3DF3 /* TitleSupplementaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CD35F927E67255001D3DF3 /* TitleSupplementaryView.swift */; };
 		49CD35FC27E67272001D3DF3 /* TextCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CD35FB27E67272001D3DF3 /* TextCell.swift */; };
 		49CD35FE27E6794F001D3DF3 /* GuestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CD35FD27E6794F001D3DF3 /* GuestViewController.swift */; };
+		49CD360027E67BEC001D3DF3 /* DissolveTransitionAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CD35FF27E67BEC001D3DF3 /* DissolveTransitionAnimator.swift */; };
+		49CD360227E6D7EA001D3DF3 /* InstructionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CD360127E6D7EA001D3DF3 /* InstructionViewController.swift */; };
 		49E3727927D4685300561E9C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E3727827D4685300561E9C /* IntroViewController.swift */; };
 		49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B427BECD5200DBEFDA /* NetworkManager.swift */; };
 		49F030B927BF20A500DBEFDA /* TransactionExtraData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */; };
@@ -233,6 +235,8 @@
 		49CD35F927E67255001D3DF3 /* TitleSupplementaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleSupplementaryView.swift; sourceTree = "<group>"; };
 		49CD35FB27E67272001D3DF3 /* TextCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCell.swift; sourceTree = "<group>"; };
 		49CD35FD27E6794F001D3DF3 /* GuestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestViewController.swift; sourceTree = "<group>"; };
+		49CD35FF27E67BEC001D3DF3 /* DissolveTransitionAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DissolveTransitionAnimator.swift; sourceTree = "<group>"; };
+		49CD360127E6D7EA001D3DF3 /* InstructionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionViewController.swift; sourceTree = "<group>"; };
 		49E3727827D4685300561E9C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		49F030B427BECD5200DBEFDA /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		49F030B827BF20A500DBEFDA /* TransactionExtraData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionExtraData.swift; sourceTree = "<group>"; };
@@ -481,6 +485,7 @@
 				4996EA2C27D8274D005702B4 /* HostLoginTransitionDelegate.swift */,
 				499C31EC27D59A1B00680C4A /* LoginTransitionDelegate.swift */,
 				49FBF5DA27DD858C00B21EED /* PopupTransitionDelegate.swift */,
+				49CD35FF27E67BEC001D3DF3 /* DissolveTransitionAnimator.swift */,
 			);
 			path = Animators;
 			sourceTree = "<group>";
@@ -520,6 +525,7 @@
 				498F894E27E035F4008949D6 /* PasswordResetViewController.swift */,
 				4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */,
 				4900A94A27E3D6A600E0D234 /* ServerViewController.swift */,
+				49CD360127E6D7EA001D3DF3 /* InstructionViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -845,6 +851,7 @@
 				4976EB4D27CFD15100C10DBD /* ReceiptCoreData+CoreDataProperties.swift in Sources */,
 				49F6E13027C72ADD00790A75 /* DetailTableViewController.swift in Sources */,
 				49E3727927D4685300561E9C /* IntroViewController.swift in Sources */,
+				49CD360027E67BEC001D3DF3 /* DissolveTransitionAnimator.swift in Sources */,
 				49FBF5E327DE615100B21EED /* AlertModalDictionary.swift in Sources */,
 				496A9CBC27C815300089AE84 /* Operation+Extensions.swift in Sources */,
 				49F030B527BECD5200DBEFDA /* NetworkManager.swift in Sources */,
@@ -905,6 +912,7 @@
 				4976EB5027CFD15100C10DBD /* TransactionCoreData+CoreDataClass.swift in Sources */,
 				49FC14F327B3236D00D215B6 /* Blocks.swift in Sources */,
 				49FBF5D427DB0ADC00B21EED /* EventCell.swift in Sources */,
+				49CD360227E6D7EA001D3DF3 /* InstructionViewController.swift in Sources */,
 				498F894D27DF8895008949D6 /* WalletButtonView.swift in Sources */,
 				49FBF5C927D970F600B21EED /* FlipAnimator.swift in Sources */,
 				490367C227BB3EFD00DFDE2B /* BIP39Language+Extensions.swift in Sources */,

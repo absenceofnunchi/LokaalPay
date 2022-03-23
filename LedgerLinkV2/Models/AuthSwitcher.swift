@@ -6,10 +6,8 @@
 //
 
 /*
- Three stages to enter the app:
- 1. IntroVC: User determines whether they are a host or a guest. IntroVC is reached when "isEntered" is false.  As one picks one's own status from this VC, "isHost" is determined.
- 2. EventVC/JoinVC: User creates their account. This is determined when "isLoggedIn" is false
- 3. tabVC(or loadMain()): This is the main part of the app. This is determined when "isLoggedIn" is set to true.
+ Abstract:
+ The controller to determine the state of authorization (logged in/logged out)
  */
 
 import Foundation
@@ -19,7 +17,7 @@ class AuthSwitcher {
     static let userDefaults = UserDefaults.standard
     
     struct AuthUserDefaultsKey {
-        static let isEntered = "isEntered"
+        static let onBoarded = "onBoarded" /// show the instructionVC if this is user's first time
         static let isHost = "isHost"
         static let isloggedIn = "isLoggedIn"
     }
@@ -27,13 +25,17 @@ class AuthSwitcher {
     static func updateRootVC() {
         let isLoggedIn = userDefaults.bool(forKey: AuthUserDefaultsKey.isloggedIn)
         let isHost = userDefaults.bool(forKey: AuthUserDefaultsKey.isHost)
-//        let isEntered = userDefaults.bool(forKey: AuthUserDefaultsKey.isEntered)
+        let onBoarded = userDefaults.bool(forKey: AuthUserDefaultsKey.onBoarded)
         var rootViewController: UIViewController!
 
-        if isLoggedIn {
-            rootViewController = loadMain(isHost: isHost)
+        if onBoarded {
+            if isLoggedIn {
+                rootViewController = loadMain(isHost: isHost)
+            } else {
+                rootViewController = IntroViewController()
+            }
         } else {
-            rootViewController = IntroViewController()
+            rootViewController = InstructionViewController()
         }
 
         guard let scene = UIApplication.shared.connectedScenes.first,
@@ -89,6 +91,12 @@ class AuthSwitcher {
     static func loginAsGuest() {
         userDefaults.set(true, forKey: AuthUserDefaultsKey.isloggedIn)
         userDefaults.set(false, forKey: AuthUserDefaultsKey.isHost)
+        updateRootVC()
+    }
+    
+    static func enter() {
+        userDefaults.set(false, forKey: AuthUserDefaultsKey.isloggedIn)
+        userDefaults.set(true, forKey: AuthUserDefaultsKey.onBoarded)
         updateRootVC()
     }
 }

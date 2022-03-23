@@ -75,7 +75,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         Node.shared.localStorage.coreDataStack.saveContext()
     }
     
-
     func registerBackgroundTasks() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.ledgerlink.refresh", using: nil) { [weak self] task in
             print("refresh task before", task)
@@ -179,10 +178,26 @@ extension SceneDelegate: UNUserNotificationCenterDelegate {
     
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
-        if response.notification.request.identifier == "Local Notification" {
-            print("Handling notifications with the Local Notification Identifier")
+                                withCompletionHandler completionHandler:
+                                @escaping () -> Void) {
+        
+        // Perform the task associated with the action.
+        switch response.actionIdentifier {
+            case "CONTINUE_ACTION":
+                print("continue")
+                break
+                
+            case "STOP_ACTION":
+                print("disconnect")
+                NetworkManager.shared.disconnect()
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                break
+                
+            default:
+                break
         }
+        
+        // Always call the completion handler when done.
         completionHandler()
     }
 }

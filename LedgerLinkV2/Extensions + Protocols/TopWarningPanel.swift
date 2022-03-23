@@ -5,6 +5,12 @@
 //  Created by J C on 2022-03-13.
 //
 
+/*
+ Abstract:
+ Shows the alert from the top of the screen.
+ Animated by being translated in y-axis
+ */
+
 import UIKit
 
 protocol TopWarningPanel where Self: UIViewController {
@@ -36,29 +42,33 @@ extension TopWarningPanel {
     }
     
     func showAlert(alertMsg: String) {
-        passwordStatusLabel.isHidden = false
-        passwordStatusLabel.text = alertMsg
-        
-        /// Get the y coordinate distance of the password view and the screen so the animation could be toggled between those two coordinates
-        let yDelta = view.bounds.origin.y - passwordBlurView.frame.origin.y
-        
-        let animation = UIViewPropertyAnimator(duration: 4, timingParameters: UICubicTimingParameters())
-        animation.addAnimations {
-            UIView.animateKeyframes(withDuration: 0, delay: 0, animations: { [weak self] in
-                UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) {
-                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
-                }
-                
-                UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 1/2) {
-                    // pause
-                }
-                
-                UIView.addKeyframe(withRelativeStartTime: 2/3, relativeDuration: 1/4) {
-                    self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
-                }
-            })
+        DispatchQueue.main.async { [weak self] in
+            self?.passwordStatusLabel.isHidden = false
+            self?.passwordStatusLabel.text = alertMsg
+            
+            /// Get the y coordinate distance of the password view and the screen so the animation could be toggled between those two coordinates
+            guard let viewY = self?.view.bounds.origin.y,
+            let blurViewY = self?.passwordBlurView.frame.origin.y else { return }
+            let yDelta = viewY - blurViewY
+            
+            let animation = UIViewPropertyAnimator(duration: 4, timingParameters: UICubicTimingParameters())
+            animation.addAnimations {
+                UIView.animateKeyframes(withDuration: 0, delay: 0, animations: { [weak self] in
+                    UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) {
+                        self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 100 : 0)
+                    }
+                    
+                    UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 1/2) {
+                        // pause
+                    }
+                    
+                    UIView.addKeyframe(withRelativeStartTime: 2/3, relativeDuration: 1/4) {
+                        self?.passwordBlurView.transform = CGAffineTransform(translationX: 0, y: yDelta == -100 ? 0 : -100)
+                    }
+                })
+            }
+            
+            animation.startAnimation()
         }
-        
-        animation.startAnimation()
     }
 }

@@ -78,6 +78,7 @@ final class ReceiveViewController: WalletModalViewController {
         guard let password = password,
               let privateKey = try? KeysService().getWalletPrivateKey(password: password) else { return }
         
+        self.address = privateKey /// Retain it for the copy and the share feature
         generateQRCode(from: privateKey, completion: { [weak self] (image) in
             if let image = image {
                 DispatchQueue.main.async {

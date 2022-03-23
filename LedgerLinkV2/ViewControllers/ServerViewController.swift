@@ -24,8 +24,8 @@ class ServerViewController: UIViewController {
     var logButton: UIButton!
     var isServerOn: Bool = false {
         didSet {
-            let attTitle = self.createAttributedString(imageString: "circlebadge.fill", imageColor: isServerOn ? UIColor.green : UIColor.red, text: isServerOn ? " Server is on" : " Server is off", textColor: .lightGray)
-            self.statusButton.setAttributedTitle(attTitle, for: .normal)
+            /// Display the status button according to the status of the server
+            setStatusButton()
         }
     } /// Shows the status of the server according to isServerOn. It's toggled at the time of the loading of VC or when the toggle button is tapped.
     
@@ -44,7 +44,7 @@ class ServerViewController: UIViewController {
         /// Provides the initial status of how many peers are connected upon loading
         let number = NetworkManager.shared.getConnectedPeerNumbers()
         peerLabel.text = "\(number) \(number == 1 ? "peer" : "peers")"
-        
+                
         /// Delay until the initial circle animation is finished
         /// Only start pulsing if the server is on
         guard self.isServerOn else { return }
@@ -107,6 +107,11 @@ class ServerViewController: UIViewController {
         }
         
 //        loadingAnimation()
+    }
+    
+    private func setStatusButton() {
+        let attTitle = self.createAttributedString(imageString: "circlebadge.fill", imageColor: isServerOn ? UIColor.green : UIColor.red, text: isServerOn ? " Server is on" : " Server is off", textColor: .lightGray)
+        self.statusButton.setAttributedTitle(attTitle, for: .normal)
     }
     
     private func loadingAnimation() {
@@ -210,6 +215,7 @@ class ServerViewController: UIViewController {
                         NetworkManager.shared.disconnect()
                         self?.isServerOn = false
                         self?.statusButton.stopAnimation()
+                        
                     default:
                         break
                 }

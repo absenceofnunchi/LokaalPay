@@ -142,7 +142,7 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
         
         eventNameTextField = createTextField(placeHolderText: " Event Name", placeHolderImageString: "square.stack.3d.down.forward", delegate: self)
         
-        currencyNameTextField = createTextField(placeHolderText: " Currency Name", placeHolderImageString: "creditcard", delegate: self)
+        currencyNameTextField = createTextField(placeHolderText: " Currency Name. Be creative!", placeHolderImageString: "creditcard", delegate: self)
         
         passwordTextField = createTextField(placeHolderText: " Passcode", placeHolderImageString: "lock", isPassword: true, delegate: self)
         passwordTextField.keyboardType = .decimalPad
@@ -347,71 +347,77 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
         /// Retain the info in order to delete off the fields
         /// Otherwise, the dissolving animation leaves the texts intact
         retainer = Retainer(eventName: eventNameTextField.text!, currency: currencyNameTextField.text!, description: descriptionTextView.text, eventPassword: passwordTextField.text!, personalPassword: personalPasswordTextField.text!)
-        eventNameTextField.text = nil
-        currencyNameTextField.text = nil
-        descriptionTextView.text = nil
-        passwordTextField.text = nil
-        passwordConfirmTextField.text = nil
+        imageButton.alpha = 0
+        eventNameTextField.alpha = 0
+        currencyNameTextField.alpha = 0
+        descriptionTextView.alpha = 0
+        passwordTextField.alpha = 0
+        passwordConfirmTextField.alpha = 0
+        personalPasswordTextField.alpha = 0
+        personalPasswordConfirmTextField.alpha = 0
         
-        UIView.animate(withDuration: 2) { [weak self] in
-            guard let view = self?.view else { return }
-            for subview in view.allSubviews where subview.tag != 4 {
-                if let label = subview as? UILabel {
-                    label.alpha = 0
-                    label.textColor = .clear
-                }
-                
-                if let textView = subview as? UITextView {
-                    textView.alpha = 0
-                    textView.textColor = .clear
-                    textView.backgroundColor = UIColor.black
-                }
-                
-                subview.layer.borderColor = UIColor.black.cgColor
-            }
-            
-            self?.buttonGradientView.alpha = 1
-        }
-        
+        fadeoutAnimation()
+    }
+    
+    /// Fade out, start blockchain, and login
+    func fadeoutAnimation() {
         buttonGradientView.animate()
         
-        startBlockchain() { [weak self] (_) in
-            self?.buttonGradientView.alpha = 0
-            self?.buttonContainer.alpha = 0
-            AuthSwitcher.loginAsHost()
-        }
-        
         /// Fade out all the elements except for the button
-        //                UIView.animateKeyframes(withDuration: 3, delay: 0, options: .calculationModeCubic) {
-        //                    UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) { [weak self] in
-        //                        guard let view = self?.view else { return }
-        //                        for subview in view.allSubviews where subview.tag != 4 {
-        //                            if let label = subview as? UILabel {
-        //                                label.alpha = 0
-        //                            }
-        //
-        //                            if let textView = subview as? UITextView {
-        //                                textView.alpha = 0
-        //                                textView.backgroundColor = UIColor.black
-        //                            }
-        //
-        //                            subview.layer.borderColor = UIColor.black.cgColor
-        //                        }
-        //                    }
-        //
-        //                    UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 2/4) { [weak self] in
-        //                        self?.buttonGradientView.alpha = 1
-        //                        self?.buttonGradientView.animate()
-        //                    }
-        //
-        //                    UIView.addKeyframe(withRelativeStartTime: 0.9, relativeDuration: 1/4) { [weak self] in
-        //                        self?.buttonGradientView.alpha = 0
-        //                        self?.buttonContainer.alpha = 0
-        //                    }
-        //                } completion: { (_) in
-        //                    AuthSwitcher.loginAsHost()
-        //                }
-
+        UIView.animateKeyframes(withDuration: 3, delay: 0, options: .calculationModeCubic) {
+            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/4) { [weak self] in
+                
+                self?.imageButton.alpha = 0
+                self?.eventNameTextField.alpha = 0
+                self?.currencyNameTextField.alpha = 0
+                self?.descriptionTextView.alpha = 0
+                self?.passwordTextField.alpha = 0
+                self?.passwordConfirmTextField.alpha = 0
+                self?.personalPasswordTextField.alpha = 0
+                self?.personalPasswordConfirmTextField.alpha = 0
+                
+                guard let view = self?.view else { return }
+                for subview in view.allSubviews where subview.tag != 4 {
+                    if let label = subview as? UILabel {
+                        label.alpha = 0
+                        label.textColor = .clear
+                    }
+                    
+                    if let textView = subview as? UITextView {
+                        textView.alpha = 0
+                        textView.textColor = .clear
+                        textView.backgroundColor = UIColor.black
+                    }
+                    
+                    subview.layer.borderColor = UIColor.black.cgColor
+                }
+                
+                self?.buttonGradientView.alpha = 1
+            }
+            
+            UIView.addKeyframe(withRelativeStartTime: 1/4, relativeDuration: 2/4) { [weak self] in
+                guard let self = self else { return }
+                
+                self.scrollView.contentSize = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.size.height)
+                
+                let yDelta = self.view.center.y - self.buttonContainer.center.y
+                self.buttonContainer.transform = CGAffineTransform(translationX: 0, y: yDelta).scaledBy(x: 1, y: 3)
+                
+            }
+            
+            UIView.addKeyframe(withRelativeStartTime: 0., relativeDuration: 1/4) { [weak self] in
+                let spinner = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+                
+                self?.buttonGradientView.
+//                self?.buttonContainer.alpha = 0
+            }
+        } completion: { [weak self] (_) in
+            self?.startBlockchain() { (_) in
+                self?.buttonGradientView.alpha = 0
+                self?.buttonContainer.alpha = 0
+                AuthSwitcher.loginAsHost()
+            }
+        }
     }
     
     /// Starts the server, creates a wallet, and creates a genesis block.
@@ -511,7 +517,7 @@ extension HostLoginViewController: UITextViewDelegate, UITextFieldDelegate {
     /// Repositions the scroll view so that text fields are visible right above the keyboard.
     func textFieldDidBeginEditing(_ textField: UITextField) {
         var point = textField.frame.origin
-        point.y += textField.bounds.size.height + 50
+        point.y += textField.bounds.size.height + 80
         scrollView.setContentOffset(point, animated: true)
     }
     

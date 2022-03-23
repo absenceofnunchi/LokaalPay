@@ -67,6 +67,7 @@ final class EventCell: UICollectionViewCell {
         contentView.addSubview(containerView)
         
         eventImageView.contentMode = .scaleAspectFill
+        eventImageView.clipsToBounds = true
         eventImageView.layer.cornerRadius = 0
 //        eventImageView.clipsToBounds = true
         eventImageView.translatesAutoresizingMaskIntoConstraints = false

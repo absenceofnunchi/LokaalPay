@@ -83,7 +83,7 @@ extension UIViewController {
     }
     
     /// Create an attributed strings using a symbol and a text
-    func createAttributedString(imageString: String?, imageColor: UIColor?, text: String, textColor: UIColor? = UIColor.gray) -> NSMutableAttributedString {
+    func createAttributedString(imageString: String?, imageColor: UIColor?, text: String, textColor: UIColor? = UIColor.gray, fontSize: CGFloat = 14) -> NSMutableAttributedString {
         /// Add them to a mutable attributed string
         let mas = NSMutableAttributedString(string: "")
         
@@ -105,7 +105,7 @@ extension UIViewController {
         let rangeText = (mas.string as NSString).range(of: mas.string)
         mas.addAttributes([
             NSAttributedString.Key.foregroundColor: textColor ?? UIColor.gray,
-            .font: UIFont.rounded(ofSize: 14, weight: .bold)
+            .font: UIFont.rounded(ofSize: fontSize, weight: .bold)
         ], range: rangeText)
         
         return mas

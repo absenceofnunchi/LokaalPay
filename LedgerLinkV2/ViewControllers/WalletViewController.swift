@@ -307,11 +307,7 @@ extension WalletViewController: UICollectionViewDelegate {
                 break
             case "Receive":
                 let vc = ReceiveViewController(infoType: .address)
-                
-                if UIDevice.current.userInterfaceIdiom != .phone {
-                    vc.modalPresentationStyle = .fullScreen
-                }
-                
+                vc.modalPresentationStyle = .fullScreen
                 present(vc, animated: true)
                 break
             case "Reset Password":
@@ -399,10 +395,13 @@ extension WalletViewController: UICollectionViewDelegate {
                       }
                 
                 self?.dismiss(animated: true, completion: {
+                    self?.showSpinner()
                                         
                     let receiveVC = ReceiveViewController(infoType: .privateKey, password: password)
                     receiveVC.modalPresentationStyle = .fullScreen
-                    self?.present(receiveVC, animated: true, completion: nil)
+                    self?.present(receiveVC, animated: true, completion: {
+                        self?.hideSpinner()
+                    })
                 })
             }
         }
