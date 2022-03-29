@@ -372,7 +372,7 @@ final class HostLoginViewController: UIViewController, TopWarningPanel {
     
     /// Fade out, start blockchain, and login
     func fadeoutAnimation() {
-//        buttonGradientView.animate()
+        buttonGradientView.animate()
         
         /// Fade out all the elements except for the button
         UIView.animateKeyframes(withDuration: 3, delay: 0, options: .calculationModeCubic) {

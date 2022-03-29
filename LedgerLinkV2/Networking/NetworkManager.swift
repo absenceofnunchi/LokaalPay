@@ -502,9 +502,9 @@ extension NetworkManager: MCNearbyServiceBrowserDelegate {
 // MARK: - Player
 extension NetworkManager {
     private func getPlayerItems() -> [AVPlayerItem] {
-        let itemNames = ["1"]
+        let itemNames = ["beep", "silence"]
         return itemNames.map {
-            let url = Bundle.main.url(forResource: $0, withExtension: "mp3")!
+            let url = Bundle.main.url(forResource: $0, withExtension: "wav")!
             return AVPlayerItem(url: url)
         }
     }
@@ -516,7 +516,7 @@ extension NetworkManager {
         player.replaceCurrentItem(with: item)
         player.actionAtItemEnd = .advance
         //        player.addObserver(self, forKeyPath: "currentItem", options: [.new, .initial] , context: nil)
-        player.volume = 0
+        player.volume = 8
         
         self.playerLooper = makeLooper(player: player, item: item)
         return player

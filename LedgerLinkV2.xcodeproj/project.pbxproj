@@ -43,7 +43,6 @@
 		49631C4527C44AEC00E5F0EA /* WalletCoreData+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C3B27C44AEC00E5F0EA /* WalletCoreData+CoreDataProperties.swift */; };
 		49631C4E27C44E7900E5F0EA /* CoreDataServices+Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */; };
 		4965765327E0BFD100FA38B8 /* ExplorerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4965765227E0BFD100FA38B8 /* ExplorerViewController.swift */; };
-		49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 49657A7C27ACF45600A19EC3 /* 1.mp3 */; };
 		49689F7427B1EBB20062C093 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49689F7327B1EBB20062C093 /* Array+Extensions.swift */; };
 		496A9CB927C7FC110089AE84 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CB827C7FC110089AE84 /* AsyncOperation.swift */; };
 		496A9CBC27C815300089AE84 /* Operation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496A9CBB27C815300089AE84 /* Operation+Extensions.swift */; };
@@ -64,6 +63,8 @@
 		498F894F27E035F4008949D6 /* PasswordResetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498F894E27E035F4008949D6 /* PasswordResetViewController.swift */; };
 		4992CB3827C3038600836419 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB3727C3038600836419 /* Node.swift */; };
 		4992CB4627C33A3000836419 /* CoreDataTestings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB4527C33A3000836419 /* CoreDataTestings.swift */; };
+		4993888327F39EAD00C50479 /* beep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4993888127F39EAD00C50479 /* beep.wav */; };
+		4993888427F39EAD00C50479 /* silence.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4993888227F39EAD00C50479 /* silence.wav */; };
 		4996EA2D27D8274D005702B4 /* HostLoginTransitionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4996EA2C27D8274D005702B4 /* HostLoginTransitionDelegate.swift */; };
 		4996EA2F27D85769005702B4 /* WalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4996EA2E27D85769005702B4 /* WalletViewController.swift */; };
 		499AF10D27ADAC0000CAF0EA /* GuestImportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF10C27ADAC0000CAF0EA /* GuestImportViewController.swift */; };
@@ -165,7 +166,7 @@
 		4909287627D64D6D00D1597E /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		4909287827D65E3E00D1597E /* BlurEffectContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurEffectContainerView.swift; sourceTree = "<group>"; };
 		491C2BBE27D2D79600821C57 /* Quicksort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quicksort.swift; sourceTree = "<group>"; };
-		492D983527A998BA003BFAB4 /* LedgerLinkV2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LedgerLinkV2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		492D983527A998BA003BFAB4 /* Lokaal Pay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Lokaal Pay.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		492D983827A998BA003BFAB4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		492D983A27A998BA003BFAB4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		492D984227A998BA003BFAB4 /* LedgerLinkV2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = LedgerLinkV2.xcdatamodel; sourceTree = "<group>"; };
@@ -190,7 +191,6 @@
 		49631C3B27C44AEC00E5F0EA /* WalletCoreData+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalletCoreData+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		49631C4D27C44E7900E5F0EA /* CoreDataServices+Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataServices+Block.swift"; sourceTree = "<group>"; };
 		4965765227E0BFD100FA38B8 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
-		49657A7C27ACF45600A19EC3 /* 1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 1.mp3; sourceTree = "<group>"; };
 		49689F7327B1EBB20062C093 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		496A9CB827C7FC110089AE84 /* AsyncOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
 		496A9CBB27C815300089AE84 /* Operation+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Operation+Extensions.swift"; sourceTree = "<group>"; };
@@ -211,6 +211,8 @@
 		498F894E27E035F4008949D6 /* PasswordResetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordResetViewController.swift; sourceTree = "<group>"; };
 		4992CB3727C3038600836419 /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		4992CB4527C33A3000836419 /* CoreDataTestings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestings.swift; sourceTree = "<group>"; };
+		4993888127F39EAD00C50479 /* beep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beep.wav; sourceTree = "<group>"; };
+		4993888227F39EAD00C50479 /* silence.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = silence.wav; sourceTree = "<group>"; };
 		4996EA2C27D8274D005702B4 /* HostLoginTransitionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostLoginTransitionDelegate.swift; sourceTree = "<group>"; };
 		4996EA2E27D85769005702B4 /* WalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViewController.swift; sourceTree = "<group>"; };
 		499AF10C27ADAC0000CAF0EA /* GuestImportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestImportViewController.swift; sourceTree = "<group>"; };
@@ -317,7 +319,7 @@
 		492D983627A998BA003BFAB4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				492D983527A998BA003BFAB4 /* LedgerLinkV2.app */,
+				492D983527A998BA003BFAB4 /* Lokaal Pay.app */,
 				492D984E27A998C0003BFAB4 /* LedgerLinkV2Tests.xctest */,
 				492D985827A998C0003BFAB4 /* LedgerLinkV2UITests.xctest */,
 			);
@@ -429,7 +431,8 @@
 		49657A7927ACEB5900A19EC3 /* AV */ = {
 			isa = PBXGroup;
 			children = (
-				49657A7C27ACF45600A19EC3 /* 1.mp3 */,
+				4993888127F39EAD00C50479 /* beep.wav */,
+				4993888227F39EAD00C50479 /* silence.wav */,
 			);
 			path = AV;
 			sourceTree = "<group>";
@@ -622,7 +625,7 @@
 			);
 			name = LedgerLinkV2;
 			productName = LedgerLinkV2;
-			productReference = 492D983527A998BA003BFAB4 /* LedgerLinkV2.app */;
+			productReference = 492D983527A998BA003BFAB4 /* Lokaal Pay.app */;
 			productType = "com.apple.product-type.application";
 		};
 		492D984D27A998C0003BFAB4 /* LedgerLinkV2Tests */ = {
@@ -711,8 +714,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4993888327F39EAD00C50479 /* beep.wav in Resources */,
 				492D984827A998BF003BFAB4 /* LaunchScreen.storyboard in Resources */,
-				49657A7D27ACF45600A19EC3 /* 1.mp3 in Resources */,
+				4993888427F39EAD00C50479 /* silence.wav in Resources */,
 				492D984527A998BF003BFAB4 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1105,6 +1109,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
 				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
@@ -1121,12 +1126,12 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.lokaalpay;
+				PRODUCT_NAME = "Lokaal Pay";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -1142,6 +1147,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
 				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
@@ -1158,11 +1164,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.LedgerLinkV2;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.lokaalpay;
+				PRODUCT_NAME = "Lokaal Pay";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
