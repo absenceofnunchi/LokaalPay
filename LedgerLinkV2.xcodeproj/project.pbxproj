@@ -63,8 +63,7 @@
 		498F894F27E035F4008949D6 /* PasswordResetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498F894E27E035F4008949D6 /* PasswordResetViewController.swift */; };
 		4992CB3827C3038600836419 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB3727C3038600836419 /* Node.swift */; };
 		4992CB4627C33A3000836419 /* CoreDataTestings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4992CB4527C33A3000836419 /* CoreDataTestings.swift */; };
-		4993888327F39EAD00C50479 /* beep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4993888127F39EAD00C50479 /* beep.wav */; };
-		4993888427F39EAD00C50479 /* silence.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4993888227F39EAD00C50479 /* silence.wav */; };
+		4993888A27F3C8C100C50479 /* beep3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4993888927F3C8C100C50479 /* beep3.mp3 */; };
 		4996EA2D27D8274D005702B4 /* HostLoginTransitionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4996EA2C27D8274D005702B4 /* HostLoginTransitionDelegate.swift */; };
 		4996EA2F27D85769005702B4 /* WalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4996EA2E27D85769005702B4 /* WalletViewController.swift */; };
 		499AF10D27ADAC0000CAF0EA /* GuestImportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AF10C27ADAC0000CAF0EA /* GuestImportViewController.swift */; };
@@ -211,8 +210,7 @@
 		498F894E27E035F4008949D6 /* PasswordResetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordResetViewController.swift; sourceTree = "<group>"; };
 		4992CB3727C3038600836419 /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		4992CB4527C33A3000836419 /* CoreDataTestings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestings.swift; sourceTree = "<group>"; };
-		4993888127F39EAD00C50479 /* beep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beep.wav; sourceTree = "<group>"; };
-		4993888227F39EAD00C50479 /* silence.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = silence.wav; sourceTree = "<group>"; };
+		4993888927F3C8C100C50479 /* beep3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = beep3.mp3; sourceTree = "<group>"; };
 		4996EA2C27D8274D005702B4 /* HostLoginTransitionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostLoginTransitionDelegate.swift; sourceTree = "<group>"; };
 		4996EA2E27D85769005702B4 /* WalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViewController.swift; sourceTree = "<group>"; };
 		499AF10C27ADAC0000CAF0EA /* GuestImportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestImportViewController.swift; sourceTree = "<group>"; };
@@ -431,8 +429,7 @@
 		49657A7927ACEB5900A19EC3 /* AV */ = {
 			isa = PBXGroup;
 			children = (
-				4993888127F39EAD00C50479 /* beep.wav */,
-				4993888227F39EAD00C50479 /* silence.wav */,
+				4993888927F3C8C100C50479 /* beep3.mp3 */,
 			);
 			path = AV;
 			sourceTree = "<group>";
@@ -714,10 +711,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4993888327F39EAD00C50479 /* beep.wav in Resources */,
 				492D984827A998BF003BFAB4 /* LaunchScreen.storyboard in Resources */,
-				4993888427F39EAD00C50479 /* silence.wav in Resources */,
 				492D984527A998BF003BFAB4 /* Assets.xcassets in Resources */,
+				4993888A27F3C8C100C50479 /* beep3.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

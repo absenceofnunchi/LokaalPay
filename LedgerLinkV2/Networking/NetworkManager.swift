@@ -502,11 +502,16 @@ extension NetworkManager: MCNearbyServiceBrowserDelegate {
 // MARK: - Player
 extension NetworkManager {
     private func getPlayerItems() -> [AVPlayerItem] {
-        let itemNames = ["beep", "silence"]
+        let itemNames = ["beep3"]
         return itemNames.map {
-            let url = Bundle.main.url(forResource: $0, withExtension: "wav")!
+            let url = Bundle.main.url(forResource: $0, withExtension: "mp3")!
             return AVPlayerItem(url: url)
         }
+    }
+    
+    private func makeLooper(player: AVQueuePlayer, item: AVPlayerItem) -> AVPlayerLooper {
+        let looper = AVPlayerLooper(player: player, templateItem: item)
+        return looper
     }
     
     private func makePlayer() -> AVQueuePlayer? {
@@ -516,15 +521,10 @@ extension NetworkManager {
         player.replaceCurrentItem(with: item)
         player.actionAtItemEnd = .advance
         //        player.addObserver(self, forKeyPath: "currentItem", options: [.new, .initial] , context: nil)
-        player.volume = 8
+        player.volume = 1
         
         self.playerLooper = makeLooper(player: player, item: item)
         return player
-    }
-    
-    private func makeLooper(player: AVQueuePlayer, item: AVPlayerItem) -> AVPlayerLooper {
-        let looper = AVPlayerLooper(player: player, templateItem: item)
-        return looper
     }
     
     /// Checking the state of the application twice seem redundant, but background to foreground sometimes triggers the player.
@@ -546,7 +546,7 @@ extension NetworkManager {
                 player = self.makePlayer()
             }
             player.play()
-            player.volume = 0
+            player.volume = 1
 
             do {
                 try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback, options: .mixWithOthers )

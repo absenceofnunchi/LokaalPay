@@ -11,4 +11,5 @@ struct UserDefaultKey {
     static let walletPassword: String = "walletPassword"
     static let chainID: String = "chainID"
     static let hasSeenExplorer = "hasSeenExplorer"
+    static let hasSeenWallet = "hasSeenWallet"
 }

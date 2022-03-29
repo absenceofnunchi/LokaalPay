@@ -36,17 +36,11 @@ struct MenuData: Hashable {
 final class WalletViewController: UIViewController {
     
     private var menuDataArray: [MenuData] = [
+        /// Top horizontal menu
         MenuData(section: .horizontal, colors: [UIColor.red.cgColor, UIColor(red: 240/255, green: 248/255, blue: 255/255, alpha: 1).cgColor, UIColor.blue.cgColor], title: "Balance", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
         MenuData(section: .horizontal, colors: [UIColor(red: 251/255, green: 255/255, blue: 163/255, alpha: 1).cgColor, UIColor(red: 102/255, green: 211/255, blue: 126/255, alpha: 1).cgColor, UIColor(red: 255/255, green: 187/255, blue: 145/255, alpha: 1).cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
         MenuData(section: .horizontal, colors: [UIColor.purple.cgColor, UIColor.orange.cgColor, UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
-//        MenuData(section: .horizontal, colors: [UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Send", image: UIImage(systemName: "arrow.up")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
-//        MenuData(section: .horizontal, colors: [UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Receive", image: UIImage(systemName: "arrow.down")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
-        
-//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Reset Password", image: UIImage(systemName: "lock.rotation.open")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
-//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Transaction History", image: UIImage(systemName: "book.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
-//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Private Key", image: UIImage(systemName: "lock.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
-//        MenuData(section: .vertical, colors: [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.black.cgColor], title: "Delete", image: UIImage(systemName: "trash.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal))
-        
+        /// Wallet menu
         MenuData(section: .vertical, colors: [UIColor(red: 70/255, green: 70/255, blue: 70/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Reset Password", image: UIImage(systemName: "lock.rotation.open")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
         MenuData(section: .vertical, colors: [UIColor(red: 70/255, green: 70/255, blue: 70/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Transaction History", image: UIImage(systemName: "book.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
         MenuData(section: .vertical, colors: [UIColor(red: 70/255, green: 70/255, blue: 70/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor, UIColor(red: 50/255, green: 50/255, blue: 50/255, alpha: 1).cgColor], title: "Private Key", image: UIImage(systemName: "lock.circle")!.withTintColor(.white, renderingMode: .alwaysOriginal)),
@@ -61,18 +55,25 @@ final class WalletViewController: UIViewController {
     final override func viewDidLoad() {
         super.viewDidLoad()
 
+        configureFirstPopup()
         configureHierarchy()
         configureDataSource()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         configureUI()
     }
 }
 
 extension WalletViewController {
+    func configureFirstPopup() {
+        let hasSeen = UserDefaults.standard.bool(forKey: UserDefaultKey.hasSeenWallet)
+        if !hasSeen {
+            showFirstPopup()
+        }
+    }
+    
     func configureUI() {
         navigationController?.setNavigationBarHidden(true, animated: false)
         reloadBalance()
@@ -460,6 +461,37 @@ extension WalletViewController: UICollectionViewDelegate {
                     UserDefaults.standard.removeObject(forKey: UserDefaultKey.chainID)
                     NetworkManager.shared.disconnect()
                     AuthSwitcher.logout()
+                })
+            }
+        }
+        self.present(alertVC, animated: true, completion: nil)
+    }
+    
+    /// Explains to the new user how the backgrounding will trigger the beeping sound
+    private func showFirstPopup() {
+        // delete
+        let content = [
+            StandardAlertContent(
+                titleString: "Welcome!",
+                body: ["": "The app will stay in the background as long as the server is on. A soft chime sound will remind you periodically. To turn the server off, simply press the toggle button under the Connect tab!"],
+                fieldViewHeight: 200,
+                messageTextAlignment: .left,
+                alertStyle: .oneButton,
+                buttonAction: { [weak self](_) in
+                    self?.dismiss(animated: true, completion: nil)
+                    UserDefaults.standard.set(true, forKey: UserDefaultKey.hasSeenWallet)
+                },
+                borderColor: UIColor.clear.cgColor
+            )
+            
+        ]
+        
+        let alertVC = AlertViewController(height: 400, standardAlertContent: content)
+        alertVC.action = { [weak self] (modal, mainVC) in
+            mainVC.buttonAction = { _ in
+                
+                self?.dismiss(animated: true, completion: {
+
                 })
             }
         }
