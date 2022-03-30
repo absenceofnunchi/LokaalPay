@@ -473,7 +473,7 @@ extension WalletViewController: UICollectionViewDelegate {
         let content = [
             StandardAlertContent(
                 titleString: "Welcome!",
-                body: ["": "The app will stay in the background as long as the server is on. A soft chime sound will remind you periodically. To turn the server off, simply press the toggle button under the Connect tab!"],
+                body: ["": "The app will stay active in the background as long as the server is on. A soft chime will sound to remind you periodically of this status. To turn the server off, simply press the toggle button under the Connect tab!"],
                 fieldViewHeight: 200,
                 messageTextAlignment: .left,
                 alertStyle: .oneButton,

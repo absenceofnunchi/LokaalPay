@@ -1100,19 +1100,20 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 2RH2V33K5A;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds.";
 				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
@@ -1121,7 +1122,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.01;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.lokaalpay;
 				PRODUCT_NAME = "Lokaal Pay";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1138,19 +1139,20 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 2RH2V33K5A;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds.";
 				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
@@ -1159,7 +1161,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.01;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.lokaalpay;
 				PRODUCT_NAME = "Lokaal Pay";
 				SWIFT_EMIT_LOC_STRINGS = YES;
