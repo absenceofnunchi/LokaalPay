@@ -41,7 +41,9 @@ final class MapViewController: UIViewController {
     }
     
     private func configureUI() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: <#T##UIImage?#>, style: <#T##UIBarButtonItem.Style#>, target: <#T##Any?#>, action: <#T##Selector?#>)
+        let barButtonItem = UIBarButtonItem(image: UIImage(systemName: "mappin.circle.fill"), style: .plain, target: self, action: #selector(buttonPressed(_:)))
+        barButtonItem.tag = 8
+        navigationItem.rightBarButtonItem = barButtonItem
         
         mapView = MKMapView()
         mapView.userTrackingMode = .follow
@@ -82,7 +84,8 @@ final class MapViewController: UIViewController {
     
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            mapTypeStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+//            mapTypeStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            mapTypeStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             mapTypeStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             mapTypeStackView.widthAnchor.constraint(equalToConstant: 50),
             mapTypeStackView.heightAnchor.constraint(equalToConstant: 250),
@@ -114,6 +117,8 @@ final class MapViewController: UIViewController {
             case 7:
                 guard let coordinate = hostLocation else { return }
                 centerMapOnLocation(coordinate: coordinate)
+            case 8:
+                showNotificationAlert()
             default:
                 break
         }
@@ -166,9 +171,8 @@ final class MapViewController: UIViewController {
         }
     }
     
-    /// Explains to the new user how the backgrounding will trigger the beeping sound
+    /// Only physically going to the Settings will enable the continuous tracking of the location
     private func showAlert() {
-        // delete
         let content = [
             StandardAlertContent(
                 titleString: "Welcome!",
@@ -189,6 +193,37 @@ final class MapViewController: UIViewController {
                 
                 self?.dismiss(animated: true, completion: {
                     
+                })
+            }
+        }
+        self.present(alertVC, animated: true, completion: nil)
+    }
+    
+    /// Enable or disable the out-of-bound notification once the guest goes outside of the perimeter
+    private func showNotificationAlert() {
+        let isAllowed = UserDefaults.standard.bool(forKey: UserDefaultKey.distanceNotificationAllowed)
+        let bodyString = isAllowed ? "The app will currently alert you when you move outside of the optical perimeter from the host. Would you like to disable it?" : "Would you like to enable the app to notify you when you are outside of the optimal distance from the host?"
+        
+        let content = [
+            StandardAlertContent(
+                titleString: "Notification Settings",
+                body: ["": bodyString],
+                fieldViewHeight: 200,
+                messageTextAlignment: .left,
+                alertStyle: .withCancelButton,
+                buttonAction: { [weak self](_) in
+                    self?.dismiss(animated: true, completion: nil)
+                },
+                borderColor: UIColor.clear.cgColor
+            )
+        ]
+        
+        let alertVC = AlertViewController(height: 400, standardAlertContent: content)
+        alertVC.action = { [weak self] (modal, mainVC) in
+            mainVC.buttonAction = { _ in
+                
+                self?.dismiss(animated: true, completion: {
+                    UserDefaults.standard.set(isAllowed ? false : true, forKey: UserDefaultKey.distanceNotificationAllowed)
                 })
             }
         }

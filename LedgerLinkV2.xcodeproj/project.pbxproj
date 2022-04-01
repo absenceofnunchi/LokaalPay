@@ -1115,7 +1115,10 @@
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds and the blockchain data.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds and blockchain data.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -1129,7 +1132,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.lokaalpay;
 				PRODUCT_NAME = "Lokaal Pay";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1153,7 +1156,10 @@
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds and the blockchain data.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds and blockchain data.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -1167,7 +1173,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ovis.lokaalpay;
 				PRODUCT_NAME = "Lokaal Pay";
 				SWIFT_EMIT_LOC_STRINGS = YES;

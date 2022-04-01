@@ -31,12 +31,6 @@
 			</array>
 		</dict>
 	</dict>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is required to inform you whether you are within the vicinity to be able to interact with other devices which is necessary to send and receive funds and the blockchain data.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

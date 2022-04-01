@@ -278,7 +278,7 @@ final class NetworkManager: NSObject {
         let identifier = "Local Notification"
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+//        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         userNotificationCenter.add(request) { (error) in
             if let error = error {
                 print("Error \(error.localizedDescription)")
