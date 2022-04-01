@@ -14,15 +14,15 @@
 import UIKit
 import MultipeerConnectivity
 
-class ServerViewController: UIViewController {
-    var statusButton: PulsatingButton!
-    var stackView: UIStackView!
-    var peerContainerView: UIView!
-    var peerTitleLabel: UILabel!
-    var peerLabel: UILabel!
-    var underLineView: UIView!
-    var logButton: UIButton!
-    var isServerOn: Bool = false {
+final class ServerViewController: UIViewController {
+    private var statusButton: PulsatingButton!
+    private var stackView: UIStackView!
+    private var peerContainerView: UIView!
+    private var peerTitleLabel: UILabel!
+    private var peerLabel: UILabel!
+    private var underLineView: UIView!
+    private var mapButton: UIButton!
+    private var isServerOn: Bool = false {
         didSet {
             /// Display the status button according to the status of the server
             setStatusButton()
@@ -59,6 +59,11 @@ class ServerViewController: UIViewController {
         self.statusButton.stopAnimation()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+    
     private func configureUI() {
         title = "Connect"
         view.backgroundColor = .black
@@ -88,10 +93,22 @@ class ServerViewController: UIViewController {
         peerContainerView.addSubview(peerLabel)
         
         underLineView = UIView()
-        underLineView.layer.borderWidth = 0.5
-        underLineView.layer.borderColor = UIColor.gray.cgColor
+        underLineView.layer.borderWidth = 1
+        underLineView.layer.borderColor = UIColor.lightGray.cgColor
         underLineView.translatesAutoresizingMaskIntoConstraints = false
         peerContainerView.addSubview(underLineView)
+        
+        mapButton = UIButton()
+        mapButton.addTarget(self, action: #selector(buttonPressed(_:)), for: .touchUpInside)
+        mapButton.alpha = 0
+        mapButton.layer.cornerRadius = 10
+        mapButton.layer.borderWidth = 0.5
+        mapButton.layer.borderColor = UIColor.lightGray.cgColor
+        mapButton.tag = 1
+        let attTitle = createAttributedString(imageString: "map", imageColor: nil, text: "View Map", textColor: .lightGray)
+        mapButton.setAttributedTitle(attTitle, for: .normal)
+        mapButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(mapButton)
         
         /// Translating animation upwards upon loading
         let yDelta = view.center.y - 200
@@ -104,6 +121,7 @@ class ServerViewController: UIViewController {
         
         UIView.animate(withDuration: 1, delay: 3) { [weak self] in
             self?.peerContainerView.alpha = 1
+            self?.mapButton.alpha = 1
         }
         
 //        loadingAnimation()
@@ -137,7 +155,7 @@ class ServerViewController: UIViewController {
     
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            peerContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            peerContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 100),
             peerContainerView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             peerContainerView.heightAnchor.constraint(equalToConstant: 50),
             peerContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -145,26 +163,35 @@ class ServerViewController: UIViewController {
             peerTitleLabel.leadingAnchor.constraint(equalTo: peerContainerView.leadingAnchor),
             peerTitleLabel.topAnchor.constraint(equalTo: peerContainerView.topAnchor),
             peerTitleLabel.bottomAnchor.constraint(equalTo: peerContainerView.bottomAnchor),
-            peerTitleLabel.widthAnchor.constraint(equalTo: peerContainerView.widthAnchor, multiplier: 0.5),
+            peerTitleLabel.widthAnchor.constraint(equalTo: peerContainerView.widthAnchor, multiplier: 0.6),
             
             peerLabel.trailingAnchor.constraint(equalTo: peerContainerView.trailingAnchor),
             peerLabel.topAnchor.constraint(equalTo: peerContainerView.topAnchor),
             peerLabel.bottomAnchor.constraint(equalTo: peerContainerView.bottomAnchor),
-            peerLabel.widthAnchor.constraint(equalTo: peerContainerView.widthAnchor, multiplier: 0.5),
+            peerLabel.widthAnchor.constraint(equalTo: peerContainerView.widthAnchor, multiplier: 0.4),
             
             underLineView.topAnchor.constraint(equalTo: peerLabel.bottomAnchor),
-            underLineView.widthAnchor.constraint(equalTo: peerContainerView.widthAnchor),
-            underLineView.heightAnchor.constraint(equalToConstant: 1)
+            underLineView.widthAnchor.constraint(equalTo: peerContainerView.widthAnchor, multiplier: 0.9),
+            underLineView.heightAnchor.constraint(equalToConstant: 1),
+            underLineView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            mapButton.topAnchor.constraint(equalTo: peerContainerView.bottomAnchor, constant: 50),
+            mapButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.7),
+            mapButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            mapButton.heightAnchor.constraint(equalToConstant: 45),
         ])
     }
     
     @objc func buttonPressed(_ sender: UIButton) {
         switch sender.tag {
-        case 0:
-            toggleServer()
-            break
-        default:
-            break
+            case 0:
+                toggleServer()
+            case 1:
+                let vc = MapViewController()
+                self.navigationController?.pushViewController(vc, animated: true)
+                break
+            default:
+                break
         }
     }
     

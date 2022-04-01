@@ -165,8 +165,17 @@ extension Node {
                     let blockNumber = lastBlock.number
                     let parentHash = lastBlock.hash
                     
+                    /// Save the location of the host as extra data so that when the guests access a map in MapVC, the location of the host is known.
+                    /// The distance between the host and the guest is calculated
+                    /// The location saved as extra data of Block is parsed in VerifyBlock by a non-validator
+                    var hostLocation: Data!
+                    if let coordinate = NetworkManager.shared.locationManager?.location?.coordinate {
+                        let location = HostLocation(longitude: coordinate.longitude.description, latitude: coordinate.latitude.description)
+                        hostLocation = try? JSONEncoder().encode(location)
+                    }
+                    
                     /// Create a new block
-                    let newBlock = try FullBlock(number: blockNumber + 1, parentHash: parentHash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: nil, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: self.validatedTransactions, accounts: self.validatedAccounts)
+                    let newBlock = try FullBlock(number: blockNumber + 1, parentHash: parentHash, nonce: nil, transactionsRoot: transactionsRoot, stateRoot: stateRoot, receiptsRoot: Data(), extraData: hostLocation, gasLimit: nil, gasUsed: nil, miner: account.address.address, transactions: self.validatedTransactions, accounts: self.validatedAccounts)
                     
                     let lightBlock = try LightBlock(data: newBlock)
                     
@@ -264,9 +273,9 @@ extension Node {
                           value != 0 else { return }
                     
                     if transaction.to.address == wallet.address {
-                        self?.sendNotification(notificationType: "You received \(value.description) fund")
+                        NetworkManager.shared.sendNotification(notificationType: "You received \(value.description) fund")
                     } else if transaction.sender?.address == wallet.address {
-                        self?.sendNotification(notificationType: "Your fund of \(value.description) was received by the recipient")
+                        NetworkManager.shared.sendNotification(notificationType: "Your fund of \(value.description) was received by the recipient")
                     }
 
                     self?.updateBalanceUI()
@@ -294,34 +303,11 @@ extension Node {
             }
         }
         
-//        for block in allBlocks where (block.miner == genesisBlock.miner) && (block.parentHash.toHexString() == latestBlock.id) && (block.number == (latestBlock.number + 1)) {
-//
-//            do {
-//                let blockHash = try block.generateBlockHash()
-//                if blockHash != block.hash {
-//                    continue
-//                }
-//            } catch {
-//                continue
-//            }
-//
-//            /// The existing accounts need to be deleted since the most updated accounts are the only source of truth.
-//            block.accounts?.forEach { self.delete($0) }
-//            block.accounts?.forEach { print("accounts in the block", $0.id) }
-//
-//            /// Save the verified block. It's now effectively part of the blockchain.
-//            self.localStorage.saveRelationalBlock(block: block, completion: { error in
-//                if let error = error {
-//                    print("non validator block save error", error as Any)
-//                    return
-//                }
-//
-//                completion(nil)
-//                return
-//            })
-//
-//            break
-//        }
+        guard let verifiedBlock = verifiedBlocks.first,
+              let location = verifiedBlock.extraData,
+              let hostLocation = try? JSONDecoder().decode(HostLocation.self, from: location) else { return }
+        
+        hostLocationDelegate?.didGetHostLocation(hostLocation)
     }
     
     // MARK: - createBlockByEveryNode

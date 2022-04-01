@@ -52,28 +52,8 @@ final class Node {
     let queue = OperationQueue() /// Queue executes transactions in timestamped order sequentially
     weak var downloadDelegate: BlockChainDownloadDelegate?
     weak var eventQueryDelegate: EventQueryDelegate? /// A delegate for GuestLoginVC to fetch the requested events
-    var userNotificationCenter: UNUserNotificationCenter!
-    
-    init() {
-        DispatchQueue.main.async { [weak self] in
-            guard let scene = UIApplication.shared.connectedScenes.first,
-                  let windowScene = scene as? UIWindowScene,
-                  let sceneDelegate = windowScene.delegate as? SceneDelegate,
-                  let rootViewController = sceneDelegate.window?.rootViewController else { return }
-            
-            self?.userNotificationCenter = sceneDelegate.userNotificationCenter
-            
-            self?.requestAuthorization { (granted) in
-                if !granted {
-                    DispatchQueue.main.async {
-                        let alert = AlertView()
-                        alert.showDetail("Notification", with: "You will not be able to receive the payment notification. You can always change your settings in your iPhone's notification settings.", for: rootViewController)
-                    }
-                }
-            }
-        }
-    }
-    
+    weak var hostLocationDelegate: HostLocationDelegate? /// Get the location of the host during VerifyBlock in order to show the host location in MapVC
+
     func save<T: LightConfigurable>(_ element: T, completion: @escaping (NodeError?) -> Void) async {
         await localStorage.save(element, completion: completion)
     }
@@ -145,9 +125,9 @@ final class Node {
                    value != 0 {
                     
                     if transaction.sender?.address == wallet.address {
-                        self?.sendNotification(notificationType: "Your fund of \(value.description) has been received by the recipient")
+                        NetworkManager.shared.sendNotification(notificationType: "Your fund of \(value.description) has been received by the recipient")
                     } else if transaction.to.address == wallet.address {
-                        self?.sendNotification(notificationType: "You received the fund of \(value.description)")
+                        NetworkManager.shared.sendNotification(notificationType: "You received the fund of \(value.description)")
                     }
 
                     self?.updateBalanceUI()
@@ -840,65 +820,6 @@ final class Node {
         addUnvalidatedBlock(fullBlock)
     }
 }
-
-extension Node {
-    func requestAuthorization(completion: @escaping  (Bool) -> Void) {
-        userNotificationCenter
-            .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _  in
-//                self?.fetchNotificationSettings()
-                completion(granted)
-            }        
-    }
-    
-    func fetchNotificationSettings() {
-        UNUserNotificationCenter.current().getNotificationSettings { _ in
-            /// Can fetch settings to fine grain control the settings
-            /// <UNNotificationSettings: 0x283419200; authorizationStatus: Authorized, notificationCenterSetting: Enabled, soundSetting: Enabled, badgeSetting: Enabled, lockScreenSetting: Enabled, carPlaySetting: NotSupported, announcementSetting: Disabled, criticalAlertSetting: NotSupported, timeSensitiveSetting: NotSupported, alertSetting: Enabled, scheduledDeliverySetting: Disabled, directMessagesSetting: NotSupported, alertStyle: Banner, groupingSetting: Default providesAppNotificationSettings: No>
-        }
-    }
-    
-    func sendNotification(notificationType: String) {
-        
-        //Compose New Notificaion
-        let content = UNMutableNotificationContent()
-        let categoryIdentifire = "Delete Notification Type"
-        content.sound = UNNotificationSound.default
-        content.body = notificationType
-        content.badge = 1
-        content.categoryIdentifier = categoryIdentifire
-        
-        //Add attachment for Notification with more content
-        if (notificationType == "Local Notification with Content") {
-            let imageName = "1"
-            guard let imageURL = Bundle.main.url(forResource: imageName, withExtension: "jpeg") else { return }
-            let attachment = try! UNNotificationAttachment(identifier: imageName, url: imageURL, options: .none)
-            content.attachments = [attachment]
-        }
-        
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
-        let identifier = "Local Notification"
-        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-        
-        userNotificationCenter.add(request) { (error) in
-            if let error = error {
-                print("Error \(error.localizedDescription)")
-            }
-        }
-        
-        //Add Action button the Notification
-        if (notificationType == "Local Notification with Action") {
-            let snoozeAction = UNNotificationAction(identifier: "Snooze", title: "Snooze", options: [])
-            let deleteAction = UNNotificationAction(identifier: "DeleteAction", title: "Delete", options: [.destructive])
-            let category = UNNotificationCategory(identifier: categoryIdentifire,
-                                                  actions: [snoozeAction, deleteAction],
-                                                  intentIdentifiers: [],
-                                                  options: [])
-            userNotificationCenter.setNotificationCategories([category])
-        }
-    }
-}
-
-
 
 #if DEBUG
 extension Node {

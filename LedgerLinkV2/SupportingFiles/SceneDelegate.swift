@@ -47,7 +47,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-        NetworkManager.shared.toggleBackgroundMode(false)
+//        NetworkManager.shared.toggleBackgroundMode(false)
         
         /// Dismisses the badge on the app icon when the app is loaded
         UIApplication.shared.applicationIconBadgeNumber = 0
@@ -56,13 +56,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillResignActive(_ scene: UIScene) {
         // Called when the scene will move from an active state to an inactive state.
         // This may occur due to temporary interruptions (ex. an incoming phone call).
-        NetworkManager.shared.toggleBackgroundMode(true)
+//        NetworkManager.shared.toggleBackgroundMode(true)
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
-        NetworkManager.shared.toggleBackgroundMode(false)
+//        NetworkManager.shared.toggleBackgroundMode(false)
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
@@ -183,14 +183,19 @@ extension SceneDelegate: UNUserNotificationCenterDelegate {
         
         // Perform the task associated with the action.
         switch response.actionIdentifier {
-            case "CONTINUE_ACTION":
+            case "CONTINUE_ACTION", "CONTIUE_DISTANCE_ALERT_ACTION":
                 print("continue")
                 break
                 
             case "STOP_ACTION":
                 print("disconnect")
                 NetworkManager.shared.disconnect()
-                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["SERVER_STATUS"])
+                break
+                
+            case "STOP_DISTANCE_ALERT_ACTION":
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["FUND_TRANSFER_NOTIFICATION"])
+                UserDefaults.standard.set(false, forKey: UserDefaultKey.distanceNotificationAllowed)
                 break
                 
             default:

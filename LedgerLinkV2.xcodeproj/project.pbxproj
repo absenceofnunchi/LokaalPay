@@ -22,6 +22,7 @@
 		4909287727D64D6D00D1597E /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4909287627D64D6D00D1597E /* GradientView.swift */; };
 		4909287927D65E3E00D1597E /* BlurEffectContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4909287827D65E3E00D1597E /* BlurEffectContainerView.swift */; };
 		491C2BBF27D2D79600821C57 /* Quicksort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491C2BBE27D2D79600821C57 /* Quicksort.swift */; };
+		4929ABF427F5D7BE00F2E137 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4929ABF327F5D7BE00F2E137 /* MapViewController.swift */; };
 		492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983827A998BA003BFAB4 /* AppDelegate.swift */; };
 		492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983A27A998BA003BFAB4 /* SceneDelegate.swift */; };
 		492D984327A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 492D984127A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld */; };
@@ -84,6 +85,7 @@
 		49A7C33027B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */; };
 		49A7C33227B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */; };
 		49A7C33427B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */; };
+		49B0FE7D27F627C500340A85 /* HostLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B0FE7C27F627C500340A85 /* HostLocation.swift */; };
 		49C4492227BFF98D00970B8E /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C4492127BFF98D00970B8E /* String+Extension.swift */; };
 		49CD35FA27E67255001D3DF3 /* TitleSupplementaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CD35F927E67255001D3DF3 /* TitleSupplementaryView.swift */; };
 		49CD35FC27E67272001D3DF3 /* TextCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CD35FB27E67272001D3DF3 /* TextCell.swift */; };
@@ -165,6 +167,7 @@
 		4909287627D64D6D00D1597E /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		4909287827D65E3E00D1597E /* BlurEffectContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurEffectContainerView.swift; sourceTree = "<group>"; };
 		491C2BBE27D2D79600821C57 /* Quicksort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quicksort.swift; sourceTree = "<group>"; };
+		4929ABF327F5D7BE00F2E137 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		492D983527A998BA003BFAB4 /* Lokaal Pay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Lokaal Pay.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		492D983827A998BA003BFAB4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		492D983A27A998BA003BFAB4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -231,6 +234,7 @@
 		49A7C32F27B8BE1900AC7EB0 /* TreeConfigurableReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeConfigurableReceipt.swift; sourceTree = "<group>"; };
 		49A7C33127B8BFE900AC7EB0 /* TransactionReceipt+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionReceipt+Extensions.swift"; sourceTree = "<group>"; };
 		49A7C33327B8DEE200AC7EB0 /* EthereumTransaction+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EthereumTransaction+Extensions.swift"; sourceTree = "<group>"; };
+		49B0FE7C27F627C500340A85 /* HostLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostLocation.swift; sourceTree = "<group>"; };
 		49C4492127BFF98D00970B8E /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		49CD35F927E67255001D3DF3 /* TitleSupplementaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleSupplementaryView.swift; sourceTree = "<group>"; };
 		49CD35FB27E67272001D3DF3 /* TextCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCell.swift; sourceTree = "<group>"; };
@@ -410,6 +414,7 @@
 				496A9CB827C7FC110089AE84 /* AsyncOperation.swift */,
 				496A9CBB27C815300089AE84 /* Operation+Extensions.swift */,
 				49FBF5E227DE615100B21EED /* AlertModalDictionary.swift */,
+				49B0FE7C27F627C500340A85 /* HostLocation.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -525,6 +530,7 @@
 				498F894E27E035F4008949D6 /* PasswordResetViewController.swift */,
 				4900A94827E2880300E0D234 /* IndividualDetailViewController.swift */,
 				4900A94A27E3D6A600E0D234 /* ServerViewController.swift */,
+				4929ABF327F5D7BE00F2E137 /* MapViewController.swift */,
 				49CD360127E6D7EA001D3DF3 /* InstructionViewController.swift */,
 			);
 			path = ViewControllers;
@@ -881,6 +887,7 @@
 				492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */,
 				496CC5A227CCA60E0016B1C5 /* Multiset.swift in Sources */,
 				49FBF5DF27DE5CC900B21EED /* BackgroundView.swift in Sources */,
+				4929ABF427F5D7BE00F2E137 /* MapViewController.swift in Sources */,
 				49FC150527B62B4D00D215B6 /* TreeConfigurableAccount.swift in Sources */,
 				492D984327A998BA003BFAB4 /* LedgerLinkV2.xcdatamodeld in Sources */,
 				490367CA27BC48E100DFDE2B /* AlertView.swift in Sources */,
@@ -894,6 +901,7 @@
 				4944570127D6B84200C9B743 /* PartialPresentationController.swift in Sources */,
 				4900A94927E2880400E0D234 /* IndividualDetailViewController.swift in Sources */,
 				492D983B27A998BA003BFAB4 /* SceneDelegate.swift in Sources */,
+				49B0FE7D27F627C500340A85 /* HostLocation.swift in Sources */,
 				4976EB5227CFD15100C10DBD /* BlockCoreData+CoreDataClass.swift in Sources */,
 				49FC14F527B323A800D215B6 /* Account.swift in Sources */,
 				49F6E12C27C6850900790A75 /* CoreDataServices+Generic.swift in Sources */,
@@ -1107,8 +1115,7 @@
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds.";
-				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds and the blockchain data.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -1146,8 +1153,7 @@
 				INFOPLIST_FILE = LedgerLinkV2/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The device requires bluetooth to send and receive blockchain data";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used for scanning QR's for addresses to send money to.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds.";
-				INFOPLIST_KEY_NSLocationUsageDescription = "Local network is need to connect to other devices.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The device connects peer-to-peer to the participating devices nearby you to send and receive funds and the blockchain data.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo gallery is needed to introduce events as a host to guests.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;

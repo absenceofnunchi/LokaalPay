@@ -55,7 +55,6 @@ final class WalletViewController: UIViewController {
     final override func viewDidLoad() {
         super.viewDidLoad()
 
-        configureFirstPopup()
         configureHierarchy()
         configureDataSource()
     }
@@ -67,13 +66,6 @@ final class WalletViewController: UIViewController {
 }
 
 extension WalletViewController {
-    func configureFirstPopup() {
-        let hasSeen = UserDefaults.standard.bool(forKey: UserDefaultKey.hasSeenWallet)
-        if !hasSeen {
-            showFirstPopup()
-        }
-    }
-    
     func configureUI() {
         navigationController?.setNavigationBarHidden(true, animated: false)
         reloadBalance()
@@ -461,37 +453,6 @@ extension WalletViewController: UICollectionViewDelegate {
                     UserDefaults.standard.removeObject(forKey: UserDefaultKey.chainID)
                     NetworkManager.shared.disconnect()
                     AuthSwitcher.logout()
-                })
-            }
-        }
-        self.present(alertVC, animated: true, completion: nil)
-    }
-    
-    /// Explains to the new user how the backgrounding will trigger the beeping sound
-    private func showFirstPopup() {
-        // delete
-        let content = [
-            StandardAlertContent(
-                titleString: "Welcome!",
-                body: ["": "The app will stay active in the background as long as the server is on. A soft chime will sound to remind you periodically of this status. To turn the server off, simply press the toggle button under the Connect tab!"],
-                fieldViewHeight: 200,
-                messageTextAlignment: .left,
-                alertStyle: .oneButton,
-                buttonAction: { [weak self](_) in
-                    self?.dismiss(animated: true, completion: nil)
-                    UserDefaults.standard.set(true, forKey: UserDefaultKey.hasSeenWallet)
-                },
-                borderColor: UIColor.clear.cgColor
-            )
-            
-        ]
-        
-        let alertVC = AlertViewController(height: 400, standardAlertContent: content)
-        alertVC.action = { [weak self] (modal, mainVC) in
-            mainVC.buttonAction = { _ in
-                
-                self?.dismiss(animated: true, completion: {
-
                 })
             }
         }

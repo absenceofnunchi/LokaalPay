@@ -15,10 +15,11 @@
 
 import Foundation
 import MultipeerConnectivity
-import MediaPlayer
+//import MediaPlayer
 import web3swift
 import BigInt
 import Combine
+import CoreLocation
 
 final class NetworkManager: NSObject {
     static let shared = NetworkManager()
@@ -31,8 +32,8 @@ final class NetworkManager: NSObject {
     var peerConnectedHandler: ((MCPeerID) -> Void)?
     var peerDisconnectedHandler: ((MCPeerID) -> Void)?
     private let maxNumPeers: Int = 10
-    private var player: AVQueuePlayer!
-    private var playerLooper: AVPlayerLooper!
+//    private var player: AVQueuePlayer!
+//    private var playerLooper: AVPlayerLooper!
     private var isServerRunning = false {
         didSet {
             if isServerRunning {
@@ -49,11 +50,34 @@ final class NetworkManager: NSObject {
     private var storage = Set<AnyCancellable>()
     private var transactionRelayHistory = [Data: Set<MCPeerID>]()
     private var blockRelayHistory = [Data: Set<MCPeerID>]()
-    
+    var locationManager: CLLocationManager?
+    var userNotificationCenter: UNUserNotificationCenter!
+
     override init() {
         super.init()
-        self.configureSession()
-        self.setupNotifications()
+        configureSession()
+        getUserLocation()
+        configureNotificationCenter()
+    }
+    
+    private func configureNotificationCenter() {
+        DispatchQueue.main.async { [weak self] in
+            guard let scene = UIApplication.shared.connectedScenes.first,
+                  let windowScene = scene as? UIWindowScene,
+                  let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                  let rootViewController = sceneDelegate.window?.rootViewController else { return }
+            
+            self?.userNotificationCenter = sceneDelegate.userNotificationCenter
+            
+            self?.requestAuthorization { (granted) in
+                if !granted {
+                    DispatchQueue.main.async {
+                        let alert = AlertView()
+                        alert.showDetail("Notification", with: "You will not be able to receive the payment notification. You can always change your settings in your iPhone's notification settings.", for: rootViewController)
+                    }
+                }
+            }
+        }
     }
     
     private func configureSession() {
@@ -68,11 +92,11 @@ final class NetworkManager: NSObject {
     // MARK: - `MPCSession` public methods.
     func start(startAutoRelay: Bool = true) {
         self.isServerRunning = true
-//        guard isServerRunning == false else { return }
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: self.peerID, discoveryInfo: nil, serviceType: self.serviceType)
         self.nearbyServiceAdvertiser.delegate = self
         self.nearbyServiceAdvertiser?.startAdvertisingPeer()
         self.nearbyBrowser.startBrowsingForPeers()
+        self.locationManager?.startUpdatingLocation()
 
         /// Start the pinging only at every 0 or 30 second so that all the devices could be synchronized.
         /// Auto relay is for a validate to send blocks or for guests to execute and clear validated transactions.
@@ -100,10 +124,11 @@ final class NetworkManager: NSObject {
     func disconnect() {
         suspend()
         isServerRunning = false
-        player = nil
-        playerLooper = nil
+//        player = nil
+//        playerLooper = nil
         timer?.invalidate()
         session.disconnect()
+        locationManager?.stopUpdatingLocation()
     }
     
     func getServerStatus() -> Bool {
@@ -229,6 +254,67 @@ final class NetworkManager: NSObject {
         
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         UNUserNotificationCenter.current().add(request)
+    }
+    
+    func sendNotification(notificationType: String) {
+        
+        /// Compose New Notificaion
+        let content = UNMutableNotificationContent()
+        let categoryIdentifier = "FUND_TRANSFER_NOTIFICATION"
+        content.sound = UNNotificationSound.default
+        content.body = notificationType
+        content.badge = 1
+        content.categoryIdentifier = categoryIdentifier
+        
+        /// Add attachment for Notification with more content
+        if (notificationType == "Local Notification with Content") {
+            let imageName = "1"
+            guard let imageURL = Bundle.main.url(forResource: imageName, withExtension: "jpeg") else { return }
+            let attachment = try! UNNotificationAttachment(identifier: imageName, url: imageURL, options: .none)
+            content.attachments = [attachment]
+        }
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let identifier = "Local Notification"
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        userNotificationCenter.add(request) { (error) in
+            if let error = error {
+                print("Error \(error.localizedDescription)")
+            }
+        }
+        
+        /// Add Action button the Notification
+        if (notificationType == "You are too far away from the host. The transactions may not work.") {
+            let alertAction = UNNotificationAction(identifier: "CONTIUE_DISTANCE_ALERT_ACTION", title: "OK", options: [])
+            let disableAlertAction = UNNotificationAction(identifier: "STOP_DISTANCE_ALERT_ACTION", title: "Disable Alert", options: [.destructive])
+            let category = UNNotificationCategory(identifier: categoryIdentifier,
+                                                  actions: [alertAction, disableAlertAction],
+                                                  intentIdentifiers: [],
+                                                  options: [])
+            userNotificationCenter.setNotificationCategories([category])
+        }
+    }
+    
+    func requestAuthorization(completion: @escaping  (Bool) -> Void) {
+        userNotificationCenter
+            .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _  in
+                //                self?.fetchNotificationSettings()
+                completion(granted)
+            }
+    }
+    
+    func fetchNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { _ in
+            /// Can fetch settings to fine grain control the settings
+            /// <UNNotificationSettings: 0x283419200; authorizationStatus: Authorized, notificationCenterSetting: Enabled, soundSetting: Enabled, badgeSetting: Enabled, lockScreenSetting: Enabled, carPlaySetting: NotSupported, announcementSetting: Disabled, criticalAlertSetting: NotSupported, timeSensitiveSetting: NotSupported, alertSetting: Enabled, scheduledDeliverySetting: Disabled, directMessagesSetting: NotSupported, alertStyle: Banner, groupingSetting: Default providesAppNotificationSettings: No>
+        }
+    }
+    
+    func getDeliveredNotifications(completion: @escaping ([UNNotification]) -> Void) {
+        let center = UNUserNotificationCenter.current()
+        center.getDeliveredNotifications(completionHandler: completion)
     }
 }
 
@@ -500,119 +586,136 @@ extension NetworkManager: MCNearbyServiceBrowserDelegate {
 }
 
 // MARK: - Player
-extension NetworkManager {
-    private func getPlayerItems() -> [AVPlayerItem] {
-        let itemNames = ["beep3"]
-        return itemNames.map {
-            let url = Bundle.main.url(forResource: $0, withExtension: "mp3")!
-            return AVPlayerItem(url: url)
-        }
-    }
-    
-    private func makeLooper(player: AVQueuePlayer, item: AVPlayerItem) -> AVPlayerLooper {
-        let looper = AVPlayerLooper(player: player, templateItem: item)
-        return looper
-    }
-    
-    private func makePlayer() -> AVQueuePlayer? {
-        let player = AVQueuePlayer()
-        let items = getPlayerItems()
-        guard let item = items.first else { return nil }
-        player.replaceCurrentItem(with: item)
-        player.actionAtItemEnd = .advance
-        //        player.addObserver(self, forKeyPath: "currentItem", options: [.new, .initial] , context: nil)
-        player.volume = 1
-        
-        self.playerLooper = makeLooper(player: player, item: item)
-        return player
-    }
-    
-    /// Checking the state of the application twice seem redundant, but background to foreground sometimes triggers the player.
-    private func stateCheckAndPlay() {
-        DispatchQueue.main.async { [weak self] in
-            if UIApplication.shared.applicationState == .active {
-                self?.toggleBackgroundMode(false)
-            } else if UIApplication.shared.applicationState == .inactive {
-            } else if UIApplication.shared.applicationState == .background {
-                self?.toggleBackgroundMode(true)
-            }
-        }
-    }
-    
-    final func toggleBackgroundMode(_ isBackgrounded: Bool) {
-        if isBackgrounded {
-            guard isServerRunning == true else { return }
-            if player == nil {
-                player = self.makePlayer()
-            }
-            player.play()
-            player.volume = 1
+//extension NetworkManager {
+//    private func getPlayerItems() -> [AVPlayerItem] {
+//        let itemNames = ["beep3"]
+//        return itemNames.map {
+//            let url = Bundle.main.url(forResource: $0, withExtension: "mp3")!
+//            return AVPlayerItem(url: url)
+//        }
+//    }
+//
+//    private func makeLooper(player: AVQueuePlayer, item: AVPlayerItem) -> AVPlayerLooper {
+//        let looper = AVPlayerLooper(player: player, templateItem: item)
+//        return looper
+//    }
+//
+//    private func makePlayer() -> AVQueuePlayer? {
+//        let player = AVQueuePlayer()
+//        let items = getPlayerItems()
+//        guard let item = items.first else { return nil }
+//        player.replaceCurrentItem(with: item)
+//        player.actionAtItemEnd = .advance
+//        //        player.addObserver(self, forKeyPath: "currentItem", options: [.new, .initial] , context: nil)
+//        player.volume = 1
+//
+//        self.playerLooper = makeLooper(player: player, item: item)
+//        return player
+//    }
+//
+//    /// Checking the state of the application twice seem redundant, but background to foreground sometimes triggers the player.
+//    private func stateCheckAndPlay() {
+//        DispatchQueue.main.async { [weak self] in
+//            if UIApplication.shared.applicationState == .active {
+//                self?.toggleBackgroundMode(false)
+//            } else if UIApplication.shared.applicationState == .inactive {
+//            } else if UIApplication.shared.applicationState == .background {
+//                self?.toggleBackgroundMode(true)
+//            }
+//        }
+//    }
+//
+//    final func toggleBackgroundMode(_ isBackgrounded: Bool) {
+//        if isBackgrounded {
+//            guard isServerRunning == true else { return }
+//            if player == nil {
+//                player = self.makePlayer()
+//            }
+//            player.play()
+//            player.volume = 1
+//
+//            do {
+//                try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback, options: .mixWithOthers )
+//            } catch {
+//                print("Failed to set audio session category. Error: \(error)")
+//            }
+//
+//            let seconds: Float64 = 10;
+//            let preferredTimeScale: Int32 = 1;
+//            let forInterval = CMTimeMakeWithSeconds(seconds, preferredTimescale: preferredTimeScale)
+//
+//            player.addPeriodicTimeObserver(forInterval: forInterval, queue: DispatchQueue.main) { time in
+//
+//            }
+//        } else {
+//            player = nil
+//            playerLooper = nil
+//        }
+//    }
+//
+//    /// Observe the audio interruptions.
+//    private func setupNotifications() {
+//        // Get the default notification center instance.
+//        let nc = NotificationCenter.default
+//        nc.addObserver(self,
+//                       selector: #selector(handleInterruption),
+//                       name: AVAudioSession.interruptionNotification,
+//                       object: AVAudioSession.sharedInstance())
+//
+//        nc.addObserver(self,
+//                       selector: #selector(handleRouteChange),
+//                       name: AVAudioSession.routeChangeNotification,
+//                       object: nil)
+//
+//
+//
+//    }
+//
+//    @objc private func handleInterruption(notification: Notification) {
+//        guard let userInfo = notification.userInfo,
+//              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+//              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+//                  return
+//              }
+//
+//        /// Interuption ended takes time to reboot.
+//        switch type {
+//            case .began:
+//                break
+//            case .ended:
+//                stateCheckAndPlay()
+//                break
+//            default: ()
+//        }
+//    }
+//
+//    @objc private func handleRouteChange(notification: Notification) {
+//        stateCheckAndPlay()
+//    }
+//
+//    private func hasHeadphones(in routeDescription: AVAudioSessionRouteDescription) -> Bool {
+//        // Filter the outputs to only those with a port type of headphones.
+//        return !routeDescription.outputs.filter({$0.portType == .headphones}).isEmpty
+//    }
+//}
 
-            do {
-                try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback, options: .mixWithOthers )
-            } catch {
-                print("Failed to set audio session category. Error: \(error)")
-            }
-            
-            let seconds: Float64 = 10;
-            let preferredTimeScale: Int32 = 1;
-            let forInterval = CMTimeMakeWithSeconds(seconds, preferredTimescale: preferredTimeScale)
-            
-            player.addPeriodicTimeObserver(forInterval: forInterval, queue: DispatchQueue.main) { time in
-                
-            }
-        } else {
-            player = nil
-            playerLooper = nil
-        }
-    }
-    
-    /// Observe the audio interruptions.
-    private func setupNotifications() {
-        // Get the default notification center instance.
-        let nc = NotificationCenter.default
-        nc.addObserver(self,
-                       selector: #selector(handleInterruption),
-                       name: AVAudioSession.interruptionNotification,
-                       object: AVAudioSession.sharedInstance())
-        
-        nc.addObserver(self,
-                       selector: #selector(handleRouteChange),
-                       name: AVAudioSession.routeChangeNotification,
-                       object: nil)
-        
-        
-        
-    }
-    
-    @objc private func handleInterruption(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
-              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
-                  return
-              }
-        
-        /// Interuption ended takes time to reboot.
-        switch type {
-            case .began:
-                break
-            case .ended:
-                stateCheckAndPlay()
-                break
-            default: ()
-        }
-    }
-    
-    @objc private func handleRouteChange(notification: Notification) {
-        stateCheckAndPlay()
-    }
-    
-    private func hasHeadphones(in routeDescription: AVAudioSessionRouteDescription) -> Bool {
-        // Filter the outputs to only those with a port type of headphones.
-        return !routeDescription.outputs.filter({$0.portType == .headphones}).isEmpty
+// MARK: - Location
+extension NetworkManager {
+    /// Continuously obtain the location of the device in order to track the distance between the host and the current device in MapVC
+    /// The background location tracking should also keep the device alive to fascilitate the blockchain and transaction propagation.
+    func getUserLocation() {
+        locationManager = CLLocationManager()
+        locationManager?.requestAlwaysAuthorization()
+        locationManager?.allowsBackgroundLocationUpdates = true
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager?.pausesLocationUpdatesAutomatically = false
+        locationManager?.distanceFilter = kCLDistanceFilterNone
+        locationManager?.startUpdatingLocation()
     }
 }
 
+
+/// For sending a blockchain data when requested
 struct Packet: Codable {
     var accounts: [TreeConfigurableAccount]?
     var transactions: [TreeConfigurableTransaction]?
