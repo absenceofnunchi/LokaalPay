@@ -179,32 +179,32 @@ In short, the offline payment solution is made possible by combining the Apple f
 
 1. Event registration by a host
 
-![](https://github.com/igibliss00/LokaalPay/blob/master/ReadmeAssets/1.jpg)
+![](https://github.com/igibliss00/LokaalPay/blob/main/ReadmeAssets/1.jpg)
 
 
 2. Wallet view controller showing the menu and the balance
 
-![](https://github.com/igibliss00/LokaalPay/blob/master/ReadmeAssets/2.jpg)
+![](https://github.com/igibliss00/LokaalPay/blob/main/ReadmeAssets/2.jpg)
 
 
 3. Explorer to view the details of the blockchain
 
-![](https://github.com/igibliss00/LokaalPay/blob/master/ReadmeAssets/3.jpg)
+![](https://github.com/igibliss00/LokaalPay/blob/main/ReadmeAssets/3.jpg)
 
 
 4. Server view controller showing the status of the connection
 
-![](https://github.com/igibliss00/LokaalPay/blob/master/ReadmeAssets/4.jpg)
+![](https://github.com/igibliss00/LokaalPay/blob/main/ReadmeAssets/4.jpg)
 
 
 5. Map showing the optimal parameter of a host in relation to the location of the user's own device
 
-![](https://github.com/igibliss00/LokaalPay/blob/master/ReadmeAssets/6.jpg)
+![](https://github.com/igibliss00/LokaalPay/blob/main/ReadmeAssets/6.jpg)
 
 
 6. Local notification to let a user know that they are outside the optimal distance from a host
 
-![](https://github.com/igibliss00/LokaalPay/blob/master/ReadmeAssets/5.jpg)
+![](https://github.com/igibliss00/LokaalPay/blob/main/ReadmeAssets/5.jpg)
 
 
 
