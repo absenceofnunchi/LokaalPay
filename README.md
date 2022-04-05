@@ -175,7 +175,14 @@ In short, the offline payment solution is made possible by combining the Apple f
     * App continously receives and relays transactions and blocks when backgrounded.
 
 
+## Video Demo
+
+Click on the following video for a demo walkthrough.
+
+[![Walkthrough demo](https://github.com/igibliss00/LokaalPay/blob/main/ReadmeAssets/0.png)](https://www.youtube.com/watch?v=MHvGSAXVQAU)
+
 ## Screenshots
+
 
 1. Event registration by a host
 

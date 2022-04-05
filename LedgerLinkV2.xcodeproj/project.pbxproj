@@ -28,6 +28,7 @@
 		4916345B27FA7B63009A10A1 /* 2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4916345427FA7B63009A10A1 /* 2.jpg */; };
 		4916345C27FA7B63009A10A1 /* 3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4916345527FA7B63009A10A1 /* 3.jpg */; };
 		4916345D27FA7B63009A10A1 /* 1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4916345627FA7B63009A10A1 /* 1.jpg */; };
+		491AA67C27FBC38100D50D40 /* 0.png in Resources */ = {isa = PBXBuildFile; fileRef = 491AA67B27FBC38100D50D40 /* 0.png */; };
 		491C2BBF27D2D79600821C57 /* Quicksort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491C2BBE27D2D79600821C57 /* Quicksort.swift */; };
 		4929ABF427F5D7BE00F2E137 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4929ABF327F5D7BE00F2E137 /* MapViewController.swift */; };
 		492D983927A998BA003BFAB4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492D983827A998BA003BFAB4 /* AppDelegate.swift */; };
@@ -180,6 +181,7 @@
 		4916345427FA7B63009A10A1 /* 2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 2.jpg; sourceTree = "<group>"; };
 		4916345527FA7B63009A10A1 /* 3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 3.jpg; sourceTree = "<group>"; };
 		4916345627FA7B63009A10A1 /* 1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 1.jpg; sourceTree = "<group>"; };
+		491AA67B27FBC38100D50D40 /* 0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 0.png; sourceTree = "<group>"; };
 		491C2BBE27D2D79600821C57 /* Quicksort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quicksort.swift; sourceTree = "<group>"; };
 		4929ABF327F5D7BE00F2E137 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		492D983527A998BA003BFAB4 /* Lokaal Pay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Lokaal Pay.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -329,6 +331,7 @@
 				4916345427FA7B63009A10A1 /* 2.jpg */,
 				4916345527FA7B63009A10A1 /* 3.jpg */,
 				4916345627FA7B63009A10A1 /* 1.jpg */,
+				491AA67B27FBC38100D50D40 /* 0.png */,
 			);
 			path = ReadmeAssets;
 			sourceTree = "<group>";
@@ -756,6 +759,7 @@
 				4916345B27FA7B63009A10A1 /* 2.jpg in Resources */,
 				4993888A27F3C8C100C50479 /* beep3.mp3 in Resources */,
 				4916345D27FA7B63009A10A1 /* 1.jpg in Resources */,
+				491AA67C27FBC38100D50D40 /* 0.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
